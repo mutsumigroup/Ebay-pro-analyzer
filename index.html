@@ -1,0 +1,873 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>eBay相場・利益分析 Pro</title>
+<style>
+:root{
+  --bg:#0f1117;--sf:#181b24;--sf2:#1e2130;--sf3:#252a3a;
+  --bd:rgba(255,255,255,.07);--bd2:rgba(255,255,255,.13);
+  --tx:#eef0f7;--sub:#8b90a8;--mt:#4a5070;
+  --ac:#4f8ef7;--ac-bg:rgba(79,142,247,.12);--ac-b:rgba(79,142,247,.3);
+  --ok:#22c98e;--ok-bg:rgba(34,201,142,.1);--ok-b:rgba(34,201,142,.3);
+  --ng:#f0524f;--ng-bg:rgba(240,82,79,.1);--ng-b:rgba(240,82,79,.3);
+  --wn:#f5a623;--wn-bg:rgba(245,166,35,.1);--wn-b:rgba(245,166,35,.3);
+  --pr:#a78bfa;--pr-bg:rgba(167,139,250,.1);--pr-b:rgba(167,139,250,.3);
+  --r:10px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Hiragino Sans','Noto Sans JP',sans-serif;background:var(--bg);color:var(--tx);min-height:100vh;font-size:14px;line-height:1.5}
+::-webkit-scrollbar{width:4px;height:4px}::-webkit-scrollbar-track{background:var(--sf)}::-webkit-scrollbar-thumb{background:var(--bd2);border-radius:4px}
+
+/* ── Sync banner ── */
+#sync-banner{background:var(--sf);border-bottom:1px solid var(--bd);padding:8px 1.5rem;display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:12px;color:var(--sub)}
+.sync-dot{width:8px;height:8px;border-radius:50%;background:var(--mt);flex-shrink:0;transition:background .3s}
+.sync-dot.synced{background:var(--ok)}
+.sync-dot.syncing{background:var(--wn);animation:pulse .8s infinite}
+.sync-dot.error{background:var(--ng)}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+#sync-sid{font-weight:700;color:var(--tx);max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sync-actions{display:flex;gap:6px;margin-left:auto}
+.sync-btn{height:26px;padding:0 10px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid var(--bd2);background:transparent;color:var(--sub);font-family:inherit;transition:all .15s}
+.sync-btn:hover{background:var(--sf2);color:var(--tx)}
+.sync-btn.accent{background:var(--ac);color:#fff;border-color:var(--ac)}
+
+
+
+
+
+
+
+.modal-input:focus{outline:none;border-color:var(--ac)}
+
+
+
+
+
+
+/* ── Header ── */
+header{background:var(--sf);border-bottom:1px solid var(--bd);padding:0 1.5rem;height:54px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:200}
+.logo{display:flex;align-items:center;gap:9px;font-size:15px;font-weight:700;color:var(--tx)}
+.logo-mark{width:30px;height:30px;background:linear-gradient(135deg,var(--ac),var(--pr));border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:900;color:#fff}
+.hdr-right{display:flex;align-items:center;gap:7px}
+.nav-btn{height:32px;padding:0 13px;border-radius:var(--r);font-size:12px;font-weight:600;cursor:pointer;border:1px solid var(--bd2);background:transparent;color:var(--sub);font-family:inherit;transition:all .15s}
+.nav-btn:hover{background:var(--sf2);color:var(--tx)}
+.nav-btn.active{background:var(--ac);color:#fff;border-color:var(--ac)}
+
+/* ── Page ── */
+.page{display:none;max-width:1160px;margin:0 auto;padding:1.5rem 1.5rem 5rem}
+.page.active{display:block}
+.pg-title{font-size:19px;font-weight:700;margin-bottom:3px}
+.pg-sub{font-size:12px;color:var(--sub);margin-bottom:1.25rem}
+
+/* ── Card ── */
+.card{background:var(--sf);border:1px solid var(--bd);border-radius:13px;overflow:hidden;margin-bottom:.9rem}
+.ctitle{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--mt);padding:.65rem 1rem;border-bottom:1px solid var(--bd);background:var(--sf2);display:flex;align-items:center;gap:6px}
+.cbody{padding:1rem}
+
+/* ── Buttons ── */
+.btn{height:34px;padding:0 14px;border-radius:var(--r);font-size:12px;font-weight:600;cursor:pointer;border:1px solid var(--bd2);background:var(--sf2);color:var(--sub);font-family:inherit;transition:all .15s;display:inline-flex;align-items:center;gap:5px}
+.btn:hover{background:var(--sf3);color:var(--tx)}
+.btn.primary{background:var(--ac);color:#fff;border-color:var(--ac)}.btn.primary:hover{opacity:.88}
+.btn.ok{background:var(--ok);color:#fff;border-color:var(--ok)}.btn.ok:hover{opacity:.88}
+.btn.sm{height:28px;padding:0 10px;font-size:11px}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+
+/* ── Forms ── */
+.f{display:flex;flex-direction:column;gap:3px}
+.lbl{font-size:11px;font-weight:600;color:var(--sub)}
+.hint{font-size:10px;color:var(--mt)}
+input[type=text],input[type=number],input[type=url],select,textarea{width:100%;padding:0 9px;height:34px;border:1px solid var(--bd2);border-radius:var(--r);background:var(--sf2);color:var(--tx);font-size:13px;font-family:inherit;transition:border .12s,box-shadow .12s}
+textarea{height:auto;padding:7px 9px;resize:vertical}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--ac);box-shadow:0 0 0 3px var(--ac-bg)}
+select option{background:var(--sf2)}
+.frow{display:flex;gap:7px}.frow .f{flex:1}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:9px}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:9px}
+@media(max-width:680px){.g2,.g3,.g4{grid-template-columns:1fr 1fr}.frow{flex-wrap:wrap}}
+@media(max-width:440px){.g2,.g3,.g4{grid-template-columns:1fr}}
+
+/* ── Upload ── */
+.upload-area{border:2px dashed var(--bd2);border-radius:13px;padding:2rem;text-align:center;cursor:pointer;transition:all .2s;position:relative}
+.upload-area:hover,.upload-area.drag{border-color:var(--ac);background:var(--ac-bg)}
+.upload-area input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.prev-img{width:100%;max-height:260px;object-fit:contain;border-radius:9px;border:1px solid var(--bd);background:var(--sf2);display:block}
+.img-wrap{position:relative}
+.img-rm{position:absolute;top:7px;right:7px;width:26px;height:26px;border-radius:50%;background:rgba(0,0,0,.7);border:none;color:#fff;font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+
+/* ── Analysis layout ── */
+.an-layout{display:grid;grid-template-columns:350px 1fr;gap:1rem;align-items:start}
+@media(max-width:860px){.an-layout{grid-template-columns:1fr}}
+
+/* ── Metrics ── */
+.mrow{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:.9rem}
+@media(max-width:660px){.mrow{grid-template-columns:1fr 1fr}}
+.metric{background:var(--sf2);border:1px solid var(--bd);border-radius:11px;padding:.75rem .9rem}
+.ml{font-size:10px;color:var(--mt);margin-bottom:3px;text-transform:uppercase;letter-spacing:.04em}
+.mv{font-size:19px;font-weight:800;line-height:1.1}
+.ms{font-size:11px;color:var(--sub);margin-top:2px}
+.mv.ok{color:var(--ok)}.mv.ng{color:var(--ng)}.mv.wn{color:var(--wn)}.mv.pr{color:var(--pr)}.mv.ac{color:var(--ac)}.mv.dm{color:var(--mt)}
+
+/* ── Rank badge ── */
+.rbadge{display:inline-flex;align-items:center;justify-content:center;width:42px;height:42px;border-radius:11px;font-size:21px;font-weight:900;border:2px solid;flex-shrink:0}
+.rbadge.S{background:rgba(34,201,142,.15);color:var(--ok);border-color:var(--ok)}
+.rbadge.A{background:rgba(79,142,247,.15);color:var(--ac);border-color:var(--ac)}
+.rbadge.B{background:rgba(245,166,35,.15);color:var(--wn);border-color:var(--wn)}
+.rbadge.C{background:rgba(240,82,79,.15);color:var(--ng);border-color:var(--ng)}
+
+/* ── Verdict ── */
+.verdict{border-radius:13px;padding:1.1rem;border:1px solid;margin-bottom:.9rem}
+.verdict.S{background:var(--ok-bg);border-color:var(--ok-b)}
+.verdict.A{background:var(--ac-bg);border-color:var(--ac-b)}
+.verdict.B{background:var(--wn-bg);border-color:var(--wn-b)}
+.verdict.C{background:var(--ng-bg);border-color:var(--ng-b)}
+.vhead{display:flex;align-items:center;gap:11px;margin-bottom:.6rem}
+.vtitle{font-size:14px;font-weight:700}
+.abtn{padding:5px 14px;border-radius:20px;font-size:11px;font-weight:700;border:1px solid;display:inline-block;margin-top:7px}
+.abtn.buy{background:var(--ok);color:#fff;border-color:var(--ok)}
+.abtn.watch{background:var(--wn-bg);color:var(--wn);border-color:var(--wn-b)}
+.abtn.pass{background:var(--ng-bg);color:var(--ng);border-color:var(--ng-b)}
+
+
+
+
+
+
+
+
+
+/* ── Tip ── */
+.tip{border-radius:var(--r);padding:9px 13px;font-size:12px;margin-bottom:.9rem;display:flex;align-items:flex-start;gap:7px;border:1px solid;line-height:1.6}
+.tip.ok{background:var(--ok-bg);color:var(--ok);border-color:var(--ok-b)}
+.tip.ng{background:var(--ng-bg);color:var(--ng);border-color:var(--ng-b)}
+.tip.info{background:var(--ac-bg);color:var(--ac);border-color:var(--ac-b)}
+.tip.warn{background:var(--wn-bg);color:var(--wn);border-color:var(--wn-b)}
+
+/* ── Dashboard ── */
+.dtable{width:100%;border-collapse:collapse}
+.dtable th{font-size:10px;font-weight:700;color:var(--mt);text-align:left;padding:7px 9px;border-bottom:1px solid var(--bd);text-transform:uppercase;letter-spacing:.04em;cursor:pointer;white-space:nowrap}
+.dtable th:hover{color:var(--sub)}
+.dtable td{padding:9px;border-bottom:1px solid var(--bd);font-size:12px;vertical-align:middle}
+.dtable tr:hover td{background:var(--sf2)}
+.dtable tr:last-child td{border-bottom:none}
+.pill{display:inline-block;padding:2px 7px;border-radius:20px;font-size:10px;font-weight:700}
+.pill.ok{background:var(--ok-bg);color:var(--ok)}.pill.ng{background:var(--ng-bg);color:var(--ng)}.pill.wn{background:var(--wn-bg);color:var(--wn)}.pill.pr{background:var(--pr-bg);color:var(--pr)}
+.ptag{background:var(--sf3);border:1px solid var(--bd);border-radius:5px;padding:2px 7px;font-size:10px;color:var(--sub)}
+
+/* ── Spinner ── */
+.spinner{width:34px;height:34px;border:3px solid var(--bd);border-top-color:var(--ac);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-st{text-align:center;padding:2rem}
+.loading-st p{font-size:12px;color:var(--sub);margin-top:.6rem}
+
+/* ── URL tabs (analyze) ── */
+.url-tabs{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:.6rem}
+.url-tab{padding:4px 11px;border-radius:20px;border:1px solid var(--bd2);background:transparent;color:var(--sub);font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s}
+.url-tab.active{background:var(--ac);color:#fff;border-color:var(--ac)}
+
+/* ── Empty ── */
+.empty{text-align:center;padding:2.5rem 1rem}
+.empty-icon{font-size:44px;margin-bottom:10px}
+.empty-title{font-size:14px;font-weight:700;margin-bottom:5px}
+.empty-sub{font-size:12px;color:var(--mt);line-height:1.6}
+
+/* ── Prod card ── */
+.prod-card{background:var(--sf2);border:1px solid var(--bd);border-radius:11px;padding:.9rem;margin-bottom:.9rem}
+.prod-name{font-size:15px;font-weight:700;margin-bottom:3px}
+.prod-meta{display:flex;gap:6px;flex-wrap:wrap}
+
+
+#share-modal.open{display:flex}
+
+
+
+.hidden{display:none!important}
+footer{text-align:center;font-size:11px;color:var(--mt);padding:1.5rem 1rem;border-top:1px solid var(--bd)}
+</style>
+</head>
+<body>
+
+<!-- STATUS BAR -->
+<div id="sync-banner">
+  <div class="sync-dot synced" id="sync-dot"></div>
+  <span id="sync-status" style="color:var(--sub)">データ保存: ローカル</span>
+  <span id="sync-count" style="color:var(--mt)"></span>
+  <div class="sync-actions">
+    <button class="sync-btn" onclick="exportCSV()">📤 CSV出力</button>
+    <button class="sync-btn" style="color:var(--ng)" onclick="clearAll()">🗑 全削除</button>
+  </div>
+</div>
+  <span>セッション: <strong id="sync-sid">—</strong></span>
+  <span id="sync-status" style="color:var(--mt)">未接続</span>
+  <span id="sync-count" style="color:var(--mt)"></span>
+  <div class="sync-actions">
+    
+    
+    
+  </div>
+</div>
+
+<!-- ═══ HEADER ═══ -->
+<header>
+  <div class="logo">
+    <div class="logo-mark">e</div>
+    eBay利益分析 Pro
+  </div>
+  <div class="hdr-right">
+    <button class="nav-btn active" onclick="showPage('analyze',this)">🔍 分析</button>
+    <button class="nav-btn" onclick="showPage('calc',this)">💰 計算</button>
+    <button class="nav-btn" onclick="showPage('dash',this)">📊 ダッシュ</button>
+  </div>
+</header>
+
+<!-- ═══════════ ANALYZE ═══════════ -->
+<div class="page active" id="page-analyze">
+  <div class="pg-title">商品分析</div>
+  <div class="pg-sub">写真またはURLから商品を特定し、eBay相場・販売データをAIで分析します</div>
+
+  <div class="an-layout">
+    <!-- Left inputs -->
+    <div>
+      <div class="card">
+        <div class="ctitle">📷 写真から分析</div>
+        <div class="cbody">
+          <div id="upload-area" class="upload-area"
+               ondragover="event.preventDefault();event.stopPropagation();this.classList.add('drag')"
+               ondragleave="event.stopPropagation();this.classList.remove('drag')"
+               ondrop="handleDrop(event)"
+               onclick="document.getElementById('file-input').click()">
+            <input type="file" accept="image/*,image/png,image/jpeg,image/webp,image/gif"
+                   onchange="handleFile(this.files[0])" id="file-input"
+                   style="display:none">
+            <div id="up-placeholder">
+              <div style="font-size:36px;margin-bottom:8px">📷</div>
+              <div style="font-size:14px;font-weight:700;margin-bottom:3px">写真をアップロード</div>
+              <div style="font-size:11px;color:var(--sub)">クリックでファイル選択<br>ドラッグ＆ドロップも可（PNG・JPG・スクショ対応）</div>
+            </div>
+            <div id="up-preview" class="hidden" onclick="event.stopPropagation()">
+              <div class="img-wrap">
+                <img id="prev-img" class="prev-img" alt="preview">
+                <button class="img-rm" onclick="clearImg(event)">✕</button>
+              </div>
+            </div>
+          </div>
+          <button class="btn primary" id="analyze-photo-btn" onclick="analyzePhoto()" disabled style="width:100%;margin-top:.6rem">🔍 AIで商品を識別・分析</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="ctitle">🔗 URLから分析</div>
+        <div class="cbody">
+          <div class="url-tabs">
+            <button class="url-tab active" onclick="setUrlPh('mercari',this)">メルカリ</button>
+            <button class="url-tab" onclick="setUrlPh('yahoo',this)">ヤフオク</button>
+            <button class="url-tab" onclick="setUrlPh('rakuma',this)">ラクマ</button>
+            <button class="url-tab" onclick="setUrlPh('ebay',this)">eBay</button>
+          </div>
+          <div class="frow" style="margin-bottom:.6rem">
+            <input type="url" id="url-input" placeholder="https://jp.mercari.com/item/..." style="flex:1;font-size:12px">
+            <button class="btn sm" onclick="openUrl()">↗</button>
+          </div>
+          <div class="f" style="margin-bottom:.6rem">
+            <div class="lbl">または商品名・キーワード</div>
+            <input type="text" id="kw-input" placeholder="Sony WH-1000XM5 ヘッドフォン">
+          </div>
+          <button class="btn ok" onclick="analyzeByUrl()" style="width:100%">📊 相場を分析</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="ctitle">⚙️ 計算設定</div>
+        <div class="cbody">
+          <div class="g2">
+            <div class="f"><div class="lbl">仕入れ価格（円）</div>
+              <input type="number" id="a-buy" placeholder="5000" min="0" oninput="updateAnalysisCalc()"></div>
+            <div class="f"><div class="lbl">USD/JPY</div>
+              <div class="frow"><input type="number" id="a-fx" placeholder="155" step="0.1" oninput="updateAnalysisCalc()" style="flex:1"><button class="btn sm" onclick="fetchFxTo('a-fx')">↻</button></div></div>
+            <div class="f"><div class="lbl">eBay手数料（%）</div>
+              <input type="number" id="a-fee" value="13.25" step="0.01" oninput="updateAnalysisCalc()"></div>
+            <div class="f"><div class="lbl">国際送料（USD）</div>
+              <input type="number" id="a-ship" placeholder="20" step="0.01" oninput="updateAnalysisCalc()"></div>
+            <div class="f"><div class="lbl">梱包・その他（円）</div>
+              <input type="number" id="a-other" placeholder="300" oninput="updateAnalysisCalc()"></div>
+            <div class="f"><div class="lbl">カテゴリ</div>
+              <select id="a-cat">
+                <option>家電・電子機器</option><option>ゲーム・おもちゃ</option>
+                <option>ファッション</option><option>カメラ・光学</option>
+                <option>ホビー・模型</option><option>その他</option>
+              </select></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right results -->
+    <div id="result-area">
+      <div class="empty" id="result-empty">
+        <div class="empty-icon">🔍</div>
+        <div class="empty-title">写真またはURLを入力してください</div>
+        <div class="empty-sub">写真をアップロードしてAI識別ボタンを押すか<br>商品URLを入力して「相場を分析」を押してください</div>
+      </div>
+      <div id="result-loading" class="hidden">
+        <div class="loading-st"><div class="spinner"></div><p id="loading-msg">AIが分析中...</p></div>
+      </div>
+      <div id="result-content" class="hidden"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CALC ═══════════ -->
+<div class="page" id="page-calc">
+  <div class="pg-title">利益計算</div>
+  <div class="pg-sub">仕入れ価格・手数料・送料から利益・ROI・最大仕入れ価格を計算します</div>
+  <div style="display:grid;grid-template-columns:1fr 340px;gap:1rem;align-items:start">
+    <div>
+      <div class="card">
+        <div class="ctitle">💰 収支入力</div>
+        <div class="cbody">
+          <div class="g2" style="margin-bottom:.6rem">
+            <div class="f"><div class="lbl">商品名（任意）</div><input type="text" id="c-name" placeholder="Sony WH-1000XM5"></div>
+            <div class="f"><div class="lbl">eBay販売価格（USD）</div><input type="number" id="c-sell" placeholder="80.00" step="0.01" oninput="calcMain()"></div>
+            <div class="f"><div class="lbl">USD/JPY</div>
+              <div class="frow"><input type="number" id="c-fx" placeholder="155" step="0.1" oninput="calcMain()" style="flex:1"><button class="btn sm" onclick="fetchFxTo('c-fx')">↻</button></div></div>
+            <div class="f"><div class="lbl">仕入れ価格（円）</div><input type="number" id="c-buy" placeholder="5000" oninput="calcMain()"></div>
+            <div class="f"><div class="lbl">仕入れ手数料（%）</div><input type="number" id="c-pfee" value="10" step="0.1" oninput="calcMain()"></div>
+            <div class="f"><div class="lbl">eBay手数料（%）</div><input type="number" id="c-efee" value="13.25" step="0.01" oninput="calcMain()"></div>
+            <div class="f"><div class="lbl">国際送料（USD）</div><input type="number" id="c-ship" placeholder="20" step="0.01" oninput="calcMain()"></div>
+            <div class="f"><div class="lbl">梱包費（円）</div><input type="number" id="c-pack" placeholder="200" oninput="calcMain()"></div>
+            <div class="f"><div class="lbl">その他経費（円）</div><input type="number" id="c-other" placeholder="0" oninput="calcMain()"></div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="ctitle">📋 収支内訳</div>
+        <div class="cbody" id="c-breakdown"><div class="empty" style="padding:1rem"><div class="empty-sub">売上と仕入れ価格を入力してください</div></div></div>
+      </div>
+    </div>
+    <div>
+      <div class="mrow" style="grid-template-columns:1fr 1fr;margin-bottom:.9rem">
+        <div class="metric"><div class="ml">純利益</div><div class="mv dm" id="c-profit-d">¥—</div></div>
+        <div class="metric"><div class="ml">利益率</div><div class="mv dm" id="c-margin-d">—%</div></div>
+        <div class="metric"><div class="ml">ROI</div><div class="mv dm" id="c-roi-d">—%</div></div>
+        <div class="metric"><div class="ml">最大仕入れ(20%)</div><div class="mv dm" id="c-max-d">¥—</div></div>
+      </div>
+      <div id="c-verdict-wrap" class="verdict B hidden" style="margin-bottom:.9rem">
+        <div class="vhead">
+          <div id="c-rbadge" class="rbadge B">B</div>
+          <div><div id="c-vtitle" class="vtitle"></div><div id="c-vsub" style="font-size:11px;color:var(--sub);margin-top:2px"></div></div>
+        </div>
+        <div id="c-action"></div>
+      </div>
+      <div style="background:var(--sf2);border:1px solid var(--bd);border-radius:11px;padding:.9rem;margin-bottom:.9rem">
+        <div style="display:flex;justify-content:space-between;font-size:12px;font-weight:700"><span>ROI メーター</span><span id="c-roi-val" style="color:var(--pr)">—%</span></div>
+        <div style="height:9px;background:var(--sf3);border-radius:5px;margin:.4rem 0;overflow:hidden"><div style="height:100%;border-radius:5px;transition:width .5s" id="c-roi-bar" style="width:0%"></div></div>
+        <div style="display:flex;justify-content:space-between;font-size:9px;color:var(--mt)"><span>0%</span><span>30% 優先仕入れ</span><span>100%</span></div>
+      </div>
+      <div class="card">
+        <div class="ctitle">✅ 判定チェックリスト</div>
+        <div class="cbody"><div style="display:flex;flex-direction:column;gap:5px" id="c-checklist"><div class="empty" style="padding:.5rem"><div class="empty-sub">入力してください</div></div></div></div>
+      </div>
+      <button class="btn ok" onclick="saveToHistory()" style="width:100%;margin-top:.75rem">📥 ダッシュボードに保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ DASHBOARD ═══════════ -->
+<div class="page" id="page-dash">
+  <div class="pg-title">ダッシュボード</div>
+  <div class="pg-sub">保存した商品の利益・ROI・ランクを一覧表示します（全デバイスで同期）</div>
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.9rem;flex-wrap:wrap;gap:8px">
+    <div style="display:flex;gap:7px;flex-wrap:wrap">
+      <select id="d-sort" onchange="renderDash()" style="width:auto;height:30px;font-size:12px;padding:0 8px">
+        <option value="profit">利益額 順</option><option value="margin">利益率 順</option>
+        <option value="roi">ROI 順</option><option value="rank">ランク 順</option><option value="date">登録日 順</option>
+      </select>
+      <select id="d-filter" onchange="renderDash()" style="width:auto;height:30px;font-size:12px;padding:0 8px">
+        <option value="all">全ランク</option><option value="S">Sのみ</option><option value="A">Aのみ</option><option value="B">Bのみ</option><option value="C">Cのみ</option>
+      </select>
+    </div>
+    <div style="display:flex;gap:7px">
+      <button class="btn sm" onclick="exportCSV()">📤 CSV</button>
+      <button class="btn sm" style="color:var(--ng)" onclick="clearAll()">🗑 全削除</button>
+    </div>
+  </div>
+  <div class="mrow" style="margin-bottom:.9rem">
+    <div class="metric"><div class="ml">登録商品数</div><div class="mv ac" id="ds-cnt">0</div></div>
+    <div class="metric"><div class="ml">平均利益率</div><div class="mv dm" id="ds-margin">—</div></div>
+    <div class="metric"><div class="ml">平均ROI</div><div class="mv dm" id="ds-roi">—</div></div>
+    <div class="metric"><div class="ml">Sランク数</div><div class="mv dm" id="ds-s">0</div></div>
+  </div>
+  <div class="card">
+    <div id="dash-content">
+      <div class="empty"><div class="empty-icon">📊</div><div class="empty-title">まだ商品が保存されていません</div><div class="empty-sub">「分析」または「計算」タブで保存した商品がここに表示されます<br>全デバイス間で自動同期されます</div></div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <p>eBay相場・利益分析 Pro — 表示価格・相場データはAI推定値です。実際の取引前に各プラットフォームの最新情報をご確認ください。</p>
+</footer>
+
+<script>
+/* ── Storage ── */
+let history_data = [];
+try { history_data = JSON.parse(localStorage.getItem('ebay_pro_local') || '[]'); } catch(e) {}
+
+function saveToStorage() {
+  try {
+    localStorage.setItem('ebay_pro_local', JSON.stringify(history_data));
+    document.getElementById('sync-status').textContent = '保存済み ✓';
+    document.getElementById('sync-count').textContent = history_data.length > 0 ? '（' + history_data.length + '件）' : '';
+  } catch(e) {}
+}
+
+/* ── Navigation ── */
+function showPage(id, el) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+  el.classList.add('active');
+  if (id === 'dash') renderDash();
+}
+
+/* ── Image upload ── */
+let currentImage = null;
+
+function handleFile(file) {
+  if (!file) return;
+  const ext = (file.name || '').split('.').pop().toLowerCase();
+  const isImg = file.type.startsWith('image/') || ['jpg','jpeg','png','gif','webp','bmp'].includes(ext);
+  if (!isImg) { alert('画像ファイルを選択してください（PNG・JPG・スクショ対応）'); return; }
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    currentImage = e.target.result;
+    document.getElementById('prev-img').src = currentImage;
+    document.getElementById('up-placeholder').classList.add('hidden');
+    document.getElementById('up-preview').classList.remove('hidden');
+    document.getElementById('analyze-photo-btn').disabled = false;
+  };
+  reader.readAsDataURL(file);
+}
+
+function handleDrop(ev) {
+  ev.preventDefault();
+  ev.stopPropagation();
+  document.getElementById('upload-area').classList.remove('drag');
+  let f = null;
+  if (ev.dataTransfer.files && ev.dataTransfer.files.length > 0) {
+    f = ev.dataTransfer.files[0];
+  } else if (ev.dataTransfer.items && ev.dataTransfer.items.length > 0) {
+    const item = ev.dataTransfer.items[0];
+    if (item.kind === 'file') f = item.getAsFile();
+  }
+  if (f) handleFile(f);
+}
+
+function clearImg(e) {
+  e.stopPropagation();
+  currentImage = null;
+  document.getElementById('prev-img').src = '';
+  document.getElementById('up-placeholder').classList.remove('hidden');
+  document.getElementById('up-preview').classList.add('hidden');
+  document.getElementById('analyze-photo-btn').disabled = true;
+  document.getElementById('file-input').value = '';
+}
+
+/* ── URL tabs ── */
+const urlPhs = {
+  mercari: 'https://jp.mercari.com/item/m12345678',
+  yahoo: 'https://page.auctions.yahoo.co.jp/jp/auction/...',
+  rakuma: 'https://fril.jp/item/...',
+  ebay: 'https://www.ebay.com/itm/...'
+};
+function setUrlPh(k, el) {
+  document.getElementById('url-input').placeholder = urlPhs[k];
+  document.querySelectorAll('.url-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+}
+function openUrl() {
+  const u = (document.getElementById('url-input').value || '').trim();
+  if (u) window.open(u, '_blank');
+}
+
+/* ── FX fetch ── */
+async function fetchFxTo(targetId) {
+  const btn = event.target;
+  btn.disabled = true; btn.textContent = '...';
+  try {
+    const r = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST', headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({model:'claude-sonnet-4-6', max_tokens:60, messages:[{role:'user', content:'Current USD to JPY rate, number only e.g. 155.3'}]})
+    });
+    const d = await r.json();
+    const rate = parseFloat((d.content && d.content[0] && d.content[0].text) || '0');
+    if (rate > 50 && rate < 300) { document.getElementById(targetId).value = rate.toFixed(1); calcMain(); }
+  } catch(e) {}
+  btn.disabled = false; btn.textContent = '↻';
+}
+
+/* ── Claude API ── */
+async function claudeAPI(messages, max_tokens) {
+  const r = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST', headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({model:'claude-sonnet-4-6', max_tokens: max_tokens||1000, messages: messages})
+  });
+  const d = await r.json();
+  const text = (d.content && d.content.map(c => c.text || '').join('')) || '{}';
+  return text.replace(/```json|```/g, '').trim();
+}
+
+function buildPrompt(ctx) {
+  const json = '{"product_name":"商品名(英語)","product_name_ja":"商品名(日本語)","brand":"ブランド","model":"型番","category":"カテゴリ","condition_estimate":"状態","tags":["特徴1","特徴2"],"confidence":0.85,"ebay_sold_avg_usd":0,"ebay_sold_min_usd":0,"ebay_sold_max_usd":0,"ebay_sold_90days":0,"ebay_sold_30days":0,"ebay_active_listings":0,"sell_through_rate":0,"popularity":"high","market_trend":"stable","notes":"コメント"}';
+  return "あなたはeBay転売の専門家AIです。" + ctx + "\n\n以下のJSONのみ返してください（説明不要）。数値フィールドには実際の推定数値を入れてください:\n" + json;
+}
+
+/* ── Photo analysis ── */
+async function analyzePhoto() {
+  if (!currentImage) return;
+  showLoading('AIが商品を識別中...');
+  const base64 = currentImage.split(',')[1];
+  const mediaType = currentImage.match(/data:([^;]+);/)[1];
+  try {
+    const text = await claudeAPI([{
+      role: 'user',
+      content: [
+        {type:'image', source:{type:'base64', media_type:mediaType, data:base64}},
+        {type:'text', text:buildPrompt('この商品画像を分析してください。')}
+      ]
+    }]);
+    renderResult(JSON.parse(text));
+  } catch(e) { showError('分析に失敗しました: ' + e.message); }
+}
+
+/* ── URL/keyword analysis ── */
+async function analyzeByUrl() {
+  const url = document.getElementById('url-input').value.trim();
+  const kw = document.getElementById('kw-input').value.trim();
+  if (!url && !kw) { alert('URLまたはキーワードを入力してください'); return; }
+  showLoading('相場データを分析中...');
+  const ctx = [url ? 'URL: ' + url : '', kw ? 'キーワード: ' + kw : ''].filter(Boolean).join(' / ');
+  try {
+    const text = await claudeAPI([{role:'user', content:buildPrompt(ctx)}]);
+    renderResult(JSON.parse(text));
+  } catch(e) { showError('分析に失敗しました: ' + e.message); }
+}
+
+/* ── Helpers ── */
+function n(id) { return parseFloat((document.getElementById(id) || {}).value) || 0; }
+function fj(v) { return '¥' + Math.round(Math.abs(v)).toLocaleString(); }
+function sg(v) { return v >= 0 ? '+' : '-'; }
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function chk(label, pass, val) {
+  const ic = pass === null ? 'na' : pass ? 'pass' : 'fail';
+  const ico = {pass:'✓', fail:'✗', na:'–'}[ic];
+  const colors={pass:'var(--ok)',fail:'var(--ng)',na:'var(--mt)'}; const bg={pass:'var(--ok-bg)',fail:'var(--ng-bg)',na:'var(--sf3)'}; return '<div style="display:flex;align-items:center;gap:7px;font-size:12px;padding:3px 0"><span style="width:17px;height:17px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;flex-shrink:0;background:'+bg[ic]+';color:'+colors[ic]+'">'+ico+'</span><span>'+label+'</span><span style="margin-left:auto;font-size:11px;color:var(--mt);font-weight:600">'+(val||'')+'</span></div>';
+}
+function showLoading(msg) {
+  document.getElementById('result-empty').classList.add('hidden');
+  document.getElementById('result-content').classList.add('hidden');
+  document.getElementById('result-loading').classList.remove('hidden');
+  document.getElementById('loading-msg').textContent = msg || 'AIが分析中...';
+}
+function showError(msg) {
+  document.getElementById('result-loading').classList.add('hidden');
+  const rc = document.getElementById('result-content');
+  rc.innerHTML = '<div class="tip ng"><span>❌</span><span>' + esc(msg) + '</span></div>';
+  rc.classList.remove('hidden');
+}
+
+/* ── Render result ── */
+let lastInfo = null;
+
+function renderResult(info) {
+  lastInfo = info;
+  const fx = n('a-fx') || 155;
+  const bp = n('a-buy');
+  const avgUsd = info.ebay_sold_avg_usd || 0;
+  const avgJpy = avgUsd * fx;
+  const sold90 = info.ebay_sold_90days || 0;
+  const sold30 = info.ebay_sold_30days || sold90 / 3;
+  const listings = info.ebay_active_listings || 0;
+  const str = info.sell_through_rate || 0;
+  const turn30 = sold30 > 0 ? sold30 : sold90 / 3;
+  const days = turn30 > 0 ? Math.round(30 / turn30) : 999;
+  const ebayFee = n('a-fee') || 13.25;
+  const intlShip = n('a-ship') || 0;
+  const other = n('a-other') || 0;
+  const efJpy = avgJpy * (ebayFee / 100);
+  const shipJpy = intlShip * fx;
+  const totalCost = bp + efJpy + shipJpy + other;
+  const profit = avgJpy - totalCost;
+  const margin = avgJpy > 0 ? profit / avgJpy * 100 : 0;
+  const roi = bp > 0 ? profit / bp * 100 : 0;
+  const max20 = avgJpy * 0.8 - (efJpy + shipJpy + other);
+
+  // ── Rank ──
+  let rank, action, vtitle, vsub;
+  if (margin >= 30 && profit >= 5000 && days <= 30) {
+    rank='S'; action='buy'; vtitle='Sランク — 優先仕入れ推奨';
+    vsub='利益率' + margin.toFixed(1) + '% / 利益' + fj(profit) + ' / 約' + (days<900 ? days+'日' : '—') + 'で売れる見込み';
+  } else if (margin >= 20 && profit >= 3000) {
+    rank='A'; action='buy'; vtitle='Aランク — 仕入れ推奨';
+    vsub='利益率' + margin.toFixed(1) + '% / 利益' + fj(profit);
+  } else if (profit > 0 || !bp) {
+    rank='B'; action='watch'; vtitle='Bランク — 様子を見る';
+    vsub = bp > 0 ? '利益率' + margin.toFixed(1) + '%（基準の20%未満）' : '仕入れ価格を入力すると利益判定できます';
+  } else {
+    rank='C'; action='pass'; vtitle='Cランク — 見送り';
+    vsub='現状赤字（' + fj(profit) + '）';
+  }
+
+  const trendLbl = {rising:'📈 上昇傾向', stable:'➡️ 安定', falling:'📉 下落傾向'};
+  const trend = info.market_trend || 'stable';
+  const actMap = {
+    buy:   {l:'▶ 仕入れる',   c:'buy'},
+    watch: {l:'⏳ 様子を見る', c:'watch'},
+    pass:  {l:'✕ 見送る',     c:'pass'}
+  };
+  const am = actMap[action];
+
+  const html =
+    // ── 商品識別カード ──
+    '<div class="prod-card">' +
+      '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:9px">' +
+        '<div>' +
+          '<div class="prod-name">' + esc(info.product_name_ja || info.product_name || '商品名不明') + '</div>' +
+          '<div style="font-size:11px;color:var(--sub);margin-bottom:6px">' +
+            esc(info.product_name || '') + (info.model ? ' / ' + esc(info.model) : '') +
+          '</div>' +
+          '<div class="prod-meta">' +
+            (info.tags||[]).map(t => '<span class="ptag">' + esc(t) + '</span>').join('') +
+            (info.brand ? '<span class="ptag">🏷 ' + esc(info.brand) + '</span>' : '') +
+            (info.condition_estimate ? '<span class="ptag">' + esc(info.condition_estimate) + '</span>' : '') +
+          '</div>' +
+        '</div>' +
+        '<div class="rbadge ' + rank + '" style="flex-shrink:0">' + rank + '</div>' +
+      '</div>' +
+      (info.confidence ? '<div style="font-size:10px;color:var(--mt);margin-top:5px">AI識別精度: ' + Math.round(info.confidence*100) + '%</div>' : '') +
+    '</div>' +
+
+    // ── ランク判定 ──
+    '<div class="verdict ' + rank + '">' +
+      '<div class="vhead">' +
+        '<div class="rbadge ' + rank + '">' + rank + '</div>' +
+        '<div>' +
+          '<div class="vtitle">' + vtitle + '</div>' +
+          '<div style="font-size:11px;color:var(--sub);margin-top:2px">' + vsub + '</div>' +
+        '</div>' +
+      '</div>' +
+      '<span class="abtn ' + am.c + '">' + am.l + '</span>' +
+    '</div>' +
+
+    // ── KPI 4枠 ──
+    '<div class="mrow">' +
+      '<div class="metric"><div class="ml">eBay平均Sold</div><div class="mv ac">$' + avgUsd.toFixed(0) + '</div><div class="ms">¥' + Math.round(avgJpy).toLocaleString() + '</div></div>' +
+      '<div class="metric"><div class="ml">純利益</div><div class="mv ' + (bp>0 ? (profit>=0?'ok':'ng') : 'dm') + '">' + (bp>0 ? (profit>=0?'+':'-') + fj(profit) : '仕入れ価格を入力') + '</div></div>' +
+      '<div class="metric"><div class="ml">利益率</div><div class="mv ' + (margin>=20?'ok':margin>0?'wn':'dm') + '">' + (bp>0 ? margin.toFixed(1)+'%' : '—') + '</div></div>' +
+      '<div class="metric"><div class="ml">ROI</div><div class="mv ' + (roi>=30?'pr':roi>0?'wn':'dm') + '">' + (bp>0 ? roi.toFixed(1)+'%' : '—') + '</div>' +
+        (bp>0 && max20>0 ? '<div class="ms">最大仕入れ ' + fj(max20) + '</div>' : '') +
+      '</div>' +
+    '</div>' +
+
+    // ── 販売データ（数値のみ） ──
+    '<div class="card">' +
+      '<div class="ctitle">📊 eBay販売データ（推計）</div>' +
+      '<div class="cbody">' +
+        '<div class="g4" style="margin-bottom:.5rem">' +
+          '<div class="metric"><div class="ml">90日Sold</div><div class="mv ' + (sold90>=10?'ok':'wn') + '">' + sold90 + '</div></div>' +
+          '<div class="metric"><div class="ml">30日Sold</div><div class="mv ' + (Math.round(sold30)>=3?'ok':'wn') + '">' + Math.round(sold30) + '</div></div>' +
+          '<div class="metric"><div class="ml">出品数</div><div class="mv ac">' + listings + '</div></div>' +
+          '<div class="metric"><div class="ml">売れ行き</div><div class="mv ' + (str>=0.5?'ok':str>=0.3?'wn':'ng') + '">' + Math.round(str*100) + '%</div></div>' +
+        '</div>' +
+        '<div class="g2" style="font-size:12px;padding:.25rem 0">' +
+          '<div style="color:var(--sub)">回転率 <strong style="color:var(--tx)">' + turn30.toFixed(1) + '個/月</strong></div>' +
+          '<div style="color:var(--sub)">想定売却 <strong style="color:' + (days<=30?'var(--ok)':days<=60?'var(--wn)':'var(--ng)') + '">' + (days<900 ? days+'日' : 'データ不足') + '</strong></div>' +
+          '<div style="color:var(--sub)">トレンド <strong style="color:var(--tx)">' + (trendLbl[trend]||trend) + '</strong></div>' +
+          '<div style="color:var(--sub)">需要 <strong style="color:' + (info.popularity==='high'?'var(--ok)':info.popularity==='medium'?'var(--wn)':'var(--ng)') + '">' + (info.popularity==='high'?'高い':info.popularity==='medium'?'普通':'低い') + '</strong></div>' +
+        '</div>' +
+      '</div>' +
+    '</div>' +
+
+    // ── 保存ボタン ──
+    '<button class="btn ok" style="width:100%;margin-top:.75rem" onclick="saveAnalysisResult()">📥 ダッシュボードに保存</button>';
+
+  document.getElementById('result-empty').classList.add('hidden');
+  document.getElementById('result-loading').classList.add('hidden');
+  const rc = document.getElementById('result-content');
+  rc.innerHTML = html;
+  rc.classList.remove('hidden');
+
+  window._lastResult = {
+    name: info.product_name_ja || info.product_name || '不明',
+    rank, profit: Math.round(profit), margin, roi, turn30, sold90,
+    avgUsd, buyPrice: bp, date: new Date().toLocaleDateString('ja-JP'), id: Date.now()
+  };
+}
+
+function updateAnalysisCalc() { if (lastInfo) renderResult(lastInfo); }
+
+/* ── Save / Delete ── */
+function saveAnalysisResult() {
+  if (!window._lastResult) return;
+  history_data.unshift(window._lastResult);
+  saveToStorage();
+  alert('ダッシュボードに保存しました！');
+}
+function saveToHistory() {
+  const sell=n('c-sell'), fx=n('c-fx')||155, buy=n('c-buy');
+  const pfee=n('c-pfee'), efee=n('c-efee'), ship=n('c-ship'), pack=n('c-pack'), other=n('c-other');
+  const name=document.getElementById('c-name').value||'名前なし';
+  if (!sell||!buy) { alert('売上と仕入れ価格を入力してください'); return; }
+  const sj=sell*fx, ef=sj*(efee/100), ij=ship*fx, pf=buy*(pfee/100);
+  const tc=buy+pf+ij+ef+pack+other, profit=sj-tc;
+  const margin=sj>0?profit/sj*100:0, roi=buy>0?profit/buy*100:0;
+  const rank=profit>0?(margin>=30&&profit>=5000?'S':margin>=20&&profit>=3000?'A':'B'):'C';
+  history_data.unshift({name,rank,profit:Math.round(profit),margin,roi,avgUsd:sell,buyPrice:buy,date:new Date().toLocaleDateString('ja-JP'),id:Date.now()});
+  saveToStorage();
+  alert('ダッシュボードに保存しました！');
+}
+function deleteItem(id) {
+  history_data = history_data.filter(function(d){return d.id!==id;});
+  saveToStorage();
+  renderDash();
+}
+function clearAll() {
+  if (!confirm('全データを削除しますか？')) return;
+  history_data = [];
+  saveToStorage();
+  renderDash();
+}
+
+/* ── Profit calculator ── */
+function setMV(id,v,cls){var el=document.getElementById(id);if(el){el.textContent=v;el.className='mv '+(cls||'dm');}}
+function calcMain() {
+  const sell=n('c-sell'), fx=n('c-fx')||155, buy=n('c-buy');
+  const pfee=n('c-pfee'), efee=n('c-efee'), ship=n('c-ship'), pack=n('c-pack'), other=n('c-other');
+  if (!sell) { setMV('c-profit-d','¥—','dm'); setMV('c-margin-d','—%','dm'); setMV('c-roi-d','—%','dm'); setMV('c-max-d','¥—','dm'); return; }
+  const sj=sell*fx, ef=sj*(efee/100), ij=ship*fx, pf=buy*(pfee/100);
+  const tc=buy+pf+ij+ef+pack+other, profit=sj-tc;
+  const margin=sj>0?profit/sj*100:0, roi=buy>0?profit/buy*100:0;
+  const max20=sj*0.8-(ef+ij+pack+other), ip=profit>=0;
+  setMV('c-profit-d',(ip?'+':'-')+fj(profit),ip?'ok':'ng');
+  setMV('c-margin-d',margin.toFixed(1)+'%',margin>=20?'ok':margin>0?'wn':'ng');
+  setMV('c-roi-d',roi.toFixed(1)+'%',roi>=30?'pr':roi>0?'wn':'ng');
+  setMV('c-max-d',max20>0?fj(max20):'—','wn');
+  const roiPct=Math.min(Math.max(roi,0),100);
+  document.getElementById('c-roi-val').textContent=roi.toFixed(1)+'%';
+  const rb=document.getElementById('c-roi-bar');
+  rb.style.width=roiPct+'%';
+  rb.style.background=roi>=30?'var(--pr)':roi>0?'var(--wn)':'var(--ng)';
+  const rank=ip?(margin>=30&&profit>=5000?'S':margin>=20&&profit>=3000?'A':'B'):'C';
+  const vw=document.getElementById('c-verdict-wrap');
+  vw.classList.remove('hidden','S','A','B','C'); vw.classList.add(rank);
+  document.getElementById('c-rbadge').textContent=rank;
+  document.getElementById('c-rbadge').className='rbadge '+rank;
+  const ts={S:'Sランク — 優先仕入れ推奨',A:'Aランク — 仕入れ推奨',B:'Bランク — 様子を見る',C:'Cランク — 見送り'};
+  const as={S:{l:'▶ 仕入れる',c:'buy'},A:{l:'▶ 仕入れる',c:'buy'},B:{l:'⏳ 様子を見る',c:'watch'},C:{l:'✕ 見送る',c:'pass'}};
+  document.getElementById('c-vtitle').textContent=ts[rank];
+  document.getElementById('c-vsub').textContent='利益率 '+margin.toFixed(1)+'% / 利益 '+(ip?'+':'-')+fj(profit)+' / ROI '+roi.toFixed(1)+'%';
+  document.getElementById('c-action').innerHTML='<span class="abtn '+as[rank].c+'">'+as[rank].l+'</span>';
+  const rows=[
+    ['eBay売上（円換算）','¥'+Math.round(sj).toLocaleString(),'ok'],
+    ['― 仕入れ価格','-¥'+Math.round(buy).toLocaleString(),'ng'],
+    ['― 仕入れ手数料('+pfee+'%)','-¥'+Math.round(pf).toLocaleString(),'ng'],
+    ['― eBay手数料('+efee+'%)','-¥'+Math.round(ef).toLocaleString(),'ng'],
+    ['― 国際送料','-¥'+Math.round(ij).toLocaleString(),'ng'],
+    ['― 梱包・その他','-¥'+Math.round(pack+other).toLocaleString(),'ng'],
+    ['= 純利益',(ip?'+':'-')+fj(profit),ip?'ok':'ng'],
+    ['損益分岐 最大仕入れ',sj-(ef+ij+pack+other)>0?fj(sj-(ef+ij+pack+other)):'—','wn'],
+    ['20%利益 最大仕入れ',max20>0?fj(max20):'—','wn'],
+  ];
+  document.getElementById('c-breakdown').innerHTML=rows.map(function(r,i){
+    return '<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:'+(i<rows.length-1?'1px solid var(--bd)':'none')+';font-size:12px;font-weight:'+(i>=6?'700':'400')+'"><span style="color:var(--sub)">'+r[0]+'</span><span style="color:var(--'+r[2]+')">'+r[1]+'</span></div>';
+  }).join('');
+  const checks=[
+    {l:'利益率 20%以上',p:margin>=20,v:margin.toFixed(1)+'%'},
+    {l:'利益額 3,000円以上',p:profit>=3000,v:fj(profit)},
+    {l:'利益率 30%以上（Sランク）',p:margin>=30,v:margin.toFixed(1)+'%'},
+    {l:'ROI 30%以上（優先仕入れ）',p:roi>=30,v:roi.toFixed(1)+'%'},
+    {l:'損益分岐 最大仕入れ',p:max20>0,v:max20>0?fj(max20):'—'},
+  ];
+  document.getElementById('c-checklist').innerHTML=checks.map(function(c){return chk(c.l,c.p,c.v);}).join('');
+}
+
+/* ── Dashboard ── */
+function renderDash() {
+  const sort=document.getElementById('d-sort').value;
+  const filter=document.getElementById('d-filter').value;
+  let data=[].concat(history_data);
+  if (filter!=='all') data=data.filter(function(d){return d.rank===filter;});
+  const sortFns={
+    profit:function(a,b){return b.profit-a.profit;},
+    margin:function(a,b){return b.margin-a.margin;},
+    roi:function(a,b){return b.roi-a.roi;},
+    rank:function(a,b){return ['S','A','B','C'].indexOf(a.rank)-['S','A','B','C'].indexOf(b.rank);},
+    date:function(a,b){return (b.id||0)-(a.id||0);}
+  };
+  data.sort(sortFns[sort]||sortFns.profit);
+  const all=history_data;
+  setMV('ds-cnt',all.length,all.length>0?'ac':'dm');
+  if (all.length>0) {
+    const avgM=all.reduce(function(s,d){return s+d.margin;},0)/all.length;
+    const avgR=all.reduce(function(s,d){return s+d.roi;},0)/all.length;
+    const sc=all.filter(function(d){return d.rank==='S';}).length;
+    setMV('ds-margin',avgM.toFixed(1)+'%',avgM>=20?'ok':'wn');
+    setMV('ds-roi',avgR.toFixed(1)+'%',avgR>=30?'pr':'wn');
+    setMV('ds-s',sc,sc>0?'ok':'dm');
+  } else {
+    ['ds-margin','ds-roi','ds-s'].forEach(function(id){setMV(id,'--','dm');});
+  }
+  const dc=document.getElementById('dash-content');
+  if (data.length===0) {
+    dc.innerHTML = '<div class="empty"><div class="empty-icon">📊</div><div class="empty-title">保存された商品がありません</div><div class="empty-sub">分析または計算タブで保存してください</div></div>';
+    return;
+  }
+
+  // Build table rows
+  var rows = data.map(function(d) {
+    var ip = d.profit >= 0;
+    var actLbl = (d.rank==='S'||d.rank==='A') ? '仕入れる' : d.rank==='B' ? '様子を見る' : '見送る';
+    var actCls = (d.rank==='S'||d.rank==='A') ? 'ok' : d.rank==='B' ? 'wn' : 'ng';
+    var profitColor = ip ? 'var(--ok)' : 'var(--ng)';
+    var marginCls = d.margin>=20 ? 'ok' : d.margin>0 ? 'wn' : 'ng';
+    var roiColor = d.roi>=30 ? 'var(--pr)' : d.roi>0 ? 'var(--wn)' : 'var(--ng)';
+    var name = esc(d.name||'--');
+    var buyStr = d.buyPrice ? fj(d.buyPrice) : '--';
+    var avgStr = (d.avgUsd||0).toFixed(0);
+    return '<tr>' +
+      '<td style="max-width:170px"><div style="font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + name + '</div>' +
+      '<div style="font-size:10px;color:var(--mt)">仕入れ ' + buyStr + ' / eBay $' + avgStr + '</div></td>' +
+      '<td><div class="rbadge ' + d.rank + '" style="width:28px;height:28px;font-size:13px">' + d.rank + '</div></td>' +
+      '<td style="font-weight:700;color:' + profitColor + '">' + sg(d.profit) + fj(d.profit) + '</td>' +
+      '<td><span class="pill ' + marginCls + '">' + d.margin.toFixed(1) + '%</span></td>' +
+      '<td style="color:' + roiColor + ';font-weight:600">' + d.roi.toFixed(1) + '%</td>' +
+      '<td><span class="pill ' + actCls + '">' + actLbl + '</span></td>' +
+      '<td style="font-size:11px;color:var(--mt)">' + (d.date||'--') + '</td>' +
+      '<td><button class="btn sm" style="color:var(--ng)" onclick="deleteItem(' + d.id + ')">&#128465;</button></td>' +
+      '</tr>';
+  }).join('');
+
+  var thead = '<thead><tr><th>商品名</th><th>ランク</th><th>利益</th><th>利益率</th><th>ROI</th><th>判定</th><th>登録日</th><th></th></tr></thead>';
+
+  dc.innerHTML = '<div style="overflow-x:auto"><table class="dtable">' + thead + '<tbody>' + rows + '</tbody></table></div>';
+}
+
+
+function sortDash(key){document.getElementById('d-sort').value=key;renderDash();}
+function exportCSV(){
+  if (!history_data.length){alert('データがありません');return;}
+  const rows=[['商品名','ランク','利益（円）','利益率%','ROI%','仕入れ価格','eBay価格USD','登録日']];
+  history_data.forEach(function(d){rows.push([d.name,d.rank,d.profit,d.margin.toFixed(1),d.roi.toFixed(1),d.buyPrice||'',d.avgUsd||'',d.date||'']);});
+  const a=document.createElement('a');
+  a.href="data:text/csv;charset=utf-8,\uFEFF"+encodeURIComponent(rows.map(function(r){return r.join(",");}).join("\n"));
+  a.download='ebay_'+new Date().toISOString().slice(0,10)+'.csv';
+  a.click();
+}
+
+/* ── Init ── */
+document.getElementById('sync-count').textContent = history_data.length > 0 ? '（' + history_data.length + '件）' : '';
+</script>
+</body>
+</html>
