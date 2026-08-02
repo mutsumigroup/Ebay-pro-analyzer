@@ -947,9 +947,7 @@ footer{text-align:center;font-size:11px;color:var(--mt);padding:1.5rem 1rem;bord
         <div style="display:flex;justify-content:space-between"><span>AI モデル</span><span style="color:var(--tx)">Claude Sonnet 4.6</span></div>
         <div style="display:flex;justify-content:space-between"><span>データ保存先</span><span style="color:var(--tx)">ローカル（このブラウザ）</span></div>
         <div style="display:flex;justify-content:space-between;margin-top:4px"><span>API接続方式</span>
-          <span style="color:${WORKER_URL && WORKER_URL !== 'YOUR_WORKER_URL_HERE' ? 'var(--ok)' : 'var(--wn)'}">
-            ${WORKER_URL && WORKER_URL !== 'YOUR_WORKER_URL_HERE' ? '✅ Workerプロキシ（安全）' : '⚠️ 直接接続'}
-          </span>
+          <span id="api-connection-mode"></span>
         </div>
       </div>
     </div>
@@ -1014,7 +1012,13 @@ function initSettingsPage() {
     statusEl.style.color = 'var(--ng)';
     statusEl.innerHTML = '❌ APIキー未設定';
   }
-  // 計算初期値を読み込み
+  // API接続方式を動的に表示
+  const modeEl = document.getElementById('api-connection-mode');
+  if (modeEl) {
+    const useWorker = WORKER_URL && WORKER_URL !== 'YOUR_WORKER_URL_HERE';
+    modeEl.style.color = useWorker ? 'var(--ok)' : 'var(--wn)';
+    modeEl.textContent = useWorker ? '✅ Workerプロキシ（安全）' : '⚠️ 直接接続';
+  }
   try {
     const s = JSON.parse(localStorage.getItem('calc_settings') || '{}');
     if (s.fee)   document.getElementById('settings-fee').value   = s.fee;
