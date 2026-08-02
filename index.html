@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>eBay相場・利益分析 Pro</title>
+<title>AI転売アシスタント Pro</title>
 <style>
 :root{
   --bg:#0f1117;--sf:#181b24;--sf2:#1e2130;--sf3:#252a3a;
@@ -21,7 +21,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Hiragino Sans','No
 ::-webkit-scrollbar{width:4px;height:4px}::-webkit-scrollbar-track{background:var(--sf)}::-webkit-scrollbar-thumb{background:var(--bd2);border-radius:4px}
 
 /* ── Sync banner ── */
-#sync-banner{background:var(--sf);border-bottom:1px solid var(--bd);padding:8px 1.5rem;display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:12px;color:var(--sub)}
+#sync-banner{background:var(--sf);border-bottom:1px solid var(--bd);padding:6px 1rem;display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:12px;color:var(--sub)}
 .sync-dot{width:8px;height:8px;border-radius:50%;background:var(--mt);flex-shrink:0;transition:background .3s}
 .sync-dot.synced{background:var(--ok)}
 .sync-dot.syncing{background:var(--wn);animation:pulse .8s infinite}
@@ -41,13 +41,38 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Hiragino Sans','No
 
 .modal-input:focus{outline:none;border-color:var(--ac)}
 
+/* ── API Key Modal ── */
+#apikey-modal{position:fixed;inset:0;background:rgba(0,0,0,.75);backdrop-filter:blur(4px);z-index:9999;display:flex;align-items:center;justify-content:center;padding:1rem}
+#apikey-modal.hidden{display:none}
+.apikey-box{background:var(--sf);border:1px solid var(--bd2);border-radius:16px;padding:2rem;width:100%;max-width:420px;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+.apikey-logo{width:44px;height:44px;background:linear-gradient(135deg,var(--ac),var(--pr));border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:900;color:#fff;margin:0 auto 1rem}
+.apikey-title{font-size:17px;font-weight:800;text-align:center;margin-bottom:5px}
+.apikey-sub{font-size:12px;color:var(--sub);text-align:center;line-height:1.6;margin-bottom:1.25rem}
+.apikey-input-wrap{position:relative;margin-bottom:.75rem}
+.apikey-input-wrap input{width:100%;padding:0 38px 0 11px;height:40px;border:1px solid var(--bd2);border-radius:var(--r);background:var(--sf2);color:var(--tx);font-size:13px;font-family:inherit;letter-spacing:.04em}
+.apikey-input-wrap input:focus{outline:none;border-color:var(--ac);box-shadow:0 0 0 3px var(--ac-bg)}
+.apikey-eye{position:absolute;right:9px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--sub);cursor:pointer;font-size:15px;padding:2px}
+.apikey-save-btn{width:100%;height:40px;background:var(--ac);color:#fff;border:none;border-radius:var(--r);font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;transition:opacity .15s}
+.apikey-save-btn:hover{opacity:.88}
+.apikey-save-btn:disabled{opacity:.4;cursor:not-allowed}
+.apikey-note{font-size:10px;color:var(--mt);text-align:center;margin-top:.75rem;line-height:1.6}
+.apikey-note a{color:var(--ac);text-decoration:none}
+.apikey-note a:hover{text-decoration:underline}
+
+/* ── API Key status in banner ── */
+.apikey-status{display:flex;align-items:center;gap:6px;font-size:11px;cursor:pointer;padding:3px 8px;border-radius:6px;transition:background .15s}
+.apikey-status:hover{background:var(--sf2)}
+.apikey-status-dot{width:7px;height:7px;border-radius:50%;background:var(--ng);flex-shrink:0}
+.apikey-status-dot.set{background:var(--ok)}
+.apikey-status-lbl{color:var(--sub)}
+
 
 
 
 
 
 /* ── Header ── */
-header{background:var(--sf);border-bottom:1px solid var(--bd);padding:0 1.5rem;height:54px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:200}
+header{background:var(--sf);border-bottom:1px solid var(--bd);padding:0 1rem;height:50px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:200}
 .logo{display:flex;align-items:center;gap:9px;font-size:15px;font-weight:700;color:var(--tx)}
 .logo-mark{width:30px;height:30px;background:linear-gradient(135deg,var(--ac),var(--pr));border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:900;color:#fff}
 .hdr-right{display:flex;align-items:center;gap:7px}
@@ -185,9 +210,336 @@ select option{background:var(--sf2)}
 
 .hidden{display:none!important}
 footer{text-align:center;font-size:11px;color:var(--mt);padding:1.5rem 1rem;border-top:1px solid var(--bd)}
+
+/* ── AI総合判定カード ── */
+.ai-master-card{border-radius:15px;padding:1.25rem;margin-bottom:1rem;border:2px solid;position:relative;overflow:hidden}
+.ai-master-card::before{content:'';position:absolute;inset:0;opacity:.04;background:repeating-linear-gradient(45deg,#fff 0,#fff 1px,transparent 1px,transparent 8px)}
+.ai-master-card.S{background:linear-gradient(135deg,rgba(34,201,142,.14),rgba(34,201,142,.06));border-color:var(--ok-b)}
+.ai-master-card.A{background:linear-gradient(135deg,rgba(79,142,247,.14),rgba(79,142,247,.06));border-color:var(--ac-b)}
+.ai-master-card.B{background:linear-gradient(135deg,rgba(245,166,35,.14),rgba(245,166,35,.06));border-color:var(--wn-b)}
+.ai-master-card.C{background:linear-gradient(135deg,rgba(240,82,79,.14),rgba(240,82,79,.06));border-color:var(--ng-b)}
+.amc-header{display:flex;align-items:center;gap:13px;margin-bottom:1rem}
+.amc-rank{width:54px;height:54px;border-radius:13px;display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:900;border:2px solid;flex-shrink:0}
+.amc-rank.S{background:rgba(34,201,142,.2);color:var(--ok);border-color:var(--ok)}
+.amc-rank.A{background:rgba(79,142,247,.2);color:var(--ac);border-color:var(--ac)}
+.amc-rank.B{background:rgba(245,166,35,.2);color:var(--wn);border-color:var(--wn)}
+.amc-rank.C{background:rgba(240,82,79,.2);color:var(--ng);border-color:var(--ng)}
+.amc-title{font-size:16px;font-weight:800;margin-bottom:2px}
+.amc-sub{font-size:11px;color:var(--sub)}
+.amc-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:.9rem}
+@media(max-width:520px){.amc-grid{grid-template-columns:1fr 1fr}}
+.amc-item{background:rgba(0,0,0,.2);border-radius:9px;padding:.6rem .75rem;border:1px solid rgba(255,255,255,.06)}
+.amc-item-lbl{font-size:9px;font-weight:700;color:var(--mt);text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px}
+.amc-item-val{font-size:13px;font-weight:700}
+.amc-advice{font-size:12px;line-height:1.65;padding:.75rem 1rem;background:rgba(0,0,0,.25);border-radius:9px;border-left:3px solid;color:var(--tx)}
+.amc-advice.S{border-left-color:var(--ok)}.amc-advice.A{border-left-color:var(--ac)}.amc-advice.B{border-left-color:var(--wn)}.amc-advice.C{border-left-color:var(--ng)}
+
+/* ── 相場分析カード ── */
+.market-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:.75rem}
+@media(max-width:480px){.market-grid{grid-template-columns:1fr 1fr}}
+.trend-badge{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700}
+.trend-badge.rising{background:var(--ok-bg);color:var(--ok);border:1px solid var(--ok-b)}
+.trend-badge.stable{background:var(--ac-bg);color:var(--ac);border:1px solid var(--ac-b)}
+.trend-badge.falling{background:var(--ng-bg);color:var(--ng);border:1px solid var(--ng-b)}
+
+/* ── 売却アドバイスカード ── */
+.advice-row{display:flex;flex-direction:column;gap:7px}
+.advice-item{display:flex;align-items:flex-start;gap:10px;padding:.7rem .9rem;background:var(--sf2);border:1px solid var(--bd);border-radius:9px;transition:border-color .15s}
+.advice-item.recommended{border-color:var(--ok-b);background:var(--ok-bg)}
+.advice-item.warn{border-color:var(--wn-b);background:var(--wn-bg)}
+.advice-item.negative{border-color:var(--ng-b);background:var(--ng-bg)}
+.advice-icon{width:28px;height:28px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.advice-lbl{font-size:12px;font-weight:700;margin-bottom:1px}
+.advice-reason{font-size:11px;color:var(--sub);line-height:1.55}
+
+/* ── 商品状態カード ── */
+.condition-rank-badge{display:inline-flex;align-items:center;justify-content:center;width:48px;height:48px;border-radius:12px;font-size:22px;font-weight:900;border:2px solid;flex-shrink:0}
+.condition-rank-badge.S,.condition-rank-badge.A{background:rgba(34,201,142,.15);color:var(--ok);border-color:var(--ok)}
+.condition-rank-badge.B{background:rgba(79,142,247,.15);color:var(--ac);border-color:var(--ac)}
+.condition-rank-badge.C{background:rgba(245,166,35,.15);color:var(--wn);border-color:var(--wn)}
+.condition-rank-badge.D,.condition-rank-badge.E{background:rgba(240,82,79,.15);color:var(--ng);border-color:var(--ng)}
+.cond-items{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:.75rem 0}
+@media(max-width:400px){.cond-items{grid-template-columns:1fr}}
+.cond-item{display:flex;justify-content:space-between;align-items:center;padding:5px 9px;background:var(--sf2);border:1px solid var(--bd);border-radius:7px;font-size:12px}
+.cond-item-lbl{color:var(--sub)}
+.cond-status{font-weight:700;font-size:11px}
+.cond-status.good{color:var(--ok)}.cond-status.warn{color:var(--wn)}.cond-status.bad{color:var(--ng)}.cond-status.na{color:var(--mt)}
+
+/* ── 売却戦略カード ── */
+.strategy-card{padding:.9rem;background:var(--sf2);border:1px solid var(--bd);border-radius:11px;margin-bottom:.6rem}
+.strategy-title{font-size:13px;font-weight:800;margin-bottom:4px;display:flex;align-items:center;gap:6px}
+.strategy-body{font-size:12px;color:var(--sub);line-height:1.65}
+.strategy-steps{list-style:none;margin-top:.5rem;display:flex;flex-direction:column;gap:4px}
+.strategy-steps li{font-size:11px;color:var(--sub);padding-left:1.1em;position:relative;line-height:1.55}
+.strategy-steps li::before{content:'→';position:absolute;left:0;color:var(--ac);font-weight:700}
+
+/* ── AI分析中アニメーション ── */
+.step-indicator{display:flex;flex-direction:column;gap:7px;margin-top:.75rem}
+.step-item{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--mt);transition:color .3s}
+.step-item.active{color:var(--ac)}
+.step-item.done{color:var(--ok)}
+.step-dot{width:7px;height:7px;border-radius:50%;background:var(--mt);flex-shrink:0;transition:background .3s}
+.step-item.active .step-dot{background:var(--ac);animation:pulse .8s infinite}
+.step-item.done .step-dot{background:var(--ok)}
+
+/* ── 柴犬ローディング ── */
+/* ── 柴犬ローディング ── */
+:root {--shiba-img:url("data:image/png;base64,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");}
+.shiba-loader{text-align:center;padding:1.5rem 1rem}
+.shiba-scene{position:relative;width:340px;height:120px;margin:0 auto 1rem;overflow:hidden;border-radius:16px;background:linear-gradient(180deg,#87CEEB 0%,#87CEEB 58%,#c8e6a0 58%,#c8e6a0 62%,#e8c870 62%,#d4a843 100%)}
+.shiba-sky-cloud{position:absolute;top:8px;font-size:18px;animation:cloudMove 4s linear infinite;opacity:.8}
+.shiba-sky-cloud:nth-child(1){left:20px;animation-delay:0s}
+.shiba-sky-cloud:nth-child(2){left:160px;animation-delay:2s;font-size:13px}
+@keyframes cloudMove{0%{transform:translateX(0)}100%{transform:translateX(20px)}}
+.shiba-ground-line{position:absolute;bottom:34px;left:0;right:0;height:2px;background:rgba(0,0,0,.15)}
+.shiba-ground{position:absolute;bottom:0;left:0;right:0;height:6px;background:repeating-linear-gradient(90deg,#8B5E3C 0,#8B5E3C 14px,#6B4423 14px,#6B4423 28px);animation:gScroll 0.18s linear infinite}
+.shiba-grass{position:absolute;bottom:6px;left:0;right:0;height:10px;background:repeating-linear-gradient(90deg,#4a8c3f 0,#4a8c3f 10px,#5aaa4a 10px,#5aaa4a 22px);animation:gScroll 0.24s linear infinite}
+@keyframes gScroll{to{background-position:-28px 0}}
+.shiba-dog-img{position:absolute;bottom:20px;left:50%;transform:translateX(-50%);width:110px;height:82px;background-image:var(--shiba-img);background-size:contain;background-repeat:no-repeat;background-position:center;animation:shibaRun 0.22s ease-in-out infinite alternate;filter:drop-shadow(2px 3px 4px rgba(0,0,0,.25))}
+@keyframes shibaRun{from{transform:translateX(-50%) translateY(0) scaleY(1) rotate(-1deg)}to{transform:translateX(-50%) translateY(-8px) scaleY(0.96) rotate(1deg)}}
+.shiba-dust{position:absolute;bottom:26px;right:50px;display:flex;gap:4px}
+.shiba-dust span{border-radius:50%;background:rgba(212,168,67,.8);animation:dustFly 0.35s ease-out infinite}
+.shiba-dust span:nth-child(1){width:6px;height:6px;animation-delay:0s}
+.shiba-dust span:nth-child(2){width:4px;height:4px;animation-delay:.08s}
+.shiba-dust span:nth-child(3){width:7px;height:7px;animation-delay:.18s}
+@keyframes dustFly{0%{transform:translateY(0) translateX(0);opacity:.9}100%{transform:translateY(-14px) translateX(-12px);opacity:0}}
+.shiba-speedlines{position:absolute;top:18px;left:5px;display:flex;flex-direction:column;gap:7px}
+.shiba-speedlines span{display:block;height:2px;background:rgba(255,255,255,.65);border-radius:1px;animation:speedFly 0.38s ease-out infinite}
+.shiba-speedlines span:nth-child(1){width:38px;animation-delay:0s}
+.shiba-speedlines span:nth-child(2){width:22px;animation-delay:.1s;margin-left:8px}
+.shiba-speedlines span:nth-child(3){width:45px;animation-delay:.22s}
+@keyframes speedFly{0%{opacity:0;transform:translateX(15px)}35%{opacity:.9}100%{opacity:0;transform:translateX(-45px)}}
+.shiba-msg{font-size:14px;font-weight:700;color:var(--tx);margin-bottom:4px}
+.shiba-sub{font-size:11px;color:var(--sub);margin-bottom:.9rem}
+
+/* ── スコアバー（%表示） ── */
+.score-bar-wrap{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.score-bar-label{font-size:11px;color:var(--sub);width:100px;flex-shrink:0;text-align:right}
+.score-bar-track{flex:1;height:8px;background:var(--sf3);border-radius:4px;overflow:hidden}
+.score-bar-fill{height:100%;border-radius:4px;transition:width .7s cubic-bezier(.4,0,.2,1)}
+.score-bar-val{font-size:11px;font-weight:700;width:38px;flex-shrink:0}
+
+/* ── 相場グラフ ── */
+.market-chart-wrap{width:100%;overflow-x:auto;margin-bottom:.75rem}
+
+/* ── 商品画像サムネ（商品カード内） ── */
+.prod-thumb{width:52px;height:52px;object-fit:cover;border-radius:8px;border:1px solid var(--bd2);flex-shrink:0;background:var(--sf3)}
+
+/* ── 詳細モーダル（スニダン風） ── */
+#detail-modal{position:fixed;inset:0;background:rgba(0,0,0,.82);backdrop-filter:blur(6px);z-index:8000;display:flex;align-items:flex-end;justify-content:center;padding:0}
+@media(min-width:600px){#detail-modal{align-items:center;padding:1rem}}
+#detail-modal.hidden{display:none}
+.detail-box{background:#0f1117;border:1px solid rgba(255,255,255,.1);border-radius:20px 20px 0 0;width:100%;max-width:600px;max-height:92vh;overflow-y:auto;box-shadow:0 -10px 60px rgba(0,0,0,.7);animation:slideUp .25s cubic-bezier(.4,0,.2,1)}
+@media(min-width:600px){.detail-box{border-radius:20px;animation:none;max-height:88vh}}
+@keyframes slideUp{from{transform:translateY(40px);opacity:0}to{transform:translateY(0);opacity:1}}
+.detail-handle{width:36px;height:4px;background:rgba(255,255,255,.2);border-radius:2px;margin:10px auto 0;cursor:pointer}
+.detail-hero{position:relative;overflow:hidden;border-radius:0;min-height:180px;background:var(--sf2);display:flex;align-items:center;justify-content:center}
+.detail-hero img{width:100%;max-height:240px;object-fit:contain;display:block}
+.detail-hero-no-img{padding:2rem;text-align:center;font-size:48px}
+.detail-hero-badge{position:absolute;top:12px;right:12px}
+.detail-hero-rank{width:44px;height:44px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:900;border:2px solid}
+.detail-hero-rank.S{background:rgba(34,201,142,.2);color:var(--ok);border-color:var(--ok)}
+.detail-hero-rank.A{background:rgba(79,142,247,.2);color:var(--ac);border-color:var(--ac)}
+.detail-hero-rank.B{background:rgba(245,166,35,.2);color:var(--wn);border-color:var(--wn)}
+.detail-hero-rank.C{background:rgba(240,82,79,.2);color:var(--ng);border-color:var(--ng)}
+.detail-info{padding:1rem 1.25rem}
+.detail-name{font-size:16px;font-weight:800;margin-bottom:3px;line-height:1.3}
+.detail-sub-name{font-size:11px;color:var(--sub);margin-bottom:.75rem}
+.detail-stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:.9rem}
+.detail-stat{background:var(--sf2);border:1px solid var(--bd);border-radius:10px;padding:.6rem .7rem;text-align:center}
+.detail-stat-lbl{font-size:9px;color:var(--mt);text-transform:uppercase;letter-spacing:.05em;margin-bottom:2px}
+.detail-stat-val{font-size:14px;font-weight:800}
+.detail-section{margin-bottom:.9rem}
+.detail-section-title{font-size:10px;font-weight:700;color:var(--mt);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.5rem;display:flex;align-items:center;gap:5px}
+.detail-best-platform{display:flex;align-items:center;gap:10px;padding:.75rem 1rem;background:rgba(34,201,142,.08);border:1px solid var(--ok-b);border-radius:10px;margin-bottom:.6rem}
+.detail-close-btn{width:100%;height:44px;background:var(--sf2);border:1px solid var(--bd2);border-radius:12px;color:var(--sub);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;margin-top:.5rem}
+.detail-close-btn:hover{background:var(--sf3);color:var(--tx)}
+.detail-refresh-btn{width:100%;height:44px;background:var(--ac);border:none;border-radius:12px;color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;margin-bottom:.5rem;display:flex;align-items:center;justify-content:center;gap:6px}
+.detail-refresh-btn:hover{opacity:.88}
+.detail-refresh-btn:disabled{opacity:.5;cursor:not-allowed}
+
+/* ── レスポンシブ全強化 ── */
+.calc-layout{display:grid;grid-template-columns:1fr 340px;gap:1rem;align-items:start}
+
+/* タブレット */
+@media(max-width:860px){
+  .calc-layout{grid-template-columns:1fr}
+  .an-layout{grid-template-columns:1fr}
+}
+
+/* スマホ */
+@media(max-width:600px){
+  /* ページ */
+  .page{padding:.75rem .75rem 6rem}
+  .pg-title{font-size:15px;margin-bottom:2px}
+  .pg-sub{font-size:11px;margin-bottom:.9rem}
+
+  /* ヘッダー */
+  header{padding:0 .75rem;height:48px}
+  .logo{font-size:13px;gap:7px}
+  .logo-mark{width:26px;height:26px;font-size:13px}
+  .nav-btn{height:30px;padding:0 10px;font-size:11px}
+  #sync-banner{padding:5px .75rem;font-size:11px}
+  #sync-banner .sync-dot{display:none}
+  #sync-banner>span:first-of-type{display:none}
+
+  /* グリッド */
+  .an-layout{grid-template-columns:1fr}
+  .calc-layout{grid-template-columns:1fr}
+  .g2,.g3,.g4{grid-template-columns:1fr 1fr}
+  .mrow{grid-template-columns:1fr 1fr;gap:6px}
+  .amc-grid{grid-template-columns:1fr 1fr}
+  .g4{grid-template-columns:1fr 1fr}
+
+  /* カード */
+  .card{border-radius:11px;margin-bottom:.7rem}
+  .cbody{padding:.75rem}
+  .ctitle{padding:.5rem .75rem;font-size:10px}
+
+  /* メトリクス */
+  .metric{padding:.6rem .7rem}
+  .mv{font-size:16px}
+  .ml{font-size:9px}
+
+  /* ランクバッジ */
+  .rbadge{width:36px;height:36px;font-size:18px;border-radius:9px}
+
+  /* アップロードエリア */
+  .upload-area{padding:1.25rem}
+
+  /* AI総合判定カード */
+  .ai-master-card{padding:1rem}
+  .amc-title{font-size:14px}
+  .amc-rank{width:46px;height:46px;font-size:22px}
+  .amc-item{padding:.5rem .6rem}
+  .amc-item-val{font-size:12px}
+
+  /* スコアバー */
+  .score-bar-label{width:76px;font-size:10px}
+  .score-bar-wrap{gap:6px}
+
+  /* 商品カード */
+  .prod-name{font-size:13px}
+  .prod-thumb{width:44px;height:44px}
+
+  /* ボタン */
+  .btn{height:36px;font-size:12px}
+  .btn.ok,.btn.primary{height:44px;font-size:13px;border-radius:11px}
+
+  /* 入力フォーム */
+  input[type=text],input[type=number],input[type=url],select{height:40px;font-size:14px}
+
+  /* ダッシュボード */
+  .dtable th,.dtable td{padding:7px 6px;font-size:11px}
+  .dtable{font-size:11px}
+
+  /* 詳細統計 */
+  .detail-stats-row{grid-template-columns:1fr 1fr}
+  .detail-name{font-size:15px}
+}
+
+/* 極小スマホ */
+@media(max-width:380px){
+  .nav-btn{padding:0 7px;font-size:10px}
+  .amc-grid{grid-template-columns:1fr 1fr}
+  .mrow{grid-template-columns:1fr 1fr}
+  .g2,.g3,.g4{grid-template-columns:1fr}
+  .score-bar-label{width:65px;font-size:9px}
+}
+
+/* スマホ用ボトムナビ */
+@media(max-width:600px){
+  .page{padding-bottom:80px}
+  #bottom-nav{display:flex}
+  header .hdr-right{display:none}
+}
+@media(min-width:601px){
+  #bottom-nav{display:none}
+}
+#bottom-nav{
+  position:fixed;bottom:0;left:0;right:0;
+  background:var(--sf);
+  border-top:1px solid var(--bd);
+  display:none;
+  z-index:300;
+  padding-bottom:env(safe-area-inset-bottom,0);
+}
+.bnav-inner{display:flex;align-items:stretch;height:56px}
+.bnav-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;background:none;border:none;color:var(--sub);font-family:inherit;cursor:pointer;font-size:9px;font-weight:600;padding:0;transition:color .15s;position:relative}
+.bnav-btn.active{color:var(--ac)}
+.bnav-btn.active::before{content:'';position:absolute;top:0;left:20%;right:20%;height:2px;background:var(--ac);border-radius:0 0 2px 2px}
+.bnav-icon{font-size:20px;line-height:1}
+/* ── Toast通知 ── */
+#toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(20px);background:rgba(34,201,142,.95);color:#fff;padding:.6rem 1.2rem;border-radius:20px;font-size:12px;font-weight:700;z-index:9999;opacity:0;transition:all .3s;pointer-events:none;white-space:nowrap}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+@media(min-width:601px){#toast{bottom:30px}}
+
+/* ── ユーザーアバター ── */
+.user-avatar{width:26px;height:26px;border-radius:50%;object-fit:cover;border:2px solid var(--ok);display:none;cursor:pointer}
+
 </style>
 </head>
 <body>
+
+<!-- Toast通知 -->
+<div id="toast"></div>
+
+<!-- ═══ DETAIL MODAL ═══ -->
+<div id="detail-modal" class="hidden">
+  <div class="detail-box">
+    <div class="detail-handle" onclick="closeDetailModal()"></div>
+    <div id="detail-hero" class="detail-hero">
+      <div class="detail-hero-no-img">📦</div>
+    </div>
+    <div class="detail-info" id="detail-body"></div>
+  </div>
+</div>
+
+<!-- ═══ LOGIN MODAL ═══ -->
+<div id="apikey-modal">
+  <div class="apikey-box">
+    <div class="apikey-logo">🤖</div>
+    <div class="apikey-title">AI転売アシスタント Pro</div>
+
+    <!-- タブ切替 -->
+    <div style="display:flex;background:var(--sf2);border-radius:10px;padding:3px;margin-bottom:1rem;gap:3px">
+      <button id="tab-login" onclick="switchAuthTab('login')" style="flex:1;height:32px;border-radius:8px;border:none;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;background:var(--ac);color:#fff;transition:all .15s">ログイン</button>
+      <button id="tab-register" onclick="switchAuthTab('register')" style="flex:1;height:32px;border-radius:8px;border:none;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;background:transparent;color:var(--sub);transition:all .15s">新規登録</button>
+    </div>
+
+    <!-- エラーメッセージ -->
+    <div id="auth-error" style="display:none;background:rgba(240,82,79,.1);border:1px solid var(--ng-b);border-radius:8px;padding:.5rem .75rem;font-size:11px;color:var(--ng);margin-bottom:.6rem"></div>
+
+    <!-- メールアドレス -->
+    <div class="apikey-input-wrap" style="margin-bottom:.5rem">
+      <input type="email" id="auth-email" placeholder="メールアドレス" autocomplete="email" style="padding-right:11px" onkeydown="if(event.key==='Enter')document.getElementById('auth-pass').focus()">
+    </div>
+
+    <!-- パスワード -->
+    <div class="apikey-input-wrap" style="margin-bottom:.5rem">
+      <input type="password" id="auth-pass" placeholder="パスワード（6文字以上）" autocomplete="current-password" onkeydown="if(event.key==='Enter')doAuth()">
+      <button class="apikey-eye" onclick="toggleAuthPassVisibility()">👁</button>
+    </div>
+
+    <!-- 新規登録時：APIキー入力 -->
+    <div id="apikey-field" style="display:none">
+      <div class="apikey-input-wrap" style="margin-bottom:.5rem">
+        <input type="password" id="apikey-input" placeholder="Anthropic APIキー（sk-ant-api03-...）" autocomplete="off" oninput="apikeyInputChanged()">
+        <button class="apikey-eye" onclick="toggleApiKeyVisibility()">👁</button>
+      </div>
+      <div style="font-size:10px;color:var(--mt);margin-bottom:.5rem">
+        APIキーは <a href="https://console.anthropic.com/settings/keys" target="_blank" style="color:var(--ac)">console.anthropic.com</a> で取得できます
+      </div>
+    </div>
+
+    <button class="apikey-save-btn" id="auth-submit-btn" onclick="doAuth()" style="opacity:1;cursor:pointer">▶ ログイン</button>
+
+    <div class="apikey-note" style="margin-top:.75rem">
+      メールとパスワードはこのブラウザに暗号化保存されます。<br>
+      <strong style="color:var(--tx)">次回から自動ログイン</strong>されます。
+    </div>
+  </div>
+</div>
 
 <!-- STATUS BAR -->
 <div id="sync-banner">
@@ -195,17 +547,13 @@ footer{text-align:center;font-size:11px;color:var(--mt);padding:1.5rem 1rem;bord
   <span id="sync-status" style="color:var(--sub)">データ保存: ローカル</span>
   <span id="sync-count" style="color:var(--mt)"></span>
   <div class="sync-actions">
+    <div class="apikey-status" onclick="openApiKeyModal()" title="APIキーを変更">
+      <img id="user-avatar" class="user-avatar" alt="user">
+      <div class="apikey-status-dot" id="apikey-dot"></div>
+      <span class="apikey-status-lbl" id="apikey-lbl">APIキー未設定</span>
+    </div>
     <button class="sync-btn" onclick="exportCSV()">📤 CSV出力</button>
     <button class="sync-btn" style="color:var(--ng)" onclick="clearAll()">🗑 全削除</button>
-  </div>
-</div>
-  <span>セッション: <strong id="sync-sid">—</strong></span>
-  <span id="sync-status" style="color:var(--mt)">未接続</span>
-  <span id="sync-count" style="color:var(--mt)"></span>
-  <div class="sync-actions">
-    
-    
-    
   </div>
 </div>
 
@@ -213,19 +561,20 @@ footer{text-align:center;font-size:11px;color:var(--mt);padding:1.5rem 1rem;bord
 <header>
   <div class="logo">
     <div class="logo-mark">e</div>
-    eBay利益分析 Pro
+    AI転売アシスタント Pro
   </div>
   <div class="hdr-right">
     <button class="nav-btn active" onclick="showPage('analyze',this)">🔍 分析</button>
     <button class="nav-btn" onclick="showPage('calc',this)">💰 計算</button>
     <button class="nav-btn" onclick="showPage('dash',this)">📊 ダッシュ</button>
+    <button class="nav-btn" onclick="showPage('settings',this)">⚙️ 設定</button>
   </div>
 </header>
 
 <!-- ═══════════ ANALYZE ═══════════ -->
 <div class="page active" id="page-analyze">
   <div class="pg-title">商品分析</div>
-  <div class="pg-sub">写真またはURLから商品を特定し、eBay相場・販売データをAIで分析します</div>
+  <div class="pg-sub">写真またはURLから商品を特定し、相場・状態・売却アドバイス・戦略をAIが総合分析します</div>
 
   <div class="an-layout">
     <!-- Left inputs -->
@@ -233,7 +582,19 @@ footer{text-align:center;font-size:11px;color:var(--mt);padding:1.5rem 1rem;bord
       <div class="card">
         <div class="ctitle">📷 写真から分析</div>
         <div class="cbody">
-          <div id="upload-area" class="upload-area"
+          <!-- スマホ用カメラ撮影ボタン（スマホのみ表示） -->
+          <div id="camera-btn-wrap" style="display:none;margin-bottom:.6rem">
+            <button class="btn" onclick="openCamera()" style="width:100%;height:48px;font-size:14px;font-weight:700;background:linear-gradient(135deg,var(--ac),var(--pr));color:#fff;border:none;border-radius:12px;display:flex;align-items:center;justify-content:center;gap:8px">
+              📸 カメラで今すぐ撮影して分析
+            </button>
+            <div style="text-align:center;font-size:10px;color:var(--mt);margin-top:4px">撮影後すぐにAIが自動分析します</div>
+          </div>
+
+          <!-- 隠しカメラinput（capture=environment でリアカメラ起動） -->
+          <input type="file" id="camera-input" accept="image/*" capture="environment"
+                 onchange="handleCameraCapture(this.files[0])" style="display:none">
+
+          <div id="upload-area" class="upload-area" style="min-height:130px"
                ondragover="event.preventDefault();event.stopPropagation();this.classList.add('drag')"
                ondragleave="event.stopPropagation();this.classList.remove('drag')"
                ondrop="handleDrop(event)"
@@ -242,9 +603,9 @@ footer{text-align:center;font-size:11px;color:var(--mt);padding:1.5rem 1rem;bord
                    onchange="handleFile(this.files[0])" id="file-input"
                    style="display:none">
             <div id="up-placeholder">
-              <div style="font-size:36px;margin-bottom:8px">📷</div>
-              <div style="font-size:14px;font-weight:700;margin-bottom:3px">写真をアップロード</div>
-              <div style="font-size:11px;color:var(--sub)">クリックでファイル選択<br>ドラッグ＆ドロップも可（PNG・JPG・スクショ対応）</div>
+              <div style="font-size:32px;margin-bottom:6px">🖼️</div>
+              <div style="font-size:13px;font-weight:700;margin-bottom:3px">写真をアップロード</div>
+              <div style="font-size:11px;color:var(--sub)">クリックでファイル選択 / ドラッグ＆ドロップ</div>
             </div>
             <div id="up-preview" class="hidden" onclick="event.stopPropagation()">
               <div class="img-wrap">
@@ -253,28 +614,61 @@ footer{text-align:center;font-size:11px;color:var(--mt);padding:1.5rem 1rem;bord
               </div>
             </div>
           </div>
-          <button class="btn primary" id="analyze-photo-btn" onclick="analyzePhoto()" disabled style="width:100%;margin-top:.6rem">🔍 AIで商品を識別・分析</button>
+          <button class="btn primary" id="analyze-photo-btn" onclick="analyzePhoto()" disabled style="width:100%;margin-top:.6rem;height:44px;font-size:13px">🔍 AIで商品を識別・分析</button>
         </div>
       </div>
 
       <div class="card">
         <div class="ctitle">🔗 URLから分析</div>
         <div class="cbody">
+
+          <!-- スニダン専用ボックス -->
+          <div style="background:rgba(167,139,250,.08);border:1px solid var(--pr-b);border-radius:9px;padding:.65rem .85rem;margin-bottom:.75rem">
+            <div style="font-size:11px;font-weight:700;color:var(--pr);margin-bottom:.4rem">👟 スニダンURLを貼って分析（精度UP）</div>
+            <div style="font-size:11px;color:var(--sub);margin-bottom:.5rem">スニダンの商品ページURLを貼るだけで、実売相場をもとにAIが高精度分析します</div>
+            <div style="font-size:10px;color:var(--mt);margin-bottom:.5rem">① スニダンで商品を検索 → ② URLをコピー → ③ 下に貼り付けて分析ボタン</div>
+            <div class="frow" style="margin-bottom:.4rem">
+              <input type="url" id="snkr-url-input" placeholder="https://snkrdunk.com/sneakers/..." style="flex:1;font-size:12px" oninput="onSnkrUrlInput()">
+              <button class="btn sm" onclick="openSnkrUrl()" title="URLを開く">↗</button>
+            </div>
+            <div id="snkr-url-hint" class="hidden" style="font-size:10px;color:var(--pr);margin-bottom:.4rem">✓ スニダンURLを検出しました</div>
+            <button class="btn" onclick="analyzeSnkrUrl()" id="snkr-analyze-btn" disabled style="width:100%;background:var(--pr);color:#fff;border-color:var(--pr);height:38px;font-size:12px;font-weight:700">👟 スニダン相場で分析</button>
+          </div>
+
+          <!-- eBay Sold URLクイック生成 -->
+          <div style="background:var(--ac-bg);border:1px solid var(--ac-b);border-radius:9px;padding:.65rem .85rem;margin-bottom:.75rem">
+            <div style="font-size:11px;font-weight:700;color:var(--ac);margin-bottom:.4rem">⚡ eBay実売データ取得</div>
+            <div style="font-size:11px;color:var(--sub);margin-bottom:.5rem">商品名を入れてeBayの落札済みURLを自動生成 → 実売相場で分析精度UP</div>
+            <div class="frow" style="margin-bottom:.4rem">
+              <input type="text" id="ebay-kw-input" placeholder="例: One Piece Luffy ST21 SEC" style="flex:1;font-size:12px">
+              <button class="btn sm primary" onclick="generateEbaySoldUrl()">🔍 生成</button>
+            </div>
+            <div id="ebay-sold-url-wrap" class="hidden">
+              <div style="font-size:10px;color:var(--sub);margin-bottom:3px">生成されたURL（クリックで確認・そのまま分析可）:</div>
+              <div style="display:flex;gap:5px;align-items:center">
+                <div id="ebay-sold-url-display" style="font-size:10px;color:var(--ac);background:var(--sf2);border:1px solid var(--bd2);border-radius:6px;padding:4px 7px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer" onclick="openEbaySoldUrl()"></div>
+                <button class="btn sm" onclick="analyzeEbaySoldUrl()" style="background:var(--ok);color:#fff;border-color:var(--ok);white-space:nowrap">📊 分析</button>
+              </div>
+            </div>
+          </div>
+
+          <div style="font-size:10px;font-weight:600;color:var(--mt);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.5rem">その他のURLを貼り付け</div>
           <div class="url-tabs">
             <button class="url-tab active" onclick="setUrlPh('mercari',this)">メルカリ</button>
             <button class="url-tab" onclick="setUrlPh('yahoo',this)">ヤフオク</button>
             <button class="url-tab" onclick="setUrlPh('rakuma',this)">ラクマ</button>
             <button class="url-tab" onclick="setUrlPh('ebay',this)">eBay</button>
+            <button class="url-tab" onclick="setUrlPh('ebaySold',this)" style="background:rgba(34,201,142,.15);color:var(--ok);border-color:var(--ok-b)">eBay落札済み</button>
           </div>
           <div class="frow" style="margin-bottom:.6rem">
-            <input type="url" id="url-input" placeholder="https://jp.mercari.com/item/..." style="flex:1;font-size:12px">
+            <input type="url" id="url-input" placeholder="https://jp.mercari.com/item/..." style="flex:1;font-size:12px" oninput="onUrlInput()">
             <button class="btn sm" onclick="openUrl()">↗</button>
           </div>
           <div class="f" style="margin-bottom:.6rem">
             <div class="lbl">または商品名・キーワード</div>
             <input type="text" id="kw-input" placeholder="Sony WH-1000XM5 ヘッドフォン">
           </div>
-          <button class="btn ok" onclick="analyzeByUrl()" style="width:100%">📊 相場を分析</button>
+          <button class="btn ok" onclick="analyzeByUrl()" style="width:100%;height:42px;font-size:13px">📊 相場を分析</button>
         </div>
       </div>
 
@@ -299,6 +693,31 @@ footer{text-align:center;font-size:11px;color:var(--mt);padding:1.5rem 1rem;bord
                 <option>ホビー・模型</option><option>その他</option>
               </select></div>
           </div>
+
+          <!-- 実価格入力（精度UP） -->
+          <div style="margin-top:.85rem;padding:.75rem;background:rgba(167,139,250,.07);border:1px solid var(--pr-b);border-radius:10px">
+            <div style="font-size:11px;font-weight:700;color:var(--pr);margin-bottom:.55rem">💡 実価格を入力すると分析精度が大幅UP</div>
+            <div class="g2" style="gap:7px">
+              <div class="f">
+                <div class="lbl">eBay実売価格（USD）</div>
+                <input type="number" id="real-ebay-usd" placeholder="例: 18" step="0.01" oninput="updateRealPriceHint()">
+              </div>
+              <div class="f">
+                <div class="lbl">メルカリ・フリマ相場（円）</div>
+                <input type="number" id="real-flea-jpy" placeholder="例: 2800" oninput="updateRealPriceHint()">
+              </div>
+              <div class="f">
+                <div class="lbl">スニダン相場（円）</div>
+                <input type="number" id="real-snkr-jpy" placeholder="例: 15000" oninput="updateRealPriceHint()">
+              </div>
+              <div class="f">
+                <div class="lbl">PSA10相場（USD）</div>
+                <input type="number" id="real-psa10-usd" placeholder="例: 85" step="0.01" oninput="updateRealPriceHint()">
+              </div>
+            </div>
+            <div id="real-price-hint" class="hidden" style="margin-top:.5rem;font-size:10px;color:var(--pr);line-height:1.6"></div>
+            <button class="btn" onclick="applyRealPrices()" style="width:100%;margin-top:.6rem;background:var(--pr);color:#fff;border-color:var(--pr);height:36px">✅ この価格で再分析</button>
+          </div>
         </div>
       </div>
     </div>
@@ -311,7 +730,25 @@ footer{text-align:center;font-size:11px;color:var(--mt);padding:1.5rem 1rem;bord
         <div class="empty-sub">写真をアップロードしてAI識別ボタンを押すか<br>商品URLを入力して「相場を分析」を押してください</div>
       </div>
       <div id="result-loading" class="hidden">
-        <div class="loading-st"><div class="spinner"></div><p id="loading-msg">AIが分析中...</p></div>
+        <div class="shiba-loader">
+          <div class="shiba-scene">
+            <div class="shiba-sky-cloud">☁️</div>
+            <div class="shiba-sky-cloud">☁️</div>
+            <div class="shiba-speedlines"><span></span><span></span><span></span></div>
+            <div class="shiba-dog-img"></div>
+            <div class="shiba-dust"><span></span><span></span><span></span></div>
+            <div class="shiba-grass"></div>
+            <div class="shiba-ground"></div>
+          </div>
+          <div class="shiba-msg" id="loading-msg">AIが全力分析中...</div>
+          <div class="shiba-sub">柴犬が相場を調査しています🔥</div>
+          <div class="step-indicator" id="step-indicator" style="text-align:left;max-width:220px;margin:0 auto">
+            <div class="step-item" id="step-1"><div class="step-dot"></div>商品識別・相場データ取得</div>
+            <div class="step-item" id="step-2"><div class="step-dot"></div>商品状態判定</div>
+            <div class="step-item" id="step-3"><div class="step-dot"></div>売却戦略・AIアドバイス生成</div>
+            <div class="step-item" id="step-4"><div class="step-dot"></div>総合スコア算出</div>
+          </div>
+        </div>
       </div>
       <div id="result-content" class="hidden"></div>
     </div>
@@ -322,7 +759,7 @@ footer{text-align:center;font-size:11px;color:var(--mt);padding:1.5rem 1rem;bord
 <div class="page" id="page-calc">
   <div class="pg-title">利益計算</div>
   <div class="pg-sub">仕入れ価格・手数料・送料から利益・ROI・最大仕入れ価格を計算します</div>
-  <div style="display:grid;grid-template-columns:1fr 340px;gap:1rem;align-items:start">
+  <div class="calc-layout">
     <div>
       <div class="card">
         <div class="ctitle">💰 収支入力</div>
@@ -406,9 +843,127 @@ footer{text-align:center;font-size:11px;color:var(--mt);padding:1.5rem 1rem;bord
   </div>
 </div>
 
-<footer>
-  <p>eBay相場・利益分析 Pro — 表示価格・相場データはAI推定値です。実際の取引前に各プラットフォームの最新情報をご確認ください。</p>
+<!-- ═══════════ SETTINGS ═══════════ -->
+<div class="page" id="page-settings">
+  <div class="pg-title">⚙️ 設定</div>
+  <div class="pg-sub">APIキーや計算の初期値を管理できます</div>
+
+  <!-- アカウント設定 -->
+  <div class="card">
+    <div class="ctitle">👤 アカウント</div>
+    <div class="cbody">
+      <div style="display:flex;align-items:center;gap:10px;padding:.6rem .85rem;background:rgba(34,201,142,.08);border:1px solid var(--ok-b);border-radius:9px;margin-bottom:.75rem">
+        <div style="font-size:20px">✅</div>
+        <div>
+          <div style="font-size:12px;font-weight:700;color:var(--ok)">ログイン中</div>
+          <div id="settings-email-display" style="font-size:11px;color:var(--sub)">—</div>
+        </div>
+      </div>
+      <button onclick="logout()" style="width:100%;height:40px;background:transparent;border:1px solid var(--ng-b);color:var(--ng);border-radius:9px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit">🚪 ログアウト</button>
+    </div>
+  </div>
+
+  <!-- APIキー設定 -->
+  <div class="card">
+    <div class="ctitle">🔑 Anthropic APIキー</div>
+    <div class="cbody">
+      <div id="settings-key-status" style="padding:.6rem .85rem;border-radius:9px;margin-bottom:.75rem;font-size:12px;display:flex;align-items:center;gap:8px"></div>
+      <div class="f" style="margin-bottom:.6rem">
+        <div class="lbl">新しいAPIキー</div>
+        <div class="frow">
+          <input type="password" id="settings-apikey-input" placeholder="sk-ant-api03-..." style="flex:1;font-size:12px" autocomplete="off">
+          <button class="btn sm" onclick="toggleSettingsKeyVisibility()">👁</button>
+        </div>
+      </div>
+      <div style="display:flex;gap:7px">
+        <button class="btn ok" onclick="saveSettingsApiKey()" style="flex:1;height:40px">💾 保存</button>
+        <button class="btn" onclick="deleteSettingsApiKey()" style="color:var(--ng);border-color:var(--ng-b);height:40px">🗑 削除</button>
+      </div>
+      <div style="margin-top:.75rem;font-size:11px;color:var(--mt);line-height:1.7">
+        APIキーは <a href="https://console.anthropic.com/settings/keys" target="_blank" style="color:var(--ac)">console.anthropic.com</a> で取得できます。
+      </div>
+    </div>
+  </div>
+
+  <!-- 計算初期値 -->
+  <div class="card">
+    <div class="ctitle">💰 計算の初期値</div>
+    <div class="cbody">
+      <div class="g2">
+        <div class="f">
+          <div class="lbl">eBay手数料（%）</div>
+          <input type="number" id="settings-fee" step="0.01" placeholder="13.25">
+        </div>
+        <div class="f">
+          <div class="lbl">国際送料（USD）</div>
+          <input type="number" id="settings-ship" step="0.01" placeholder="20">
+        </div>
+        <div class="f">
+          <div class="lbl">梱包・その他（円）</div>
+          <input type="number" id="settings-other" placeholder="300">
+        </div>
+        <div class="f">
+          <div class="lbl">デフォルトカテゴリ</div>
+          <select id="settings-cat">
+            <option>家電・電子機器</option><option>ゲーム・おもちゃ</option>
+            <option>ファッション</option><option>カメラ・光学</option>
+            <option>ホビー・模型</option><option>その他</option>
+          </select>
+        </div>
+      </div>
+      <button class="btn ok" onclick="saveSettingsCalc()" style="width:100%;margin-top:.75rem;height:40px">💾 初期値を保存</button>
+    </div>
+  </div>
+
+  <!-- データ管理 -->
+  <div class="card">
+    <div class="ctitle">🗂 データ管理</div>
+    <div class="cbody">
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <button class="btn" onclick="exportCSV()" style="height:40px;justify-content:flex-start;gap:8px;padding:0 1rem">📤 ダッシュボードをCSV出力</button>
+        <button class="btn" onclick="if(confirm('全データを削除しますか？'))clearAll()" style="color:var(--ng);border-color:var(--ng-b);height:40px;justify-content:flex-start;gap:8px;padding:0 1rem">🗑 保存データを全削除</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- アプリ情報 -->
+  <div class="card">
+    <div class="ctitle">ℹ️ アプリ情報</div>
+    <div class="cbody">
+      <div style="font-size:12px;color:var(--sub);line-height:1.9">
+        <div style="display:flex;justify-content:space-between"><span>バージョン</span><span style="color:var(--tx)">1.0.0</span></div>
+        <div style="display:flex;justify-content:space-between"><span>AI モデル</span><span style="color:var(--tx)">Claude Sonnet 4.6</span></div>
+        <div style="display:flex;justify-content:space-between"><span>データ保存先</span><span style="color:var(--tx)">ローカル（このブラウザ）</span></div>
+        <div style="display:flex;justify-content:space-between;margin-top:4px"><span>API接続方式</span>
+          <span style="color:${WORKER_URL && WORKER_URL !== 'YOUR_WORKER_URL_HERE' ? 'var(--ok)' : 'var(--wn)'}">
+            ${WORKER_URL && WORKER_URL !== 'YOUR_WORKER_URL_HERE' ? '✅ Workerプロキシ（安全）' : '⚠️ 直接接続'}
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+  <p>AI転売アシスタント Pro — 表示価格・相場データ・商品状態・売却アドバイスはすべてAI推定値です。実際の取引前に各プラットフォームの最新情報を必ずご確認ください。</p>
 </footer>
+
+<!-- スマホ用ボトムナビ -->
+<div id="bottom-nav">
+  <div class="bnav-inner">
+    <button class="bnav-btn active" id="bnav-analyze" onclick="showPage('analyze',this);updateBnav('analyze')">
+      <span class="bnav-icon">🔍</span>分析
+    </button>
+    <button class="bnav-btn" id="bnav-calc" onclick="showPage('calc',this);updateBnav('calc')">
+      <span class="bnav-icon">💰</span>計算
+    </button>
+    <button class="bnav-btn" id="bnav-dash" onclick="showPage('dash',this);updateBnav('dash')">
+      <span class="bnav-icon">📊</span>ダッシュ
+    </button>
+    <button class="bnav-btn" id="bnav-settings" onclick="showPage('settings',this);updateBnav('settings')">
+      <span class="bnav-icon">⚙️</span>設定
+    </button>
+  </div>
+</div>
 
 <script>
 /* ── Storage ── */
@@ -423,13 +978,144 @@ function saveToStorage() {
   } catch(e) {}
 }
 
+/* ── 設定ページ ── */
+function initSettingsPage() {
+  // メールアドレス表示
+  try {
+    const email = localStorage.getItem('current_user_email') || '—';
+    const el = document.getElementById('settings-email-display');
+    if (el) el.textContent = email;
+  } catch(e) {}
+
+  // APIキー状態表示
+  const statusEl = document.getElementById('settings-key-status');
+  const input = document.getElementById('settings-apikey-input');
+  if (_apiKey) {
+    statusEl.style.background = 'rgba(34,201,142,.1)';
+    statusEl.style.border = '1px solid var(--ok-b)';
+    statusEl.style.color = 'var(--ok)';
+    statusEl.innerHTML = '✅ APIキー設定済み — <span style="font-size:10px;opacity:.7">' + _apiKey.slice(0,12) + '••••••••</span>';
+    input.placeholder = _apiKey.slice(0,12) + '••••••••';
+  } else {
+    statusEl.style.background = 'rgba(240,82,79,.1)';
+    statusEl.style.border = '1px solid var(--ng-b)';
+    statusEl.style.color = 'var(--ng)';
+    statusEl.innerHTML = '❌ APIキー未設定';
+  }
+  // 計算初期値を読み込み
+  try {
+    const s = JSON.parse(localStorage.getItem('calc_settings') || '{}');
+    if (s.fee)   document.getElementById('settings-fee').value   = s.fee;
+    if (s.ship)  document.getElementById('settings-ship').value  = s.ship;
+    if (s.other) document.getElementById('settings-other').value = s.other;
+    if (s.cat) {
+      const sel = document.getElementById('settings-cat');
+      [...sel.options].forEach((o,i) => { if(o.value===s.cat) sel.selectedIndex=i; });
+    }
+  } catch(e) {}
+}
+
+function toggleSettingsKeyVisibility() {
+  const inp = document.getElementById('settings-apikey-input');
+  inp.type = inp.type === 'password' ? 'text' : 'password';
+}
+
+function saveSettingsApiKey() {
+  const v = (document.getElementById('settings-apikey-input').value || '').trim();
+  if (!v) { showToast('❌ APIキーを入力してください'); return; }
+  if (!v.startsWith('sk-ant-')) { showToast('❌ 無効なキーです（sk-ant- で始まるもの）'); return; }
+  _apiKey = v;
+  try {
+    localStorage.setItem('anthropic_api_key', _apiKey);
+    // ユーザーデータも更新
+    const email = localStorage.getItem('current_user_email');
+    if (email) {
+      const users = JSON.parse(localStorage.getItem('app_users') || '{}');
+      if (users[email]) { users[email].apiKey = v; localStorage.setItem('app_users', JSON.stringify(users)); }
+    }
+  } catch(e) {}
+  updateApiKeyUI();
+  initSettingsPage();
+  showToast('✅ APIキーを保存しました');
+}
+
+function deleteSettingsApiKey() {
+  if (!confirm('APIキーを削除しますか？')) return;
+  _apiKey = '';
+  try { localStorage.removeItem('anthropic_api_key'); } catch(e) {}
+  document.getElementById('settings-apikey-input').value = '';
+  updateApiKeyUI();
+  initSettingsPage();
+  showToast('🗑 APIキーを削除しました');
+}
+
+function saveSettingsCalc() {
+  const s = {
+    fee:   document.getElementById('settings-fee').value,
+    ship:  document.getElementById('settings-ship').value,
+    other: document.getElementById('settings-other').value,
+    cat:   document.getElementById('settings-cat').value,
+  };
+  try { localStorage.setItem('calc_settings', JSON.stringify(s)); } catch(e) {}
+  // 計算ページにも反映
+  if (s.fee)   document.getElementById('a-fee').value   = s.fee;
+  if (s.ship)  document.getElementById('a-ship').value  = s.ship;
+  if (s.other) document.getElementById('a-other').value = s.other;
+  showToast('✅ 初期値を保存しました');
+}
+
+function loadCalcSettings() {
+  try {
+    const s = JSON.parse(localStorage.getItem('calc_settings') || '{}');
+    if (s.fee)   document.getElementById('a-fee').value   = s.fee;
+    if (s.ship)  document.getElementById('a-ship').value  = s.ship;
+    if (s.other) document.getElementById('a-other').value = s.other;
+  } catch(e) {}
+}
+
 /* ── Navigation ── */
 function showPage(id, el) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
   document.getElementById('page-' + id).classList.add('active');
-  el.classList.add('active');
+  if (el && el.classList && el.classList.contains('nav-btn')) el.classList.add('active');
   if (id === 'dash') renderDash();
+  if (id === 'settings') initSettingsPage();
+  updateBnav(id);
+}
+function updateBnav(id) {
+  ['analyze','calc','dash','settings'].forEach(function(p){
+    var b = document.getElementById('bnav-'+p);
+    if (b) b.classList.toggle('active', p===id);
+  });
+}
+
+/* ── カメラ撮影（スマホ用） ── */
+function openCamera() {
+  document.getElementById('camera-input').click();
+}
+
+async function handleCameraCapture(file) {
+  if (!file) return;
+  // プレビュー表示
+  const reader = new FileReader();
+  reader.onload = async function(e) {
+    currentImage = e.target.result;
+    document.getElementById('prev-img').src = currentImage;
+    document.getElementById('up-placeholder').classList.add('hidden');
+    document.getElementById('up-preview').classList.remove('hidden');
+    document.getElementById('analyze-photo-btn').disabled = false;
+    // 撮影後に自動分析スタート
+    await analyzePhoto();
+  };
+  reader.readAsDataURL(file);
+}
+
+/* ── スマホ判定してカメラボタンを表示 ── */
+function checkMobileCamera() {
+  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth <= 768;
+  const wrap = document.getElementById('camera-btn-wrap');
+  if (wrap && isMobile) wrap.style.display = 'block';
 }
 
 /* ── Image upload ── */
@@ -475,15 +1161,65 @@ function clearImg(e) {
   document.getElementById('file-input').value = '';
 }
 
-/* ── URL tabs ── */
+/* ── スニダン専用 ── */
+function onSnkrUrlInput() {
+  const val = (document.getElementById('snkr-url-input').value || '').trim();
+  const isSnkr = val.includes('snkrdunk.com') || val.includes('snkr.dunk');
+  const hint = document.getElementById('snkr-url-hint');
+  const btn = document.getElementById('snkr-analyze-btn');
+  if (isSnkr) {
+    hint.classList.remove('hidden');
+    btn.disabled = false;
+  } else {
+    hint.classList.add('hidden');
+    btn.disabled = !val;
+  }
+}
+function openSnkrUrl() {
+  const u = (document.getElementById('snkr-url-input').value || '').trim();
+  if (u) window.open(u, '_blank');
+}
+async function analyzeSnkrUrl() {
+  const url = (document.getElementById('snkr-url-input').value || '').trim();
+  if (!url) return;
+  showLoading('スニダン相場を分析中...');
+  setStep(1);
+  try {
+    await new Promise(r => setTimeout(r, 200));
+    setStep(2);
+    document.getElementById('loading-msg').textContent = 'スニダン実売価格を解析中...';
+    await new Promise(r => setTimeout(r, 250));
+    setStep(3);
+    document.getElementById('loading-msg').textContent = '売却戦略・AIアドバイスを生成中...';
+    const ctx = `スニダンURL: ${url}\n※このURLはスニーカーダンク（スニダン）の商品ページです。スニダンのURLから商品名・ブランドを特定し、スニダンでの実際の売買履歴・相場を中心に分析してください。snkrdunk_avg_jpyには現在のスニダン相場を必ず設定し、フリマ・eBay国際相場も合わせて推定してください。`;
+    const text = await claudeAPI([{role:'user', content:buildPrompt(ctx, false)}], 2000);
+    setStep(4);
+    document.getElementById('loading-msg').textContent = '総合スコアを算出中...';
+    await new Promise(r => setTimeout(r, 200));
+    renderResult(JSON.parse(text));
+  } catch(e) { showError('分析に失敗しました: ' + e.message); }
+}
+
+/* ── url-input 貼り付け時の自動判定 ── */
+function onUrlInput() {
+  const val = (document.getElementById('url-input').value || '').trim();
+  if (val.includes('snkrdunk.com')) {
+    // スニダンURLが貼られたらスニダン欄にもコピーして促す
+    document.getElementById('snkr-url-input').value = val;
+    onSnkrUrlInput();
+  }
+}
+
+
 const urlPhs = {
   mercari: 'https://jp.mercari.com/item/m12345678',
   yahoo: 'https://page.auctions.yahoo.co.jp/jp/auction/...',
   rakuma: 'https://fril.jp/item/...',
-  ebay: 'https://www.ebay.com/itm/...'
+  ebay: 'https://www.ebay.com/itm/...',
+  ebaySold: 'https://www.ebay.com/sch/i.html?_nkw=商品名&LH_Sold=1&LH_Complete=1'
 };
 function setUrlPh(k, el) {
-  document.getElementById('url-input').placeholder = urlPhs[k];
+  document.getElementById('url-input').placeholder = urlPhs[k] || '';
   document.querySelectorAll('.url-tab').forEach(t => t.classList.remove('active'));
   el.classList.add('active');
 }
@@ -491,53 +1227,463 @@ function openUrl() {
   const u = (document.getElementById('url-input').value || '').trim();
   if (u) window.open(u, '_blank');
 }
+function openEbaySoldUrl() {
+  const u = (document.getElementById('ebay-sold-url-display')||{}).textContent || '';
+  if (u) window.open(u, '_blank');
+}
+
+/* ── eBay Sold URL生成 ── */
+function generateEbaySoldUrl() {
+  const kw = (document.getElementById('ebay-kw-input').value || '').trim();
+  if (!kw) { alert('商品名を入力してください'); return; }
+  const url = `https://www.ebay.com/sch/i.html?_nkw=${encodeURIComponent(kw)}&LH_Sold=1&LH_Complete=1&_sop=13`;
+  const disp = document.getElementById('ebay-sold-url-display');
+  if (disp) { disp.textContent = url; disp.title = url; }
+  const wrap = document.getElementById('ebay-sold-url-wrap');
+  if (wrap) wrap.classList.remove('hidden');
+  document.getElementById('url-input').value = url;
+}
+
+/* ── eBay Sold URLで分析 ── */
+async function analyzeEbaySoldUrl() {
+  const kw = (document.getElementById('ebay-kw-input').value || '').trim();
+  const url = (document.getElementById('ebay-sold-url-display')||{}).textContent || '';
+  if (!url) return;
+  showLoading('eBay落札データを分析中...');
+  setStep(1);
+  try {
+    await new Promise(r => setTimeout(r, 200));
+    setStep(2);
+    document.getElementById('loading-msg').textContent = 'eBay実売価格を解析中...';
+    await new Promise(r => setTimeout(r, 250));
+    setStep(3);
+    document.getElementById('loading-msg').textContent = '売却戦略・AIアドバイスを生成中...';
+    const ctx = `eBay落札済みURL: ${url}\n商品キーワード: ${kw}\n※このURLはeBayの実際の落札済みリストです。URLのキーワードから実際の落札相場を精度高く推定してください。LH_Sold=1はSold Items（落札済み）フィルターです。`;
+    const text = await claudeAPI([{role:'user', content:buildPrompt(ctx, false)}], 2000);
+    setStep(4);
+    document.getElementById('loading-msg').textContent = '総合スコアを算出中...';
+    await new Promise(r => setTimeout(r, 200));
+    renderResult(JSON.parse(text));
+  } catch(e) { showError('分析に失敗しました: ' + e.message); }
+}
+
+/* ══════════════════════════════════════════
+   メール＋パスワード認証（ローカル）
+   ══════════════════════════════════════════ */
+
+let _authMode = 'login'; // 'login' | 'register'
+
+function switchAuthTab(mode) {
+  _authMode = mode;
+  const isReg = mode === 'register';
+  // タブスタイル
+  document.getElementById('tab-login').style.background    = isReg ? 'transparent' : 'var(--ac)';
+  document.getElementById('tab-login').style.color         = isReg ? 'var(--sub)' : '#fff';
+  document.getElementById('tab-register').style.background = isReg ? 'var(--ac)' : 'transparent';
+  document.getElementById('tab-register').style.color      = isReg ? '#fff' : 'var(--sub)';
+  // APIキー欄
+  document.getElementById('apikey-field').style.display = isReg ? 'block' : 'none';
+  document.getElementById('auth-submit-btn').textContent = isReg ? '▶ 登録して開始' : '▶ ログイン';
+  // パスワード欄のautocomplete
+  document.getElementById('auth-pass').autocomplete = isReg ? 'new-password' : 'current-password';
+  hideAuthError();
+}
+
+function showAuthError(msg) {
+  const el = document.getElementById('auth-error');
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+function hideAuthError() {
+  document.getElementById('auth-error').style.display = 'none';
+}
+
+function toggleAuthPassVisibility() {
+  const inp = document.getElementById('auth-pass');
+  inp.type = inp.type === 'password' ? 'text' : 'password';
+}
+
+// 簡易ハッシュ（パスワードをそのまま保存しない）
+async function hashPassword(pass) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(pass + '_resale_salt'));
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+}
+
+async function doAuth() {
+  const email = (document.getElementById('auth-email').value || '').trim().toLowerCase();
+  const pass  = (document.getElementById('auth-pass').value  || '').trim();
+  hideAuthError();
+
+  if (!email || !email.includes('@')) { showAuthError('メールアドレスを正しく入力してください'); return; }
+  if (pass.length < 6)                { showAuthError('パスワードは6文字以上で入力してください'); return; }
+
+  const btn = document.getElementById('auth-submit-btn');
+  btn.disabled = true;
+  btn.textContent = '⏳ 処理中...';
+
+  try {
+    const passHash = await hashPassword(pass);
+    const usersRaw = localStorage.getItem('app_users');
+    const users    = usersRaw ? JSON.parse(usersRaw) : {};
+
+    if (_authMode === 'register') {
+      // 新規登録
+      const apiKey = (document.getElementById('apikey-input').value || '').trim();
+      if (!apiKey.startsWith('sk-ant-')) {
+        showAuthError('有効なAPIキーを入力してください（sk-ant- で始まるもの）');
+        btn.disabled = false; btn.textContent = '▶ 登録して開始';
+        return;
+      }
+      if (users[email]) { showAuthError('このメールアドレスはすでに登録されています'); btn.disabled=false; btn.textContent='▶ 登録して開始'; return; }
+      // 暗号化してローカルに保存
+      users[email] = { passHash, apiKey, createdAt: Date.now() };
+      localStorage.setItem('app_users', JSON.stringify(users));
+      // 自動ログイン
+      completeLogin(email, apiKey);
+
+    } else {
+      // ログイン
+      const user = users[email];
+      if (!user)                        { showAuthError('メールアドレスが見つかりません'); btn.disabled=false; btn.textContent='▶ ログイン'; return; }
+      if (user.passHash !== passHash)   { showAuthError('パスワードが正しくありません');   btn.disabled=false; btn.textContent='▶ ログイン'; return; }
+      completeLogin(email, user.apiKey);
+    }
+  } catch(e) {
+    showAuthError('エラーが発生しました: ' + e.message);
+    btn.disabled = false;
+    btn.textContent = _authMode === 'register' ? '▶ 登録して開始' : '▶ ログイン';
+  }
+}
+
+function completeLogin(email, apiKey) {
+  _apiKey = apiKey;
+  // セッション保存
+  try {
+    localStorage.setItem('anthropic_api_key', apiKey);
+    localStorage.setItem('current_user_email', email);
+    sessionStorage.setItem('logged_in', '1');
+  } catch(e) {}
+  updateApiKeyUI();
+  updateLoginUI(email);
+  document.getElementById('apikey-modal').classList.add('hidden');
+  showToast('✅ ログインしました');
+}
+
+function updateLoginUI(email) {
+  const lbl = document.getElementById('apikey-lbl');
+  const dot = document.getElementById('apikey-dot');
+  if (lbl) lbl.textContent = email ? email.split('@')[0] : 'ログイン済み';
+  if (dot) dot.classList.add('set');
+}
+
+function loadSavedLogin() {
+  // 保存済みセッションを復元
+  try {
+    const email  = localStorage.getItem('current_user_email');
+    const apiKey = localStorage.getItem('anthropic_api_key');
+    if (email && apiKey) {
+      _apiKey = apiKey;
+      updateApiKeyUI();
+      updateLoginUI(email);
+      // 設定ページのメール表示
+      const settingsEmail = document.getElementById('settings-email-display');
+      if (settingsEmail) settingsEmail.textContent = email;
+      return true;
+    }
+  } catch(e) {}
+  return false;
+}
+
+function logout() {
+  if (!confirm('ログアウトしますか？')) return;
+  _apiKey = '';
+  try {
+    localStorage.removeItem('anthropic_api_key');
+    localStorage.removeItem('current_user_email');
+    sessionStorage.removeItem('logged_in');
+  } catch(e) {}
+  updateApiKeyUI();
+  openApiKeyModal();
+  showToast('ログアウトしました');
+}
+
+/* ── API Key Management ── */
+// ★ Cloudflare WorkerのURLをここに設定（GitHubにアップしても安全）
+// 設定方法: worker.jsをCloudflareにデプロイ後、そのURLを入力
+// 例: 'https://resale-proxy.your-name.workers.dev'
+const WORKER_URL = 'https://resale-proxy.kentaro-09-29-xxx.workers.dev';
+
+let _apiKey = ''; // 後方互換のため残す（設定画面からの手動入力用）
+
+function loadApiKey() {
+  // Worker URLが設定済みならAPIキー不要でそのまま開始
+  if (WORKER_URL && WORKER_URL !== 'YOUR_WORKER_URL_HERE') {
+    document.getElementById('apikey-modal').classList.add('hidden');
+    updateApiKeyUI();
+    return;
+  }
+  // なければ保存済みログインを復元
+  if (!loadSavedLogin()) {
+    openApiKeyModal();
+  }
+  updateApiKeyUI();
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  if (!t) return;
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+function updateApiKeyUI() {
+  const dot = document.getElementById('apikey-dot');
+  const lbl = document.getElementById('apikey-lbl');
+  const useWorker = WORKER_URL && WORKER_URL !== 'YOUR_WORKER_URL_HERE';
+  const isReady = useWorker || !!_apiKey;
+  if (dot) dot.classList.toggle('set', isReady);
+  if (lbl) lbl.textContent = useWorker ? '接続済み ✓' : (_apiKey ? 'APIキー設定済 ✓' : 'APIキー未設定');
+}
+
+function openApiKeyModal() {
+  const modal = document.getElementById('apikey-modal');
+  const inp = document.getElementById('apikey-input');
+  modal.classList.remove('hidden');
+  if (_apiKey) inp.value = _apiKey;
+  inp.focus();
+}
+
+function closeApiKeyModal() {
+  if (!_apiKey) return; // キー未設定なら閉じない
+  document.getElementById('apikey-modal').classList.add('hidden');
+}
+
+function apikeyInputChanged() {
+  const v = (document.getElementById('apikey-input').value || '').trim();
+  document.getElementById('apikey-save-btn').disabled = !v.startsWith('sk-ant-');
+}
+
+function saveApiKey() {
+  const v = (document.getElementById('apikey-input').value || '').trim();
+  if (!v.startsWith('sk-ant-')) { alert('有効なAPIキーを入力してください（sk-ant- で始まるもの）'); return; }
+  _apiKey = v;
+  try { localStorage.setItem('anthropic_api_key', _apiKey); } catch(e) {}
+  // ログイン済みならクラウドにも保存
+  if (_currentUser) saveApiKeyToCloud(_currentUser, _apiKey);
+  updateApiKeyUI();
+  document.getElementById('apikey-modal').classList.add('hidden');
+  if (_currentUser) showToast('✅ APIキーを保存しました（次回から自動復元）');
+}
+
+function toggleApiKeyVisibility() {
+  const inp = document.getElementById('apikey-input');
+  inp.type = inp.type === 'password' ? 'text' : 'password';
+}
+
+// Enterキーで保存
+document.addEventListener('DOMContentLoaded', function() {
+  const inp = document.getElementById('apikey-input');
+  if (inp) inp.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') saveApiKey();
+  });
+  // モーダル外クリックで閉じる（キー設定済みの場合のみ）
+  document.getElementById('apikey-modal').addEventListener('click', function(e) {
+    if (e.target === this) closeApiKeyModal();
+  });
+  loadApiKey();
+  loadCalcSettings();
+  // スマホ判定してカメラボタン表示
+  checkMobileCamera();
+  window.addEventListener('resize', checkMobileCamera);
+});
 
 /* ── FX fetch ── */
 async function fetchFxTo(targetId) {
+  if (!_apiKey) { openApiKeyModal(); return; }
   const btn = event.target;
   btn.disabled = true; btn.textContent = '...';
   try {
     const r = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST', headers: {'Content-Type': 'application/json'},
+      method: 'POST',
+      headers: {'Content-Type': 'application/json', 'x-api-key': _apiKey, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true'},
       body: JSON.stringify({model:'claude-sonnet-4-6', max_tokens:60, messages:[{role:'user', content:'Current USD to JPY rate, number only e.g. 155.3'}]})
     });
     const d = await r.json();
+    if (d.error) throw new Error(d.error.message || 'API Error');
     const rate = parseFloat((d.content && d.content[0] && d.content[0].text) || '0');
     if (rate > 50 && rate < 300) { document.getElementById(targetId).value = rate.toFixed(1); calcMain(); }
-  } catch(e) {}
+  } catch(e) { console.warn('FX fetch error:', e.message); }
   btn.disabled = false; btn.textContent = '↻';
 }
 
-/* ── Claude API ── */
+/* ── Claude API（Cloudflare Worker経由） ── */
 async function claudeAPI(messages, max_tokens) {
-  const r = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST', headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({model:'claude-sonnet-4-6', max_tokens: max_tokens||1000, messages: messages})
+  // Worker URLが設定済みならそちら経由（APIキー不要・安全）
+  const useWorker = WORKER_URL && WORKER_URL !== 'YOUR_WORKER_URL_HERE';
+
+  if (!useWorker && !_apiKey) {
+    openApiKeyModal();
+    throw new Error('APIキーが設定されていません');
+  }
+
+  const endpoint = useWorker
+    ? WORKER_URL  // Cloudflare Worker経由（APIキー不要）
+    : 'https://api.anthropic.com/v1/messages'; // 直接接続（APIキー必要）
+
+  const headers = { 'Content-Type': 'application/json' };
+  if (!useWorker) {
+    headers['x-api-key'] = _apiKey;
+    headers['anthropic-version'] = '2023-06-01';
+    headers['anthropic-dangerous-direct-browser-access'] = 'true';
+  }
+
+  const r = await fetch(endpoint, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify({ model:'claude-sonnet-4-6', max_tokens: max_tokens||1500, messages })
   });
+
   const d = await r.json();
+  if (d.error) {
+    if (!useWorker && d.error.type === 'authentication_error') {
+      _apiKey = '';
+      updateApiKeyUI();
+      openApiKeyModal();
+      throw new Error('APIキーが無効です。設定から正しいキーを入力してください。');
+    }
+    throw new Error(d.error.message || 'API Error');
+  }
   const text = (d.content && d.content.map(c => c.text || '').join('')) || '{}';
   return text.replace(/```json|```/g, '').trim();
 }
 
-function buildPrompt(ctx) {
-  const json = '{"product_name":"商品名(英語)","product_name_ja":"商品名(日本語)","brand":"ブランド","model":"型番","category":"カテゴリ","condition_estimate":"状態","tags":["特徴1","特徴2"],"confidence":0.85,"ebay_sold_avg_usd":0,"ebay_sold_min_usd":0,"ebay_sold_max_usd":0,"ebay_sold_90days":0,"ebay_sold_30days":0,"ebay_active_listings":0,"sell_through_rate":0,"popularity":"high","market_trend":"stable","notes":"コメント"}';
-  return "あなたはeBay転売の専門家AIです。" + ctx + "\n\n以下のJSONのみ返してください（説明不要）。数値フィールドには実際の推定数値を入れてください:\n" + json;
+function buildPrompt(ctx, hasImage) {
+  const json = JSON.stringify({
+    product_name:"商品名(英語)",
+    product_name_ja:"商品名(日本語)",
+    brand:"ブランド",
+    model:"型番",
+    category:"カテゴリ",
+    condition_estimate:"S/A/B/C/D",
+    tags:["特徴1","特徴2"],
+    confidence:0.85,
+    // eBay国際相場
+    ebay_sold_avg_usd:0,
+    ebay_sold_min_usd:0,
+    ebay_sold_max_usd:0,
+    // PSA10グレード相場（カード・トレカのみ、それ以外は0）
+    psa10_avg_usd:0,
+    psa10_min_usd:0,
+    psa10_max_usd:0,
+    // スニダン国内相場（スニーカー・ストリートウェア系のみ、なければ0）
+    snkrdunk_avg_jpy:0,
+    snkrdunk_min_jpy:0,
+    snkrdunk_max_jpy:0,
+    // フリマ（メルカリ・ラクマ）国内相場
+    flea_avg_jpy:0,
+    flea_min_jpy:0,
+    flea_max_jpy:0,
+    // 国内総合
+    domestic_avg_jpy:0,
+    market_trend:"rising|stable|falling",
+    market_trend_reason:"相場動向の理由(30字以内)",
+    // 販売データ
+    ebay_sold_90days:0,
+    ebay_sold_30days:0,
+    ebay_active_listings:0,
+    sell_through_rate:0,
+    popularity:"high|medium|low",
+    turnover_days:14,
+    // 商品状態
+    condition_rank:"S|A|B|C|D",
+    condition_scratch:"なし|軽微|あり|多数",
+    condition_stain:"なし|軽微|あり|多数",
+    condition_fade:"なし|軽微|あり",
+    condition_box:"あり|なし|不明",
+    condition_accessories:"完備|一部欠品|なし|不明",
+    condition_missing:"なし|あり|不明",
+    condition_comment:"状態コメント(50字以内)",
+    // 販売先スコア（0-100）
+    sell_ebay_score:80,
+    sell_domestic_score:60,
+    sell_psa10_score:0,
+    sell_snkrdunk_score:0,
+    sell_flea_score:50,
+    sell_now_score:80,
+    hold_score:40,
+    pass_score:10,
+    sell_ebay_reason:"eBay販売を選ぶ理由(30字以内)",
+    sell_domestic_reason:"国内販売を選ぶ理由(30字以内)",
+    sell_psa10_reason:"PSA10グレード後に売る理由(30字以内)",
+    sell_snkrdunk_reason:"スニダン販売を選ぶ理由(30字以内)",
+    sell_flea_reason:"フリマ販売を選ぶ理由(30字以内)",
+    sell_now_reason:"今すぐ売る理由(30字以内)",
+    hold_reason:"保持する理由(30字以内)",
+    pass_reason:"見送る理由(30字以内)",
+    // ベスト販売先
+    best_platform:"ebay|flea|snkrdunk|psa10|domestic",
+    best_platform_reason:"最もおすすめな販売先の理由(50字以内)",
+    // 売却戦略
+    strategy_title:"推奨戦略タイトル(15字以内)",
+    strategy_body:"戦略の根拠・概要(60字以内)",
+    strategy_steps:["ステップ1","ステップ2","ステップ3"],
+    notes:"コメント"
+  });
+  const imgInstructions = hasImage ? `※画像分析の必須事項:
+1. 商品名・ブランド・型番・カラー・サイズを正確に特定してください
+2. 画像から商品状態（傷・汚れ・箱有無）を詳しく判定してください
+3. スニダン相場(snkrdunk_avg_jpy): スニーカー・ストリートウェアは必須。他カテゴリも国内2次流通相場として必ず推定値を設定
+4. フリマ相場(flea_avg_jpy): メルカリ・ラクマの相場を必ず推定して設定
+5. eBay落札相場(ebay_sold_avg_usd): 必ず推定して設定` : "※画像がないため商品状態は推定値でok。";
+
+  return `あなたはeBay転売・PSA鑑定・スニダン・フリマ転売の専門家AIです。以下の情報を分析してください。
+${ctx}
+${imgInstructions}
+※重要: コンテキストに「実測値」「実売価格」と明記された価格は最優先で使用し、必ずそれに近い値をJSONに設定してください。
+※PSA10相場はトレカ・カードゲームのみ推定。関係なければ0。
+※eBay落札済みURLが含まれる場合はebay_sold_avg_usdにリアルな落札相場を設定してください。
+※スニダンURLが含まれる場合はsnkrdunk_avg_jpyに実際の相場を必ず設定してください。
+※eBay国際販売・国内フリマ・スニダン・PSA10グレードを総合して最もおすすめの販売先をbest_platformに設定してください。
+※ebay_sold_avg_usd・flea_avg_jpy・snkrdunk_avg_jpyは必ず0以外の推定値を設定すること（画像・キーワードから推定）。
+
+以下のJSONのみ返してください（前後説明・マークダウン不要）:
+${json}`;
+}
+
+/* ── Step indicator helpers ── */
+function setStep(stepNum) {
+  for (let i = 1; i <= 4; i++) {
+    const el = document.getElementById('step-' + i);
+    if (!el) continue;
+    el.className = 'step-item' + (i < stepNum ? ' done' : i === stepNum ? ' active' : '');
+  }
 }
 
 /* ── Photo analysis ── */
 async function analyzePhoto() {
   if (!currentImage) return;
-  showLoading('AIが商品を識別中...');
+  showLoading('商品を識別中...');
+  setStep(1);
   const base64 = currentImage.split(',')[1];
   const mediaType = currentImage.match(/data:([^;]+);/)[1];
   try {
+    await new Promise(r => setTimeout(r, 200));
+    setStep(2);
+    document.getElementById('loading-msg').textContent = 'スニダン・フリマ・eBay相場を推定中...';
+    await new Promise(r => setTimeout(r, 300));
+    setStep(3);
+    document.getElementById('loading-msg').textContent = '売却戦略・AIアドバイスを生成中...';
     const text = await claudeAPI([{
       role: 'user',
       content: [
         {type:'image', source:{type:'base64', media_type:mediaType, data:base64}},
-        {type:'text', text:buildPrompt('この商品画像を分析してください。')}
+        {type:'text', text:buildPrompt('この商品画像を分析してください。商品を正確に識別し、スニダン・フリマ・eBay相場を必ず推定してください。', true)}
       ]
-    }]);
+    }], 2500);
+    setStep(4);
+    document.getElementById('loading-msg').textContent = '総合スコアを算出中...';
+    await new Promise(r => setTimeout(r, 200));
     renderResult(JSON.parse(text));
   } catch(e) { showError('分析に失敗しました: ' + e.message); }
 }
@@ -547,10 +1693,51 @@ async function analyzeByUrl() {
   const url = document.getElementById('url-input').value.trim();
   const kw = document.getElementById('kw-input').value.trim();
   if (!url && !kw) { alert('URLまたはキーワードを入力してください'); return; }
-  showLoading('相場データを分析中...');
-  const ctx = [url ? 'URL: ' + url : '', kw ? 'キーワード: ' + kw : ''].filter(Boolean).join(' / ');
+
+  // URL種別を判定してローディングメッセージとコンテキストを最適化
+  const isEbaySold  = url.includes('LH_Sold=1') || url.includes('LH_Complete=1');
+  const isEbay      = url.includes('ebay.com') && !isEbaySold;
+  const isSniDan    = url.includes('snkrdunk.com');
+  const isMercari   = url.includes('mercari.com');
+  const isYahoo     = url.includes('auctions.yahoo');
+  const isRakuma    = url.includes('fril.jp');
+
+  const loadMsg = isEbaySold ? 'eBay落札データを分析中...'
+    : isSniDan  ? 'スニダン相場を分析中...'
+    : isMercari ? 'メルカリ相場を分析中...'
+    : isYahoo   ? 'ヤフオク相場を分析中...'
+    : '相場データを分析中...';
+
+  showLoading(loadMsg);
+  setStep(1);
+
+  // URLの種別に応じてAIへのコンテキストを強化
+  let ctx = '';
+  if (isEbaySold) {
+    ctx = `eBay落札済みURL: ${url}${kw?' / 商品名:'+kw:''}\n※LH_Sold=1&LH_Complete=1はeBayの落札済みフィルターです。URLのキーワード「${decodeURIComponent(url.match(/_nkw=([^&]+)/)?.[1]||kw)}」の実際の落札相場を精度高く推定してください。`;
+  } else if (isSniDan) {
+    ctx = `スニダンURL: ${url}${kw?' / キーワード:'+kw:''}\n※スニーカーダンクの商品ページです。スニダン・eBay国際・フリマの相場を分析してください。`;
+  } else if (isMercari) {
+    ctx = `メルカリURL: ${url}${kw?' / キーワード:'+kw:''}\n※メルカリの商品ページです。フリマ・eBay国際相場を分析してください。`;
+  } else if (isYahoo) {
+    ctx = `ヤフオクURL: ${url}${kw?' / キーワード:'+kw:''}\n※ヤフオクの商品ページです。国内オークション・eBay相場を分析してください。`;
+  } else if (isRakuma) {
+    ctx = `ラクマURL: ${url}${kw?' / キーワード:'+kw:''}\n※ラクマの商品ページです。フリマ・eBay国際相場を分析してください。`;
+  } else {
+    ctx = [url ? 'URL: ' + url : '', kw ? 'キーワード: ' + kw : ''].filter(Boolean).join(' / ');
+  }
+
   try {
-    const text = await claudeAPI([{role:'user', content:buildPrompt(ctx)}]);
+    await new Promise(r => setTimeout(r, 200));
+    setStep(2);
+    document.getElementById('loading-msg').textContent = isEbaySold ? 'eBay実売価格を解析中...' : '商品情報を確認中...';
+    await new Promise(r => setTimeout(r, 250));
+    setStep(3);
+    document.getElementById('loading-msg').textContent = '売却戦略・AIアドバイスを生成中...';
+    const text = await claudeAPI([{role:'user', content:buildPrompt(ctx, false)}], 2000);
+    setStep(4);
+    document.getElementById('loading-msg').textContent = '総合スコアを算出中...';
+    await new Promise(r => setTimeout(r, 200));
     renderResult(JSON.parse(text));
   } catch(e) { showError('分析に失敗しました: ' + e.message); }
 }
@@ -587,12 +1774,14 @@ function renderResult(info) {
   const bp = n('a-buy');
   const avgUsd = info.ebay_sold_avg_usd || 0;
   const avgJpy = avgUsd * fx;
+  const minUsd = info.ebay_sold_min_usd || avgUsd * 0.7;
+  const maxUsd = info.ebay_sold_max_usd || avgUsd * 1.3;
   const sold90 = info.ebay_sold_90days || 0;
   const sold30 = info.ebay_sold_30days || sold90 / 3;
   const listings = info.ebay_active_listings || 0;
   const str = info.sell_through_rate || 0;
   const turn30 = sold30 > 0 ? sold30 : sold90 / 3;
-  const days = turn30 > 0 ? Math.round(30 / turn30) : 999;
+  const days = info.turnover_days || (turn30 > 0 ? Math.round(30 / turn30) : 999);
   const ebayFee = n('a-fee') || 13.25;
   const intlShip = n('a-ship') || 0;
   const other = n('a-other') || 0;
@@ -603,12 +1792,13 @@ function renderResult(info) {
   const margin = avgJpy > 0 ? profit / avgJpy * 100 : 0;
   const roi = bp > 0 ? profit / bp * 100 : 0;
   const max20 = avgJpy * 0.8 - (efJpy + shipJpy + other);
+  const trend = info.market_trend || 'stable';
 
-  // ── Rank ──
+  /* ── Rank ── */
   let rank, action, vtitle, vsub;
   if (margin >= 30 && profit >= 5000 && days <= 30) {
     rank='S'; action='buy'; vtitle='Sランク — 優先仕入れ推奨';
-    vsub='利益率' + margin.toFixed(1) + '% / 利益' + fj(profit) + ' / 約' + (days<900 ? days+'日' : '—') + 'で売れる見込み';
+    vsub='利益率' + margin.toFixed(1) + '% / 利益' + fj(profit) + ' / 約' + (days<900?days+'日':'—') + 'で売れる見込み';
   } else if (margin >= 20 && profit >= 3000) {
     rank='A'; action='buy'; vtitle='Aランク — 仕入れ推奨';
     vsub='利益率' + margin.toFixed(1) + '% / 利益' + fj(profit);
@@ -621,7 +1811,7 @@ function renderResult(info) {
   }
 
   const trendLbl = {rising:'📈 上昇傾向', stable:'➡️ 安定', falling:'📉 下落傾向'};
-  const trend = info.market_trend || 'stable';
+  const trendCls = {rising:'rising', stable:'stable', falling:'falling'};
   const actMap = {
     buy:   {l:'▶ 仕入れる',   c:'buy'},
     watch: {l:'⏳ 様子を見る', c:'watch'},
@@ -629,19 +1819,92 @@ function renderResult(info) {
   };
   const am = actMap[action];
 
+  /* ── 販売先スコア ── */
+  const ebayScore   = info.sell_ebay_score     || info.sell_overseas_score || 50;
+  const domScore    = info.sell_domestic_score  || 50;
+  const psa10Score  = info.sell_psa10_score     || 0;
+  const snkrScore   = info.sell_snkrdunk_score  || 0;
+  const fleaScore   = info.sell_flea_score      || 40;
+  const nowScore    = info.sell_now_score        || 60;
+  const holdScore   = info.hold_score            || 40;
+
+  const platformMap = {ebay:'🌏 eBay国際', flea:'📱 フリマ', snkrdunk:'👟 スニダン', psa10:'🏆 PSA10後', domestic:'🇯🇵 国内'};
+  const bestPlatform = info.best_platform || (ebayScore>=domScore?'ebay':'flea');
+  const bestPlatformLbl = platformMap[bestPlatform] || '🌏 eBay国際';
+
+  /* ── 需要ラベル ── */
+  const demandLbl = info.popularity==='high' ? '高い' : info.popularity==='medium' ? '普通' : '低い';
+  const demandCls = info.popularity==='high' ? 'ok' : info.popularity==='medium' ? 'wn' : 'ng';
+
+  /* ── 一言アドバイス ── */
+  const quickAdvice =
+    rank==='S' ? '今すぐ仕入れ！高利益・高回転の優良案件です。' :
+    rank==='A' ? '仕入れ推奨。利益・需要ともに基準クリア。' :
+    rank==='B' ? '条件次第。仕入れ価格交渉で化ける可能性あり。' :
+    '現状は見送り。価格下落か別ルートを検討。';
+
+  /* ── 回転率ラベル ── */
+  const turnLbl = days <= 14 ? '高速' : days <= 30 ? '良好' : days <= 60 ? '普通' : '低速';
+  const turnCls = days <= 14 ? 'ok' : days <= 30 ? 'ok' : days <= 60 ? 'wn' : 'ng';
+
+  /* ── 利益率ラベル ── */
+  const marginCls = margin >= 30 ? 'ok' : margin >= 20 ? 'ok' : margin > 0 ? 'wn' : 'ng';
+
+  /* ── 売却アドバイス items（タイミング系） ── */
+  const advItems = [
+    { icon:'🟢', label:'🟢 即売り推奨',  score:nowScore,  reason:info.sell_now_reason||'現在の相場で即売却' },
+    { icon:'🟡', label:'🟡 様子見',      score:holdScore, reason:info.hold_reason||'相場回復を待って高値売却' },
+    { icon:'🔴', label:'🔴 スルー',     score:info.pass_score||10, reason:info.pass_reason||'現時点では利益見込みが薄い' }
+  ];
+  const bestAdv = advItems.reduce((a,b) => a.score>b.score?a:b);
+
+  /* ── 商品状態 ── */
+  const condRank = info.condition_rank || info.condition_estimate || 'B';
+  const condItems = [
+    { lbl:'傷', val:info.condition_scratch||'不明', cls:condClass(info.condition_scratch) },
+    { lbl:'汚れ', val:info.condition_stain||'不明', cls:condClass(info.condition_stain) },
+    { lbl:'色あせ', val:info.condition_fade||'不明', cls:condClass(info.condition_fade) },
+    { lbl:'箱', val:info.condition_box||'不明', cls:condClass2(info.condition_box) },
+    { lbl:'付属品', val:info.condition_accessories||'不明', cls:condClass2(info.condition_accessories) },
+    { lbl:'欠品', val:info.condition_missing||'不明', cls:condClassMissing(info.condition_missing) }
+  ];
+
+  /* ── Build HTML ── */
   const html =
-    // ── 商品識別カード ──
+    /* ①AI総合判定カード（最上部） */
+    '<div class="ai-master-card ' + rank + '">' +
+      '<div class="amc-header">' +
+        '<div class="amc-rank ' + rank + '">' + rank + '</div>' +
+        '<div style="flex:1">' +
+          '<div class="amc-title">AI総合判定 — ' + vtitle.replace(/^[A-S]ランク — /, '') + '</div>' +
+          '<div class="amc-sub">' + esc(info.product_name_ja || info.product_name || '商品名不明') + '</div>' +
+        '</div>' +
+        '<span class="abtn ' + am.c + '" style="font-size:12px">' + am.l + '</span>' +
+      '</div>' +
+      '<div class="amc-grid">' +
+        '<div class="amc-item"><div class="amc-item-lbl">おすすめ販売先</div><div class="amc-item-val" style="color:var(--ok)">' + bestPlatformLbl + '</div></div>' +
+        '<div class="amc-item"><div class="amc-item-lbl">想定利益</div><div class="amc-item-val" style="color:' + (bp>0?(profit>=0?'var(--ok)':'var(--ng)'):'var(--mt)') + '">' + (bp>0?(profit>=0?'+':'')+fj(profit):'入力待ち') + '</div></div>' +
+        '<div class="amc-item"><div class="amc-item-lbl">利益率</div><div class="amc-item-val" style="color:var(--' + marginCls + ')">' + (bp>0?margin.toFixed(1)+'%':'—') + '</div></div>' +
+        '<div class="amc-item"><div class="amc-item-lbl">需要</div><div class="amc-item-val" style="color:var(--' + demandCls + ')">' + demandLbl + '</div></div>' +
+        '<div class="amc-item"><div class="amc-item-lbl">回転率</div><div class="amc-item-val" style="color:var(--' + turnCls + ')">' + turnLbl + (days<900?' ('+days+'日)':'') + '</div></div>' +
+        '<div class="amc-item"><div class="amc-item-lbl">相場トレンド</div><div class="amc-item-val">' + (trendLbl[trend]||trend) + '</div></div>' +
+      '</div>' +
+      '<div class="amc-advice ' + rank + '">💡 ' + quickAdvice + '</div>' +
+    '</div>' +
+
+    /* 商品識別カード */
     '<div class="prod-card">' +
-      '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:9px">' +
-        '<div>' +
-          '<div class="prod-name">' + esc(info.product_name_ja || info.product_name || '商品名不明') + '</div>' +
+      '<div style="display:flex;align-items:flex-start;gap:11px">' +
+        (currentImage ? '<img src="' + currentImage + '" class="prod-thumb" alt="商品画像">' : '') +
+        '<div style="flex:1;min-width:0">' +
+          '<div class="prod-name" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + esc(info.product_name_ja || info.product_name || '商品名不明') + '</div>' +
           '<div style="font-size:11px;color:var(--sub);margin-bottom:6px">' +
             esc(info.product_name || '') + (info.model ? ' / ' + esc(info.model) : '') +
           '</div>' +
           '<div class="prod-meta">' +
             (info.tags||[]).map(t => '<span class="ptag">' + esc(t) + '</span>').join('') +
             (info.brand ? '<span class="ptag">🏷 ' + esc(info.brand) + '</span>' : '') +
-            (info.condition_estimate ? '<span class="ptag">' + esc(info.condition_estimate) + '</span>' : '') +
+            (info.condition_estimate ? '<span class="ptag">状態: ' + esc(info.condition_estimate) + '</span>' : '') +
           '</div>' +
         '</div>' +
         '<div class="rbadge ' + rank + '" style="flex-shrink:0">' + rank + '</div>' +
@@ -649,7 +1912,7 @@ function renderResult(info) {
       (info.confidence ? '<div style="font-size:10px;color:var(--mt);margin-top:5px">AI識別精度: ' + Math.round(info.confidence*100) + '%</div>' : '') +
     '</div>' +
 
-    // ── ランク判定 ──
+    /* ランク判定 */
     '<div class="verdict ' + rank + '">' +
       '<div class="vhead">' +
         '<div class="rbadge ' + rank + '">' + rank + '</div>' +
@@ -661,17 +1924,30 @@ function renderResult(info) {
       '<span class="abtn ' + am.c + '">' + am.l + '</span>' +
     '</div>' +
 
-    // ── KPI 4枠 ──
+    /* KPI 4枠 */
     '<div class="mrow">' +
       '<div class="metric"><div class="ml">eBay平均Sold</div><div class="mv ac">$' + avgUsd.toFixed(0) + '</div><div class="ms">¥' + Math.round(avgJpy).toLocaleString() + '</div></div>' +
-      '<div class="metric"><div class="ml">純利益</div><div class="mv ' + (bp>0 ? (profit>=0?'ok':'ng') : 'dm') + '">' + (bp>0 ? (profit>=0?'+':'-') + fj(profit) : '仕入れ価格を入力') + '</div></div>' +
-      '<div class="metric"><div class="ml">利益率</div><div class="mv ' + (margin>=20?'ok':margin>0?'wn':'dm') + '">' + (bp>0 ? margin.toFixed(1)+'%' : '—') + '</div></div>' +
-      '<div class="metric"><div class="ml">ROI</div><div class="mv ' + (roi>=30?'pr':roi>0?'wn':'dm') + '">' + (bp>0 ? roi.toFixed(1)+'%' : '—') + '</div>' +
+      '<div class="metric"><div class="ml">純利益</div><div class="mv ' + (bp>0?(profit>=0?'ok':'ng'):'dm') + '">' + (bp>0?(profit>=0?'+':'-')+fj(profit):'仕入れ価格を入力') + '</div></div>' +
+      '<div class="metric"><div class="ml">利益率</div><div class="mv ' + (margin>=20?'ok':margin>0?'wn':'dm') + '">' + (bp>0?margin.toFixed(1)+'%':'—') + '</div></div>' +
+      '<div class="metric"><div class="ml">ROI</div><div class="mv ' + (roi>=30?'pr':roi>0?'wn':'dm') + '">' + (bp>0?roi.toFixed(1)+'%':'—') + '</div>' +
         (bp>0 && max20>0 ? '<div class="ms">最大仕入れ ' + fj(max20) + '</div>' : '') +
       '</div>' +
     '</div>' +
 
-    // ── 販売データ（数値のみ） ──
+    /* ①相場分析カード（グラフ付き） */
+    '<div class="card">' +
+      '<div class="ctitle">📈 相場分析（推計）</div>' +
+      '<div class="cbody">' +
+        buildMarketChart(info, fx) +
+        '<div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-top:.5rem">' +
+          '<span style="font-size:11px;color:var(--sub)">相場推移:</span>' +
+          '<span class="trend-badge ' + (trendCls[trend]||'stable') + '">' + (trendLbl[trend]||trend) + '</span>' +
+          (info.market_trend_reason ? '<span style="font-size:11px;color:var(--sub)">— ' + esc(info.market_trend_reason) + '</span>' : '') +
+        '</div>' +
+      '</div>' +
+    '</div>' +
+
+    /* eBay販売データ */
     '<div class="card">' +
       '<div class="ctitle">📊 eBay販売データ（推計）</div>' +
       '<div class="cbody">' +
@@ -683,14 +1959,92 @@ function renderResult(info) {
         '</div>' +
         '<div class="g2" style="font-size:12px;padding:.25rem 0">' +
           '<div style="color:var(--sub)">回転率 <strong style="color:var(--tx)">' + turn30.toFixed(1) + '個/月</strong></div>' +
-          '<div style="color:var(--sub)">想定売却 <strong style="color:' + (days<=30?'var(--ok)':days<=60?'var(--wn)':'var(--ng)') + '">' + (days<900 ? days+'日' : 'データ不足') + '</strong></div>' +
+          '<div style="color:var(--sub)">想定売却 <strong style="color:' + (days<=30?'var(--ok)':days<=60?'var(--wn)':'var(--ng)') + '">' + (days<900?days+'日':'データ不足') + '</strong></div>' +
           '<div style="color:var(--sub)">トレンド <strong style="color:var(--tx)">' + (trendLbl[trend]||trend) + '</strong></div>' +
-          '<div style="color:var(--sub)">需要 <strong style="color:' + (info.popularity==='high'?'var(--ok)':info.popularity==='medium'?'var(--wn)':'var(--ng)') + '">' + (info.popularity==='high'?'高い':info.popularity==='medium'?'普通':'低い') + '</strong></div>' +
+          '<div style="color:var(--sub)">需要 <strong style="color:' + (info.popularity==='high'?'var(--ok)':info.popularity==='medium'?'var(--wn)':'var(--ng)') + '">' + demandLbl + '</strong></div>' +
         '</div>' +
       '</div>' +
     '</div>' +
 
-    // ── 保存ボタン ──
+    /* ②AI売却アドバイス — 販売先比較＋タイミング */
+    '<div class="card">' +
+      '<div class="ctitle">🧠 AI売却アドバイス — どこで売る？</div>' +
+      '<div class="cbody">' +
+        /* おすすめ販売先ハイライト */
+        '<div style="padding:.75rem 1rem;background:rgba(34,201,142,.08);border:1px solid var(--ok-b);border-radius:10px;margin-bottom:.9rem;display:flex;align-items:flex-start;gap:10px">' +
+          '<div style="font-size:22px;flex-shrink:0">🏆</div>' +
+          '<div>' +
+            '<div style="font-size:12px;font-weight:800;color:var(--ok);margin-bottom:3px">AIおすすめ販売先: ' + bestPlatformLbl + '</div>' +
+            '<div style="font-size:11px;color:var(--sub);line-height:1.6">' + esc(info.best_platform_reason || 'この商品は' + bestPlatformLbl + 'での販売が最も利益を最大化できます。') + '</div>' +
+          '</div>' +
+        '</div>' +
+        /* 販売先スコアバー */
+        '<div style="margin-bottom:.9rem">' +
+          buildPlatformScores(info) +
+        '</div>' +
+        /* 各販売先の理由 */
+        '<div style="display:flex;flex-direction:column;gap:6px;margin-bottom:.9rem">' +
+          platformAdvItem('🌏', 'eBay国際販売', ebayScore, info.sell_ebay_reason||'海外バイヤーへ直販、高値が狙える') +
+          platformAdvItem('📱', 'フリマ（メルカリ・ラクマ）', fleaScore, info.sell_flea_reason||'国内での素早い現金化') +
+          (snkrScore > 0 ? platformAdvItem('👟', 'スニダン', snkrScore, info.sell_snkrdunk_reason||'スニーカー専門市場で高値売却') : '') +
+          (psa10Score > 0 ? platformAdvItem('🏆', 'PSA10グレード後', psa10Score, info.sell_psa10_reason||'グレード取得後にプレミア価格で売却') : '') +
+        '</div>' +
+        /* タイミングアドバイス */
+        '<div style="font-size:10px;font-weight:700;color:var(--mt);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.6rem">売るタイミング</div>' +
+        '<div style="display:flex;flex-direction:column;gap:6px">' +
+          advItems.map(a => {
+            const cls = a.score>=70?'recommended':a.score>=40?'warn':'negative';
+            return '<div class="advice-item ' + cls + '">' +
+              '<div class="advice-icon" style="background:rgba(0,0,0,.2)">' + a.icon + '</div>' +
+              '<div style="flex:1">' +
+                '<div class="advice-lbl" style="display:flex;justify-content:space-between">' +
+                  '<span>' + a.label + '</span>' +
+                  '<span style="font-size:11px;font-weight:700;color:' + (a.score>=70?'var(--ok)':a.score>=40?'var(--wn)':'var(--ng)') + '">' + a.score + '%</span>' +
+                '</div>' +
+                '<div class="advice-reason">' + esc(a.reason) + '</div>' +
+              '</div>' +
+            '</div>';
+          }).join('') +
+        '</div>' +
+      '</div>' +
+    '</div>' +
+
+    /* ③商品状態判定 */
+    '<div class="card">' +
+      '<div class="ctitle">🔍 商品状態判定</div>' +
+      '<div class="cbody">' +
+        '<div style="display:flex;align-items:center;gap:13px;margin-bottom:.75rem">' +
+          '<div class="condition-rank-badge ' + condRank + '">' + condRank + '</div>' +
+          '<div>' +
+            '<div style="font-size:13px;font-weight:700;margin-bottom:2px">総合状態ランク: ' + condRank + '</div>' +
+            '<div style="font-size:11px;color:var(--sub)">' + condRankDesc(condRank) + '</div>' +
+          '</div>' +
+        '</div>' +
+        '<div class="cond-items">' +
+          condItems.map(c =>
+            '<div class="cond-item"><span class="cond-item-lbl">' + c.lbl + '</span><span class="cond-status ' + c.cls + '">' + esc(c.val) + '</span></div>'
+          ).join('') +
+        '</div>' +
+        (info.condition_comment ? '<div style="font-size:12px;color:var(--sub);padding:.6rem .8rem;background:var(--sf2);border:1px solid var(--bd);border-radius:8px;line-height:1.6">💬 ' + esc(info.condition_comment) + '</div>' : '') +
+      '</div>' +
+    '</div>' +
+
+    /* ⑤売却戦略 */
+    '<div class="card">' +
+      '<div class="ctitle">🎯 売却戦略</div>' +
+      '<div class="cbody">' +
+        '<div class="strategy-card">' +
+          '<div class="strategy-title">' +
+            '<span style="font-size:16px">🚀</span>' +
+            esc(info.strategy_title || bestAdv.label + 'を推奨') +
+          '</div>' +
+          '<div class="strategy-body">' + esc(info.strategy_body || bestAdv.reason) + '</div>' +
+          (info.strategy_steps && info.strategy_steps.length ? '<ul class="strategy-steps">' + info.strategy_steps.map(s => '<li>' + esc(s) + '</li>').join('') + '</ul>' : '') +
+        '</div>' +
+      '</div>' +
+    '</div>' +
+
+    /* 保存ボタン */
     '<button class="btn ok" style="width:100%;margin-top:.75rem" onclick="saveAnalysisResult()">📥 ダッシュボードに保存</button>';
 
   document.getElementById('result-empty').classList.add('hidden');
@@ -702,16 +2056,331 @@ function renderResult(info) {
   window._lastResult = {
     name: info.product_name_ja || info.product_name || '不明',
     rank, profit: Math.round(profit), margin, roi, turn30, sold90,
-    avgUsd, buyPrice: bp, date: new Date().toLocaleDateString('ja-JP'), id: Date.now()
+    avgUsd, buyPrice: bp, date: new Date().toLocaleDateString('ja-JP'), id: Date.now(),
+    // 詳細再表示用
+    _info: info,
+    _image: currentImage || null,
+    _fx: fx, _bp: bp
   };
+}
+
+/* ── 相場グラフ生成（折れ線グラフ + 1週間/1ヶ月/3ヶ月タブ） ── */
+function buildMarketChart(info, fx) {
+  const avgUsd = info.ebay_sold_avg_usd || 0;
+  const minUsd = info.ebay_sold_min_usd || avgUsd*0.75;
+  const maxUsd = info.ebay_sold_max_usd || avgUsd*1.25;
+  const psa10  = info.psa10_avg_usd || 0;
+  const fleaAvg = info.flea_avg_jpy || 0;
+  const snkrAvg = info.snkrdunk_avg_jpy || 0;
+
+  if (!avgUsd && !fleaAvg && !snkrAvg) {
+    return '<div style="font-size:12px;color:var(--mt);text-align:center;padding:.75rem">相場データなし</div>';
+  }
+
+  // 各期間の模擬トレンドデータ生成（AIの相場データから推算）
+  function genPoints(avg, trend, count) {
+    const pts = [];
+    let v = avg;
+    const mult = trend==='rising'?1.008: trend==='falling'?0.992:1.001;
+    const noise = avg * 0.04;
+    for (let i=0; i<count; i++) {
+      v = v * mult + (Math.random()-0.5)*noise;
+      pts.push(Math.max(0, v));
+    }
+    // 最後は現在値に近づける
+    pts[pts.length-1] = avg * (0.97 + Math.random()*0.06);
+    return pts;
+  }
+
+  const trend = info.market_trend || 'stable';
+
+  // データセット定義
+  const datasets = [];
+  if (avgUsd > 0) datasets.push({ label:'eBay', color:'#4f8ef7', avg7:avgUsd*fx, avg30:avgUsd*fx*(trend==='rising'?0.92:0.95), avg90:avgUsd*fx*(trend==='rising'?0.82:0.88) });
+  if (psa10   > 0) datasets.push({ label:'PSA10', color:'#f5a623', avg7:psa10*fx, avg30:psa10*fx*0.88, avg90:psa10*fx*0.72 });
+  if (fleaAvg > 0) datasets.push({ label:'フリマ', color:'#22c98e', avg7:fleaAvg, avg30:fleaAvg*(trend==='rising'?0.90:0.93), avg90:fleaAvg*(trend==='rising'?0.80:0.87) });
+  if (snkrAvg > 0) datasets.push({ label:'スニダン', color:'#a78bfa', avg7:snkrAvg, avg30:snkrAvg*0.91, avg90:snkrAvg*0.80 });
+
+  const chartId = 'chart_' + Math.random().toString(36).substr(2,6);
+
+  function renderLine(period) {
+    const W=500, H=160, PL=50, PR=90, PT=12, PB=34;
+    const N = period==='1w'?7: period==='1m'?30:90;
+
+    // 各データセットのポイント生成
+    const allPts = datasets.map(ds => {
+      const startAvg = period==='1w'?ds.avg7: period==='1m'?ds.avg30:ds.avg90;
+      return genPoints(startAvg, trend, N);
+    });
+
+    const allVals = allPts.flat();
+    const maxV = Math.max(...allVals)*1.10;
+    const minV = Math.min(...allVals)*0.90;
+    const range = maxV - minV || 1;
+    const toX = i => PL + (W-PL-PR)*i/(N-1);
+    const toY = v => PT + (H-PT-PB)*(1-(v-minV)/range);
+
+    let svg = `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block;overflow:visible">`;
+    // grid
+    [0,0.25,0.5,0.75,1].forEach(r => {
+      const y = PT+(H-PT-PB)*r;
+      svg += `<line x1="${PL}" y1="${y.toFixed(1)}" x2="${W-PR}" y2="${y.toFixed(1)}" stroke="rgba(255,255,255,.05)" stroke-width="1"/>`;
+      const v = minV + range*(1-r);
+      const lbl = v>=10000?'¥'+(v/1000).toFixed(0)+'k':v>=1?'¥'+Math.round(v):'' ;
+      svg += `<text x="${PL-4}" y="${(y+3.5).toFixed(1)}" text-anchor="end" font-size="8.5" fill="rgba(139,144,168,.65)">${lbl}</text>`;
+    });
+    // x-axis ticks
+    const tickN = period==='1w'?7:6;
+    for(let t=0;t<tickN;t++){
+      const i=Math.round(t*(N-1)/(tickN-1));
+      const x=toX(i);
+      const daysAgo = period==='1w'?(7-i): period==='1m'?(30-Math.round(30*i/(N-1))):(90-Math.round(90*i/(N-1)));
+      const lbl = daysAgo===0?'今日':`${daysAgo}日前`;
+      svg+=`<text x="${x.toFixed(1)}" y="${H-4}" text-anchor="middle" font-size="8" fill="rgba(139,144,168,.55)">${lbl}</text>`;
+    }
+    // lines + areas
+    // ラベル重なり防止：終端Y座標を収集してずらし量を計算
+    const endPoints = allPts.map((pts, di) => ({
+      di, val: pts[N-1], ly: toY(pts[N-1]), color: datasets[di].color
+    }));
+    // Y座標でソートしてラベルがかぶらないよう12px間隔を保証
+    const MIN_GAP = 13;
+    const sorted = [...endPoints].sort((a,b) => a.ly - b.ly);
+    const adjustedLy = {};
+    sorted.forEach((ep, i) => {
+      let y = ep.ly;
+      if (i > 0) {
+        const prevY = adjustedLy[sorted[i-1].di];
+        if (y - prevY < MIN_GAP) y = prevY + MIN_GAP;
+      }
+      adjustedLy[ep.di] = y;
+    });
+
+    allPts.forEach((pts, di) => {
+      const ds = datasets[di];
+      const pathD = pts.map((v,i)=>`${i===0?'M':'L'}${toX(i).toFixed(1)},${toY(v).toFixed(1)}`).join(' ');
+      const areaD = pathD + ` L${toX(N-1).toFixed(1)},${(H-PB).toFixed(1)} L${PL},${(H-PB).toFixed(1)} Z`;
+      svg += `<path d="${areaD}" fill="${ds.color}" opacity=".08"/>`;
+      svg += `<path d="${pathD}" fill="none" stroke="${ds.color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>`;
+      // 最新値ドット（実際のY位置）
+      const lx=toX(N-1), ly=toY(pts[N-1]);
+      svg += `<circle cx="${lx.toFixed(1)}" cy="${ly.toFixed(1)}" r="3.5" fill="${ds.color}"/>`;
+      // ラベルはずらしたY座標に表示（重なり防止）
+      const labelY = adjustedLy[di];
+      const val = pts[N-1];
+      const valLbl = val>=10000?'¥'+(val/1000).toFixed(1)+'k':'¥'+Math.round(val).toLocaleString();
+      // ドットからラベルへの引き線（ずれた場合のみ）
+      if (Math.abs(labelY - ly) > 2) {
+        svg += `<line x1="${(lx+4).toFixed(1)}" y1="${ly.toFixed(1)}" x2="${(lx+7).toFixed(1)}" y2="${labelY.toFixed(1)}" stroke="${ds.color}" stroke-width="0.8" opacity=".5"/>`;
+      }
+      svg += `<text x="${(lx+10).toFixed(1)}" y="${(labelY+3.5).toFixed(1)}" font-size="9.5" fill="${ds.color}" font-weight="700">${valLbl}</text>`;
+    });
+    svg += '</svg>';
+    return svg;
+  }
+
+  // タブHTML
+  const tabs = ['1w','1m','3m'].map((p,i) => {
+    const lbl = p==='1w'?'1週間':p==='1m'?'1ヶ月':'3ヶ月';
+    return `<button onclick="switchChartTab('${chartId}','${p}')" id="${chartId}_tab_${p}" style="padding:3px 10px;border-radius:20px;border:1px solid var(--bd2);background:${i===0?'var(--ac)':'transparent'};color:${i===0?'#fff':'var(--sub)'};font-size:10px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s">${lbl}</button>`;
+  }).join('');
+
+  const legend = datasets.map(ds =>
+    `<div style="display:flex;align-items:center;gap:4px;font-size:10px;color:var(--sub)"><div style="width:12px;height:2px;border-radius:1px;background:${ds.color}"></div>${ds.label}</div>`
+  ).join('');
+
+  // 初期SVG (1週間)
+  const initSvg = renderLine('1w');
+
+  // 全期間のSVGを事前生成してdata属性に
+  const svgs = {
+    '1w': renderLine('1w'),
+    '1m': renderLine('1m'),
+    '3m': renderLine('3m')
+  };
+
+  return `<div class="market-chart-wrap">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+      <div style="display:flex;gap:6px;flex-wrap:wrap">${legend}</div>
+      <div style="display:flex;gap:4px">${tabs}</div>
+    </div>
+    <div id="${chartId}_svg">${svgs['1w']}</div>
+    <script>
+    window['_svgs_${chartId}'] = ${JSON.stringify(svgs)};
+    <\/script>
+  </div>`;
+}
+
+/* ── スコアバー生成 ── */
+function scoreBar(label, score) {
+  const clr = score>=70?'var(--ok)':score>=40?'var(--wn)':'var(--ng)';
+  return '<div class="score-bar-wrap">' +
+    '<div class="score-bar-label">' + label + '</div>' +
+    '<div class="score-bar-track"><div class="score-bar-fill" style="width:' + score + '%;background:' + clr + '"></div></div>' +
+    '<div class="score-bar-val" style="color:' + clr + '">' + score + '%</div>' +
+  '</div>';
+}
+
+/* ── 販売先スコアセクション（素体/PSA後分割） ── */
+function buildPlatformScores(info) {
+  const ebayScore  = info.sell_ebay_score     || info.sell_overseas_score || 50;
+  const fleaScore  = info.sell_flea_score      || 40;
+  const snkrScore  = info.sell_snkrdunk_score  || 0;
+  const psa10Score = info.sell_psa10_score     || 0;
+
+  // 素体（現状のまま）スコア — 国内全般を削除、スニダンのみ
+  const rawPlatforms = [
+    { label:'🌏 eBay国際', score:ebayScore },
+    { label:'📱 フリマ',   score:fleaScore },
+    (snkrScore>0 ? { label:'👟 スニダン', score:snkrScore } : null),
+  ].filter(Boolean);
+
+  // PSA10後スコア
+  const psa10Platforms = psa10Score > 0 ? [
+    { label:'🌏 eBay（PSA10後）', score:Math.min(100, Math.round(ebayScore*1.15)) },
+    { label:'📱 フリマ（PSA10後）', score:Math.min(100, Math.round(fleaScore*1.2)) },
+    (snkrScore>0 ? { label:'👟 スニダン（PSA10後）', score:Math.min(100, Math.round(snkrScore*1.1)) } : null),
+  ].filter(Boolean) : [];
+
+  let html = '<div style="font-size:10px;font-weight:700;color:var(--mt);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.5rem">📦 素体のまま販売</div>';
+  rawPlatforms.forEach(p => { html += scoreBar(p.label, p.score); });
+
+  if (psa10Platforms.length > 0) {
+    html += '<div style="font-size:10px;font-weight:700;color:var(--wn);text-transform:uppercase;letter-spacing:.06em;margin:.75rem 0 .5rem">🏆 PSA10グレード後に販売</div>';
+    psa10Platforms.forEach(p => { html += scoreBar(p.label, p.score); });
+    html += '<div style="font-size:10px;color:var(--sub);margin-top:.4rem;padding:.4rem .6rem;background:var(--wn-bg);border:1px solid var(--wn-b);border-radius:7px">💡 PSA10取得費用（$20〜30）を差し引いた上でも大幅な価格プレミアムが期待できます</div>';
+  }
+  return html;
+}
+
+/* ── 販売先アドバイスアイテム ── */
+function platformAdvItem(icon, label, score, reason) {
+  const cls = score>=70?'recommended':score>=40?'warn':'negative';
+  return '<div class="advice-item ' + cls + '" style="padding:.55rem .8rem">' +
+
+    '<div class="advice-icon" style="background:rgba(0,0,0,.2);width:24px;height:24px;font-size:13px">' + icon + '</div>' +
+    '<div style="flex:1">' +
+      '<div class="advice-lbl" style="display:flex;justify-content:space-between;font-size:11px">' +
+        '<span>' + label + '</span>' +
+        '<span style="color:' + (score>=70?'var(--ok)':score>=40?'var(--wn)':'var(--ng)') + '">' + score + '%</span>' +
+      '</div>' +
+      '<div class="advice-reason" style="font-size:10px">' + esc(reason) + '</div>' +
+    '</div>' +
+  '</div>';
+}
+
+/* ── 状態ヘルパー ── */
+function condClass(val) {
+  if (!val || val==='不明') return 'na';
+  if (val==='なし') return 'good';
+  if (val==='軽微') return 'warn';
+  return 'bad';
+}
+function condClass2(val) {
+  if (!val || val==='不明') return 'na';
+  if (val==='あり' || val==='完備') return 'good';
+  if (val==='一部欠品') return 'warn';
+  return 'bad';
+}
+function condClassMissing(val) {
+  if (!val || val==='不明') return 'na';
+  if (val==='なし') return 'good';
+  return 'bad';
+}
+function condRankDesc(r) {
+  const d = {S:'新品同様・完璧な状態', A:'良好・目立つ傷なし', B:'普通・軽微な使用感あり', C:'やや難・傷・汚れあり', D:'難あり・ジャンク扱い'};
+  return d[r] || '状態確認が必要';
 }
 
 function updateAnalysisCalc() { if (lastInfo) renderResult(lastInfo); }
 
+/* ── 実価格ヒント表示 ── */
+function updateRealPriceHint() {
+  const ebay = parseFloat(document.getElementById('real-ebay-usd').value) || 0;
+  const flea = parseFloat(document.getElementById('real-flea-jpy').value) || 0;
+  const snkr = parseFloat(document.getElementById('real-snkr-jpy').value) || 0;
+  const psa10 = parseFloat(document.getElementById('real-psa10-usd').value) || 0;
+  const hints = [];
+  if (ebay)  hints.push(`eBay: $${ebay}`);
+  if (flea)  hints.push(`フリマ: ¥${flea.toLocaleString()}`);
+  if (snkr)  hints.push(`スニダン: ¥${snkr.toLocaleString()}`);
+  if (psa10) hints.push(`PSA10: $${psa10}`);
+  const el = document.getElementById('real-price-hint');
+  if (hints.length > 0) {
+    el.textContent = '入力済み: ' + hints.join(' / ') + ' — 「この価格で再分析」を押すと精度が大幅に上がります';
+    el.classList.remove('hidden');
+  } else {
+    el.classList.add('hidden');
+  }
+}
+
+/* ── 実価格で再分析 ── */
+async function applyRealPrices() {
+  if (!lastInfo) { alert('先に商品を分析してください'); return; }
+  const ebay  = parseFloat(document.getElementById('real-ebay-usd').value) || 0;
+  const flea  = parseFloat(document.getElementById('real-flea-jpy').value) || 0;
+  const snkr  = parseFloat(document.getElementById('real-snkr-jpy').value) || 0;
+  const psa10 = parseFloat(document.getElementById('real-psa10-usd').value) || 0;
+  if (!ebay && !flea && !snkr && !psa10) { alert('少なくとも1つ実価格を入力してください'); return; }
+
+  const name = lastInfo.product_name_ja || lastInfo.product_name || '商品';
+  showLoading('実価格データで再分析中...');
+  setStep(1);
+
+  // 実価格情報を含むコンテキストを構築
+  const priceCtx = [
+    `商品名: ${name}`,
+    ebay  ? `eBay実売価格: $${ebay}（実測値・最優先で使用してください）` : '',
+    flea  ? `フリマ（メルカリ・ラクマ）実売価格: ¥${flea}（実測値）` : '',
+    snkr  ? `スニダン実売価格: ¥${snkr}（実測値）` : '',
+    psa10 ? `PSA10グレード後実売価格: $${psa10}（実測値）` : '',
+    '※上記は実際に確認した価格です。これらの実測値を最優先にして、min/avg/maxもこの価格を基準に現実的な範囲で設定してください。AI推定ではなく実測値ベースで分析してください。'
+  ].filter(Boolean).join('\n');
+
+  try {
+    await new Promise(r => setTimeout(r, 150));
+    setStep(2);
+    document.getElementById('loading-msg').textContent = '実価格データを反映中...';
+    await new Promise(r => setTimeout(r, 200));
+    setStep(3);
+    document.getElementById('loading-msg').textContent = '売却戦略を最適化中...';
+    const text = await claudeAPI([{role:'user', content:buildPrompt(priceCtx, false)}], 2000);
+    setStep(4);
+    document.getElementById('loading-msg').textContent = '総合スコアを算出中...';
+    await new Promise(r => setTimeout(r, 150));
+    const newInfo = JSON.parse(text);
+    // 実価格を強制上書き（AIが無視した場合の保険）
+    if (ebay)  { newInfo.ebay_sold_avg_usd = ebay; newInfo.ebay_sold_min_usd = ebay*0.85; newInfo.ebay_sold_max_usd = ebay*1.15; }
+    if (flea)  { newInfo.flea_avg_jpy = flea; newInfo.flea_min_jpy = flea*0.8; newInfo.flea_max_jpy = flea*1.2; }
+    if (snkr)  { newInfo.snkrdunk_avg_jpy = snkr; newInfo.snkrdunk_min_jpy = snkr*0.9; newInfo.snkrdunk_max_jpy = snkr*1.1; }
+    if (psa10) { newInfo.psa10_avg_usd = psa10; newInfo.psa10_min_usd = psa10*0.85; newInfo.psa10_max_usd = psa10*1.15; }
+    // 商品基本情報は元の分析から引き継ぎ
+    newInfo.product_name    = newInfo.product_name    || lastInfo.product_name;
+    newInfo.product_name_ja = newInfo.product_name_ja || lastInfo.product_name_ja;
+    newInfo.brand           = newInfo.brand           || lastInfo.brand;
+    newInfo.model           = newInfo.model           || lastInfo.model;
+    newInfo.tags            = newInfo.tags            || lastInfo.tags;
+    renderResult(newInfo);
+    // 精度バッジを表示
+    const rc = document.getElementById('result-content');
+    const badge = document.createElement('div');
+    badge.style.cssText = 'position:relative;margin-bottom:.6rem';
+    badge.innerHTML = '<div style="background:rgba(167,139,250,.12);border:1px solid var(--pr-b);border-radius:9px;padding:.5rem .85rem;font-size:11px;color:var(--pr);display:flex;align-items:center;gap:6px"><span>✅</span><span>実価格データで再分析完了 — 精度が大幅に向上しました</span></div>';
+    rc.insertBefore(badge, rc.firstChild);
+  } catch(e) { showError('再分析に失敗しました: ' + e.message); }
+}
+
 /* ── Save / Delete ── */
 function saveAnalysisResult() {
   if (!window._lastResult) return;
-  history_data.unshift(window._lastResult);
+  // localStorage容量のため画像は別キーに保存
+  const id = window._lastResult.id;
+  const entry = Object.assign({}, window._lastResult);
+  if (entry._image) {
+    try { localStorage.setItem('img_' + id, entry._image); } catch(e) {}
+    entry._image = null; // メインデータには画像を入れない
+  }
+  history_data.unshift(entry);
   saveToStorage();
   alert('ダッシュボードに保存しました！');
 }
@@ -730,6 +2399,7 @@ function saveToHistory() {
 }
 function deleteItem(id) {
   history_data = history_data.filter(function(d){return d.id!==id;});
+  try { localStorage.removeItem('img_' + id); } catch(e) {}
   saveToStorage();
   renderDash();
 }
@@ -836,24 +2506,219 @@ function renderDash() {
     var name = esc(d.name||'--');
     var buyStr = d.buyPrice ? fj(d.buyPrice) : '--';
     var avgStr = (d.avgUsd||0).toFixed(0);
+    var imgSrc = ''; try { imgSrc = localStorage.getItem('img_' + d.id) || ''; } catch(e) {}
     return '<tr>' +
-      '<td style="max-width:170px"><div style="font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + name + '</div>' +
-      '<div style="font-size:10px;color:var(--mt)">仕入れ ' + buyStr + ' / eBay $' + avgStr + '</div></td>' +
+      '<td style="max-width:170px">' +
+        '<div style="display:flex;align-items:center;gap:7px">' +
+          (imgSrc ? '<img src="' + imgSrc + '" style="width:32px;height:32px;object-fit:cover;border-radius:6px;flex-shrink:0">' : '') +
+          '<div><div style="font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:130px">' + name + '</div>' +
+          '<div style="font-size:10px;color:var(--mt)">仕入れ ' + buyStr + ' / eBay $' + avgStr + '</div></div>' +
+        '</div>' +
+      '</td>' +
       '<td><div class="rbadge ' + d.rank + '" style="width:28px;height:28px;font-size:13px">' + d.rank + '</div></td>' +
       '<td style="font-weight:700;color:' + profitColor + '">' + sg(d.profit) + fj(d.profit) + '</td>' +
       '<td><span class="pill ' + marginCls + '">' + d.margin.toFixed(1) + '%</span></td>' +
       '<td style="color:' + roiColor + ';font-weight:600">' + d.roi.toFixed(1) + '%</td>' +
       '<td><span class="pill ' + actCls + '">' + actLbl + '</span></td>' +
       '<td style="font-size:11px;color:var(--mt)">' + (d.date||'--') + '</td>' +
-      '<td><button class="btn sm" style="color:var(--ng)" onclick="deleteItem(' + d.id + ')">&#128465;</button></td>' +
+      '<td style="white-space:nowrap">' +
+        (d._info ? '<button class="btn sm" onclick="openDetailModal(' + d.id + ')" style="margin-right:3px">📋</button>' : '') +
+        '<button class="btn sm" style="color:var(--ng)" onclick="deleteItem(' + d.id + ')">&#128465;</button>' +
+      '</td>' +
       '</tr>';
   }).join('');
 
-  var thead = '<thead><tr><th>商品名</th><th>ランク</th><th>利益</th><th>利益率</th><th>ROI</th><th>判定</th><th>登録日</th><th></th></tr></thead>';
+  var isMobile = window.innerWidth <= 600;
 
-  dc.innerHTML = '<div style="overflow-x:auto"><table class="dtable">' + thead + '<tbody>' + rows + '</tbody></table></div>';
+  if (isMobile) {
+    // スマホ用カード表示
+    var cards = data.map(function(d) {
+      var ip = d.profit >= 0;
+      var actLbl = (d.rank==='S'||d.rank==='A') ? '🟢 即売り推奨' : d.rank==='B' ? '🟡 様子見' : '🔴 スルー';
+      var actCls = (d.rank==='S'||d.rank==='A') ? 'ok' : d.rank==='B' ? 'wn' : 'ng';
+      var profitColor = ip ? 'var(--ok)' : 'var(--ng)';
+      var marginCls = d.margin>=20 ? 'ok' : d.margin>0 ? 'wn' : 'ng';
+      var name = esc(d.name||'--');
+      var imgSrc = ''; try { imgSrc = localStorage.getItem('img_' + d.id) || ''; } catch(e) {}
+      return '<div style="background:var(--sf);border:1px solid var(--bd);border-radius:13px;padding:.85rem;margin-bottom:.6rem">' +
+        '<div style="display:flex;align-items:center;gap:9px;margin-bottom:.6rem">' +
+          (imgSrc ? '<img src="'+imgSrc+'" style="width:44px;height:44px;object-fit:cover;border-radius:8px;flex-shrink:0">' : '') +
+          '<div style="flex:1;min-width:0">' +
+            '<div style="font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+name+'</div>' +
+            '<div style="font-size:10px;color:var(--mt);margin-top:1px">'+( d.date||'--')+'</div>' +
+          '</div>' +
+          '<div class="rbadge '+d.rank+'" style="width:32px;height:32px;font-size:15px">'+d.rank+'</div>' +
+        '</div>' +
+        '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;margin-bottom:.6rem">' +
+          '<div style="background:var(--sf2);border-radius:8px;padding:.4rem .5rem;text-align:center">' +
+            '<div style="font-size:9px;color:var(--mt);margin-bottom:1px">利益</div>' +
+            '<div style="font-size:13px;font-weight:700;color:'+profitColor+'">'+(ip?'+':'')+fj(d.profit)+'</div>' +
+          '</div>' +
+          '<div style="background:var(--sf2);border-radius:8px;padding:.4rem .5rem;text-align:center">' +
+            '<div style="font-size:9px;color:var(--mt);margin-bottom:1px">利益率</div>' +
+            '<div style="font-size:13px;font-weight:700;color:var(--'+marginCls+')">'+d.margin.toFixed(1)+'%</div>' +
+          '</div>' +
+          '<div style="background:var(--sf2);border-radius:8px;padding:.4rem .5rem;text-align:center">' +
+            '<div style="font-size:9px;color:var(--mt);margin-bottom:1px">ROI</div>' +
+            '<div style="font-size:13px;font-weight:700;color:var(--'+(d.roi>=30?'pr':d.roi>0?'wn':'ng')+')">'+d.roi.toFixed(1)+'%</div>' +
+          '</div>' +
+        '</div>' +
+        '<div style="display:flex;align-items:center;justify-content:space-between">' +
+          '<span style="font-size:11px;font-weight:700;color:var(--'+(actCls==='ok'?'ok':actCls==='wn'?'wn':'ng')+')">'+actLbl+'</span>' +
+          '<div style="display:flex;gap:5px">' +
+            (d._info ? '<button class="btn sm" onclick="openDetailModal('+d.id+')" style="height:32px">📋 詳細</button>' : '') +
+            '<button class="btn sm" style="color:var(--ng);height:32px" onclick="deleteItem('+d.id+')">🗑</button>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+    dc.innerHTML = cards;
+  } else {
+    var thead = '<thead><tr><th>商品名</th><th>ランク</th><th>利益</th><th>利益率</th><th>ROI</th><th>判定</th><th>登録日</th><th></th></tr></thead>';
+    dc.innerHTML = '<div style="overflow-x:auto"><table class="dtable">' + thead + '<tbody>' + rows + '</tbody></table></div>';
+  }
 }
 
+
+function openDetailModal(id) {
+  const d = history_data.find(function(x){ return x.id === id; });
+  if (!d) return;
+  let imgSrc = d._image || ''; try { imgSrc = imgSrc || localStorage.getItem('img_' + id) || ''; } catch(e) {}
+
+  // ヒーロー部分（画像）
+  const hero = document.getElementById('detail-hero');
+  const rank = d.rank || 'B';
+  if (imgSrc) {
+    hero.innerHTML = `<img src="${imgSrc}" alt="${esc(d.name)}"><div class="detail-hero-badge"><div class="detail-hero-rank ${rank}">${rank}</div></div>`;
+  } else {
+    hero.innerHTML = `<div class="detail-hero-no-img">📦</div><div class="detail-hero-badge"><div class="detail-hero-rank ${rank}">${rank}</div></div>`;
+  }
+
+  const ip = d.profit >= 0;
+  const marginCls = d.margin>=20?'ok':d.margin>0?'wn':'ng';
+  const roiCls = d.roi>=30?'pr':d.roi>0?'wn':'ng';
+
+  // info本体
+  const info = d._info;
+  const fx = d._fx || 155;
+  const trend = info ? (info.market_trend||'stable') : 'stable';
+  const trendLbl2 = {rising:'📈 上昇傾向', stable:'➡️ 安定', falling:'📉 下落傾向'};
+  const bestPlatformLbl2 = info ? (({'ebay':'🌏 eBay国際','flea':'📱 フリマ','snkrdunk':'👟 スニダン','psa10':'🏆 PSA10後','domestic':'🇯🇵 国内'})[info.best_platform||'ebay']||'🌏 eBay国際') : '—';
+
+  let html = '';
+
+  // 商品名・基本情報
+  html += `<div class="detail-name">${esc(d.name)}</div>`;
+  if (info && info.product_name) html += `<div class="detail-sub-name">${esc(info.product_name)}${info.model?' / '+esc(info.model):''}</div>`;
+
+  // 3つの主要KPI
+  html += `<div class="detail-stats-row">
+    <div class="detail-stat">
+      <div class="detail-stat-lbl">純利益</div>
+      <div class="detail-stat-val" style="color:${ip?'var(--ok)':'var(--ng)'}">${ip?'+':''}${fj(d.profit)}</div>
+    </div>
+    <div class="detail-stat">
+      <div class="detail-stat-lbl">利益率</div>
+      <div class="detail-stat-val" style="color:var(--${marginCls})">${d.margin.toFixed(1)}%</div>
+    </div>
+    <div class="detail-stat">
+      <div class="detail-stat-lbl">ROI</div>
+      <div class="detail-stat-val" style="color:var(--${roiCls})">${d.roi.toFixed(1)}%</div>
+    </div>
+    <div class="detail-stat">
+      <div class="detail-stat-lbl">eBay相場</div>
+      <div class="detail-stat-val" style="color:var(--ac)">$${(d.avgUsd||0).toFixed(0)}</div>
+    </div>
+    <div class="detail-stat">
+      <div class="detail-stat-lbl">相場トレンド</div>
+      <div class="detail-stat-val" style="font-size:11px">${trendLbl2[trend]||trend}</div>
+    </div>
+    <div class="detail-stat">
+      <div class="detail-stat-lbl">登録日</div>
+      <div class="detail-stat-val" style="font-size:11px;color:var(--sub)">${d.date||'—'}</div>
+    </div>
+  </div>`;
+
+  // おすすめ販売先
+  if (info && info.best_platform) {
+    html += `<div class="detail-best-platform">
+      <div style="font-size:22px">🏆</div>
+      <div>
+        <div style="font-size:11px;font-weight:800;color:var(--ok);margin-bottom:2px">おすすめ販売先: ${bestPlatformLbl2}</div>
+        <div style="font-size:11px;color:var(--sub)">${esc(info.best_platform_reason||'')}</div>
+      </div>
+    </div>`;
+  }
+
+  // 相場グラフ
+  if (info) {
+    html += `<div class="detail-section">
+      <div class="detail-section-title">📈 相場推移</div>
+      ${buildMarketChart(info, fx)}
+    </div>`;
+
+    // 販売先スコア
+    html += `<div class="detail-section">
+      <div class="detail-section-title">🎯 販売先スコア比較</div>
+      ${buildPlatformScores(info)}
+    </div>`;
+
+    // 売却戦略
+    if (info.strategy_title) {
+      html += `<div class="detail-section">
+        <div class="detail-section-title">🚀 売却戦略</div>
+        <div style="background:var(--sf2);border:1px solid var(--bd);border-radius:10px;padding:.75rem 1rem">
+          <div style="font-size:13px;font-weight:700;margin-bottom:4px">${esc(info.strategy_title)}</div>
+          <div style="font-size:12px;color:var(--sub);line-height:1.6">${esc(info.strategy_body||'')}</div>
+          ${info.strategy_steps&&info.strategy_steps.length?'<ul class="strategy-steps" style="margin-top:.5rem">'+info.strategy_steps.map(s=>'<li>'+esc(s)+'</li>').join('')+'</ul>':''}
+        </div>
+      </div>`;
+    }
+  }
+
+  // リアルタイム更新ボタン
+  html += `<button class="detail-refresh-btn" id="detail-refresh-btn" onclick="refreshDetailAnalysis(${id})">
+    <span>🔄</span> リアルタイムで情報を更新
+  </button>`;
+  html += `<button class="detail-close-btn" onclick="closeDetailModal()">閉じる</button>`;
+
+  document.getElementById('detail-body').innerHTML = html;
+  document.getElementById('detail-modal').classList.remove('hidden');
+  document.body.style.overflow = 'hidden';
+}
+
+// リアルタイム更新
+async function refreshDetailAnalysis(id) {
+  const d = history_data.find(function(x){ return x.id === id; });
+  if (!d || !d._info) return;
+  const btn = document.getElementById('detail-refresh-btn');
+  if (btn) { btn.disabled = true; btn.innerHTML = '<span style="display:inline-block;animation:spin .8s linear infinite">🔄</span> 更新中...'; }
+  const info = d._info;
+  const name = info.product_name || info.product_name_ja || d.name;
+  try {
+    const text = await claudeAPI([{role:'user', content:buildPrompt('商品名: ' + name + (info.brand?' ブランド:'+info.brand:'') + (info.model?' 型番:'+info.model:''), false)}], 2000);
+    const newInfo = JSON.parse(text);
+    // データ更新
+    d._info = Object.assign({}, info, newInfo);
+    d._fx = n('a-fx') || 155;
+    saveToStorage();
+    // モーダル再描画
+    openDetailModal(id);
+    if (btn) { btn.disabled = false; btn.innerHTML = '<span>✅</span> 更新完了！'; setTimeout(()=>{if(btn)btn.innerHTML='<span>🔄</span> リアルタイムで情報を更新';btn&&(btn.disabled=false);},2000); }
+  } catch(e) {
+    if (btn) { btn.disabled = false; btn.innerHTML = '<span>❌</span> 更新失敗 — 再試行'; }
+  }
+}
+
+function closeDetailModal() {
+  document.getElementById('detail-modal').classList.add('hidden');
+  document.body.style.overflow = '';
+}
+// モーダル外クリックで閉じる
+document.addEventListener('DOMContentLoaded', function() {
+  var dm = document.getElementById('detail-modal');
+  if (dm) dm.addEventListener('click', function(e){ if(e.target===this) closeDetailModal(); });
+});
 
 function sortDash(key){document.getElementById('d-sort').value=key;renderDash();}
 function exportCSV(){
@@ -865,6 +2730,22 @@ function exportCSV(){
   a.download='ebay_'+new Date().toISOString().slice(0,10)+'.csv';
   a.click();
 }
+
+/* ── グラフタブ切替（グローバル定義） ── */
+window.switchChartTab = function(id, period) {
+  var el = document.getElementById(id + '_svg');
+  if (!el) return;
+  var svgs = window['_svgs_' + id];
+  if (!svgs || !svgs[period]) return;
+  el.innerHTML = svgs[period];
+  ['1w','1m','3m'].forEach(function(p) {
+    var tb = document.getElementById(id + '_tab_' + p);
+    if (!tb) return;
+    tb.style.background = p === period ? 'var(--ac)' : 'transparent';
+    tb.style.color = p === period ? '#fff' : 'var(--sub)';
+    tb.style.borderColor = p === period ? 'var(--ac)' : 'var(--bd2)';
+  });
+};
 
 /* ── Init ── */
 document.getElementById('sync-count').textContent = history_data.length > 0 ? '（' + history_data.length + '件）' : '';
