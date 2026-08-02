@@ -919,8 +919,20 @@ footer{text-align:center;font-size:11px;color:var(--mt);padding:1.5rem 1rem;bord
   <div class="card">
     <div class="ctitle">🗂 データ管理</div>
     <div class="cbody">
-      <div style="display:flex;flex-direction:column;gap:8px">
-        <button class="btn" onclick="exportCSV()" style="height:40px;justify-content:flex-start;gap:8px;padding:0 1rem">📤 ダッシュボードをCSV出力</button>
+      <!-- バックアップ・移行 -->
+      <div style="background:rgba(79,142,247,.08);border:1px solid var(--ac-b);border-radius:9px;padding:.7rem .9rem;margin-bottom:.75rem">
+        <div style="font-size:11px;font-weight:700;color:var(--ac);margin-bottom:.4rem">📦 データの引き継ぎ・バックアップ</div>
+        <div style="font-size:11px;color:var(--sub);margin-bottom:.6rem">旧ファイルから新しいブラウザ・デバイスへデータを移行できます</div>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <button class="btn ok" onclick="exportAllData()" style="height:38px;font-size:12px">📤 全データをバックアップ（JSONファイル）</button>
+          <label style="width:100%">
+            <input type="file" id="import-file" accept=".json" onchange="importAllData(this)" style="display:none">
+            <div class="btn" onclick="document.getElementById('import-file').click()" style="height:38px;font-size:12px;display:flex;align-items:center;justify-content:center;cursor:pointer">📥 バックアップから復元（JSONファイル）</div>
+          </label>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <button class="btn" onclick="exportCSV()" style="height:40px;justify-content:flex-start;gap:8px;padding:0 1rem">📊 ダッシュボードをCSV出力</button>
         <button class="btn" onclick="if(confirm('全データを削除しますか？'))clearAll()" style="color:var(--ng);border-color:var(--ng-b);height:40px;justify-content:flex-start;gap:8px;padding:0 1rem">🗑 保存データを全削除</button>
       </div>
     </div>
@@ -2721,6 +2733,64 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function sortDash(key){document.getElementById('d-sort').value=key;renderDash();}
+
+/* ── 全データ バックアップ・復元 ── */
+function exportAllData() {
+  try {
+    const backup = {
+      version: '1.0',
+      exportedAt: new Date().toISOString(),
+      history: history_data,
+      calc_settings: JSON.parse(localStorage.getItem('calc_settings') || '{}'),
+    };
+    // 画像データも含める
+    backup.images = {};
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (k && k.startsWith('img_')) backup.images[k] = localStorage.getItem(k);
+    }
+    const blob = new Blob([JSON.stringify(backup)], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'resale-backup-' + new Date().toISOString().slice(0,10) + '.json';
+    a.click();
+    showToast('✅ ' + history_data.length + '件をバックアップしました');
+  } catch(e) { showToast('❌ エクスポート失敗: ' + e.message); }
+}
+
+function importAllData(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const backup = JSON.parse(e.target.result);
+      if (!backup.version || !Array.isArray(backup.history)) {
+        showToast('❌ 無効なバックアップファイルです'); return;
+      }
+      // 既存データとマージ（IDで重複排除）
+      const existingIds = new Set(history_data.map(d => d.id));
+      const newItems = backup.history.filter(d => !existingIds.has(d.id));
+      history_data = [...newItems, ...history_data];
+      saveToStorage();
+      // 画像データを復元
+      if (backup.images) {
+        Object.entries(backup.images).forEach(([k,v]) => { try { localStorage.setItem(k,v); } catch(e){} });
+      }
+      // 計算設定を復元
+      if (backup.calc_settings && Object.keys(backup.calc_settings).length) {
+        localStorage.setItem('calc_settings', JSON.stringify(backup.calc_settings));
+        loadCalcSettings();
+      }
+      showToast('✅ ' + newItems.length + '件を復元！重複' + (backup.history.length - newItems.length) + '件スキップ');
+      showPage('dash', null);
+      renderDash();
+    } catch(e) { showToast('❌ インポート失敗: ' + e.message); }
+  };
+  reader.readAsText(file);
+  input.value = '';
+}
+
 function exportCSV(){
   if (!history_data.length){alert('データがありません');return;}
   const rows=[['商品名','ランク','利益（円）','利益率%','ROI%','仕入れ価格','eBay価格USD','登録日']];
