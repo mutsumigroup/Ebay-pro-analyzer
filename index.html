@@ -581,31 +581,32 @@ footer{text-align:center;font-size:11px;color:var(--mt);padding:1.5rem 1rem;bord
     <div>
       <div class="card">
         <div class="ctitle">📷 写真から分析</div>
+      <!-- ── 写真から分析（メイン） ── -->
+      <div class="card" style="border:2px solid var(--ac-b)">
+        <div class="ctitle" style="font-size:13px;font-weight:800">📸 写真から分析</div>
         <div class="cbody">
-          <!-- スマホ用カメラ撮影ボタン（スマホのみ表示） -->
-          <div id="camera-btn-wrap" style="display:none;margin-bottom:.6rem">
-            <button class="btn" onclick="openCamera()" style="width:100%;height:48px;font-size:14px;font-weight:700;background:linear-gradient(135deg,var(--ac),var(--pr));color:#fff;border:none;border-radius:12px;display:flex;align-items:center;justify-content:center;gap:8px">
-              📸 カメラで今すぐ撮影して分析
+          <!-- スマホ用カメラボタン -->
+          <div id="camera-btn-wrap" style="display:none;margin-bottom:.75rem">
+            <button onclick="openCamera()" style="width:100%;height:64px;font-size:16px;font-weight:800;background:linear-gradient(135deg,var(--ac),var(--pr));color:#fff;border:none;border-radius:14px;display:flex;align-items:center;justify-content:center;gap:10px;cursor:pointer;box-shadow:0 4px 20px rgba(79,142,247,.3)">
+              📸 カメラで撮影して即分析
             </button>
-            <div style="text-align:center;font-size:10px;color:var(--mt);margin-top:4px">撮影後すぐにAIが自動分析します</div>
+            <div style="text-align:center;font-size:11px;color:var(--mt);margin-top:5px">撮影後すぐにAIが自動分析します</div>
           </div>
 
-          <!-- 隠しカメラinput（capture=environment でリアカメラ起動） -->
           <input type="file" id="camera-input" accept="image/*" capture="environment"
                  onchange="handleCameraCapture(this.files[0])" style="display:none">
 
-          <div id="upload-area" class="upload-area" style="min-height:130px"
-               ondragover="event.preventDefault();event.stopPropagation();this.classList.add('drag')"
-               ondragleave="event.stopPropagation();this.classList.remove('drag')"
+          <!-- アップロードエリア -->
+          <div id="upload-area" class="upload-area" style="min-height:150px"
+               ondragover="event.preventDefault();this.classList.add('drag')"
+               ondragleave="this.classList.remove('drag')"
                ondrop="handleDrop(event)"
                onclick="document.getElementById('file-input').click()">
-            <input type="file" accept="image/*,image/png,image/jpeg,image/webp,image/gif"
-                   onchange="handleFile(this.files[0])" id="file-input"
-                   style="display:none">
+            <input type="file" accept="image/*" onchange="handleFile(this.files[0])" id="file-input" style="display:none">
             <div id="up-placeholder">
-              <div style="font-size:32px;margin-bottom:6px">🖼️</div>
-              <div style="font-size:13px;font-weight:700;margin-bottom:3px">写真をアップロード</div>
-              <div style="font-size:11px;color:var(--sub)">クリックでファイル選択 / ドラッグ＆ドロップ</div>
+              <div style="font-size:36px;margin-bottom:6px">🖼️</div>
+              <div style="font-size:13px;font-weight:700;margin-bottom:3px">写真をタップして選択</div>
+              <div style="font-size:11px;color:var(--sub)">またはドラッグ＆ドロップ</div>
             </div>
             <div id="up-preview" class="hidden" onclick="event.stopPropagation()">
               <div class="img-wrap">
@@ -614,61 +615,14 @@ footer{text-align:center;font-size:11px;color:var(--mt);padding:1.5rem 1rem;bord
               </div>
             </div>
           </div>
-          <button class="btn primary" id="analyze-photo-btn" onclick="analyzePhoto()" disabled style="width:100%;margin-top:.6rem;height:44px;font-size:13px">🔍 AIで商品を識別・分析</button>
-        </div>
-      </div>
 
-      <div class="card">
-        <div class="ctitle">🔗 URLから分析</div>
-        <div class="cbody">
-
-          <!-- スニダン専用ボックス -->
-          <div style="background:rgba(167,139,250,.08);border:1px solid var(--pr-b);border-radius:9px;padding:.65rem .85rem;margin-bottom:.75rem">
-            <div style="font-size:11px;font-weight:700;color:var(--pr);margin-bottom:.4rem">👟 スニダンURLを貼って分析（精度UP）</div>
-            <div style="font-size:11px;color:var(--sub);margin-bottom:.5rem">スニダンの商品ページURLを貼るだけで、実売相場をもとにAIが高精度分析します</div>
-            <div style="font-size:10px;color:var(--mt);margin-bottom:.5rem">① スニダンで商品を検索 → ② URLをコピー → ③ 下に貼り付けて分析ボタン</div>
-            <div class="frow" style="margin-bottom:.4rem">
-              <input type="url" id="snkr-url-input" placeholder="https://snkrdunk.com/sneakers/..." style="flex:1;font-size:12px" oninput="onSnkrUrlInput()">
-              <button class="btn sm" onclick="openSnkrUrl()" title="URLを開く">↗</button>
-            </div>
-            <div id="snkr-url-hint" class="hidden" style="font-size:10px;color:var(--pr);margin-bottom:.4rem">✓ スニダンURLを検出しました</div>
-            <button class="btn" onclick="analyzeSnkrUrl()" id="snkr-analyze-btn" disabled style="width:100%;background:var(--pr);color:#fff;border-color:var(--pr);height:38px;font-size:12px;font-weight:700">👟 スニダン相場で分析</button>
+          <button class="btn primary" id="analyze-photo-btn" onclick="analyzePhoto()" disabled
+                  style="width:100%;margin-top:.75rem;height:52px;font-size:15px;font-weight:800;border-radius:14px">
+            🔍 AIで相場・状態・売却タイミングを分析
+          </button>
+          <div style="text-align:center;font-size:10px;color:var(--mt);margin-top:6px">
+            eBay・スニダン・フリマの相場をAIが自動推定します
           </div>
-
-          <!-- eBay Sold URLクイック生成 -->
-          <div style="background:var(--ac-bg);border:1px solid var(--ac-b);border-radius:9px;padding:.65rem .85rem;margin-bottom:.75rem">
-            <div style="font-size:11px;font-weight:700;color:var(--ac);margin-bottom:.4rem">⚡ eBay実売データ取得</div>
-            <div style="font-size:11px;color:var(--sub);margin-bottom:.5rem">商品名を入れてeBayの落札済みURLを自動生成 → 実売相場で分析精度UP</div>
-            <div class="frow" style="margin-bottom:.4rem">
-              <input type="text" id="ebay-kw-input" placeholder="例: One Piece Luffy ST21 SEC" style="flex:1;font-size:12px">
-              <button class="btn sm primary" onclick="generateEbaySoldUrl()">🔍 生成</button>
-            </div>
-            <div id="ebay-sold-url-wrap" class="hidden">
-              <div style="font-size:10px;color:var(--sub);margin-bottom:3px">生成されたURL（クリックで確認・そのまま分析可）:</div>
-              <div style="display:flex;gap:5px;align-items:center">
-                <div id="ebay-sold-url-display" style="font-size:10px;color:var(--ac);background:var(--sf2);border:1px solid var(--bd2);border-radius:6px;padding:4px 7px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer" onclick="openEbaySoldUrl()"></div>
-                <button class="btn sm" onclick="analyzeEbaySoldUrl()" style="background:var(--ok);color:#fff;border-color:var(--ok);white-space:nowrap">📊 分析</button>
-              </div>
-            </div>
-          </div>
-
-          <div style="font-size:10px;font-weight:600;color:var(--mt);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.5rem">その他のURLを貼り付け</div>
-          <div class="url-tabs">
-            <button class="url-tab active" onclick="setUrlPh('mercari',this)">メルカリ</button>
-            <button class="url-tab" onclick="setUrlPh('yahoo',this)">ヤフオク</button>
-            <button class="url-tab" onclick="setUrlPh('rakuma',this)">ラクマ</button>
-            <button class="url-tab" onclick="setUrlPh('ebay',this)">eBay</button>
-            <button class="url-tab" onclick="setUrlPh('ebaySold',this)" style="background:rgba(34,201,142,.15);color:var(--ok);border-color:var(--ok-b)">eBay落札済み</button>
-          </div>
-          <div class="frow" style="margin-bottom:.6rem">
-            <input type="url" id="url-input" placeholder="https://jp.mercari.com/item/..." style="flex:1;font-size:12px" oninput="onUrlInput()">
-            <button class="btn sm" onclick="openUrl()">↗</button>
-          </div>
-          <div class="f" style="margin-bottom:.6rem">
-            <div class="lbl">または商品名・キーワード</div>
-            <input type="text" id="kw-input" placeholder="Sony WH-1000XM5 ヘッドフォン">
-          </div>
-          <button class="btn ok" onclick="analyzeByUrl()" style="width:100%;height:42px;font-size:13px">📊 相場を分析</button>
         </div>
       </div>
 
