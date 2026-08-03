@@ -1527,90 +1527,115 @@ async function claudeAPI(messages, max_tokens) {
 }
 
 function buildPrompt(ctx, hasImage) {
+  const now = new Date().toISOString();
   const json = JSON.stringify({
-    // ── 商品識別 ──
+    // ── 商品識別（必須：カード名・番号・レアリティを正確に） ──
     product_name: "商品名(英語)",
     product_name_ja: "商品名(日本語)",
     brand: "ブランド",
-    model: "型番・カード番号",
-    category: "カテゴリ",
-    rarity: "レアリティ(SEC/SAR/SR/R等)",
-    tags: ["特徴1","特徴2"],
+    card_number: "カード番号(例:OP10-118)",
+    set_name: "弾名(例:Royal Blood)",
+    rarity: "レアリティ(SEC/SAR/SR/R/UC/C等)",
+    tags: ["特徴"],
     confidence: 0.85,
+    analyzed_at: now,
 
-    // ── Market Price Engine: Raw（素体）──
-    // eBay: 過去30日の実際の落札済み価格のみ使用（出品中価格は除外）
-    raw_ebay: {
-      sold_avg_usd: 0,       // 落札済み平均（中央値ベース）
-      sold_median_usd: 0,    // 中央値
-      sold_min_usd: 0,       // 最安落札
-      sold_max_usd: 0,       // 最高落札
-      sold_30days: 0,        // 過去30日の落札件数
-      sold_90days: 0,        // 過去90日の落札件数
-      confidence_pct: 0      // 信頼度(0-100)
-    },
-    // スニダン: 販売済みデータのみ（「売り切れ」「購入済み」価格）
-    raw_snkrdunk: {
-      sold_avg_jpy: 0,       // 販売済み平均
-      sold_median_jpy: 0,    // 中央値
-      sold_min_jpy: 0,
-      sold_max_jpy: 0,
-      sold_30days: 0,
-      confidence_pct: 0
-    },
-    // フリマ（メルカリ・ラクマ）: 「売れた」商品のみ（出品中除外）
-    raw_flea: {
-      sold_avg_jpy: 0,       // 販売済み平均
-      sold_median_jpy: 0,    // 中央値
-      sold_min_jpy: 0,
-      sold_max_jpy: 0,
-      sold_30days: 0,
-      confidence_pct: 0
+    // ── ① Raw（素体）各市場の独立価格 ──
+    // 【重要】各市場を独立して推定。混在・平均化厳禁
+    // 販売済み成約価格のみ使用。出品中価格は絶対に使わない
+    // 異常値（中央値の2.5倍以上・0.4倍以下）は除外
+    raw: {
+      ebay: {
+        price_jpy: 0,         // 成約価格中央値（JPY換算）
+        price_usd: 0,         // 成約価格中央値（USD）
+        price_min_jpy: 0,     // 最安成約価格
+        price_max_jpy: 0,     // 最高成約価格
+        sold_30d: 0,          // 過去30日成約件数
+        sold_90d: 0,          // 過去90日成約件数
+        confidence_pct: 0,    // 信頼度(0-100)
+        last_sold_hours: 0    // 最終成約からの経過時間
+      },
+      flea: {
+        price_jpy: 0,         // メルカリ・ラクマ成約価格中央値
+        price_min_jpy: 0,
+        price_max_jpy: 0,
+        sold_30d: 0,
+        sold_90d: 0,
+        confidence_pct: 0,
+        last_sold_hours: 0
+      },
+      snkrdunk: {
+        price_jpy: 0,         // スニダン成約価格中央値
+        price_min_jpy: 0,
+        price_max_jpy: 0,
+        sold_30d: 0,
+        sold_90d: 0,
+        confidence_pct: 0,
+        last_sold_hours: 0
+      }
     },
 
-    // ── 統合Market Price（加重平均）──
-    // 計算式: eBay×40% + スニダン×35% + フリマ×25%（JPY換算）
-    // 異常値除外後の中央値ベース
-    market_price_jpy: 0,      // 統合市場価格（円）
-    market_confidence_pct: 0, // 総合信頼度(0-100)
-    market_stars: 4,          // 信頼度★(1-5)
-    price_data_count: 0,      // 使用した価格データ件数
-
-    // ── PSA10（完全別市場）──
+    // ── ② PSA10（完全別市場・素体とは別に独立推定）──
     psa10: {
-      sold_avg_usd: 0,
-      sold_median_usd: 0,
-      sold_min_usd: 0,
-      sold_max_usd: 0,
-      sold_30days: 0,
-      sold_avg_jpy: 0,
-      confidence_pct: 0,
-      gem_rate_pct: 0,         // PSA10取得期待率(%)
-      expected_profit_jpy: 0   // PSA提出後の期待利益（費用差し引き後）
+      ebay: {
+        price_jpy: 0,
+        price_usd: 0,
+        price_min_jpy: 0,
+        price_max_jpy: 0,
+        sold_30d: 0,
+        confidence_pct: 0,
+        last_sold_hours: 0
+      },
+      flea: {
+        price_jpy: 0,
+        price_min_jpy: 0,
+        price_max_jpy: 0,
+        sold_30d: 0,
+        confidence_pct: 0,
+        last_sold_hours: 0
+      },
+      snkrdunk: {
+        price_jpy: 0,
+        price_min_jpy: 0,
+        price_max_jpy: 0,
+        sold_30d: 0,
+        confidence_pct: 0,
+        last_sold_hours: 0
+      },
+      gem_rate_pct: 0,          // PSA10取得期待率(%)
+      grading_cost_jpy: 5000,   // グレーディング費用（目安）
+      expected_profit_jpy: 0    // PSA提出後期待利益（費用差引後）
     },
 
-    // ── トレンド分析 ──
+    // ── ③ トレンド分析 ──
     trend: {
-      direction: "rising|stable|falling",  // 現在のトレンド
-      change_30d_pct: 0,   // 30日前比 変動率(%)
-      change_90d_pct: 0,   // 90日前比 変動率(%)
-      price_30d_ago_jpy: 0,
-      price_90d_ago_jpy: 0,
-      volume_trend: "increasing|stable|decreasing", // 販売件数の推移
-      reason: "トレンドの理由(40字以内)"
+      direction: "rising|stable|falling",
+      change_30d_pct: 0,        // 30日前比 変動率(%)
+      change_90d_pct: 0,        // 90日前比 変動率(%)
+      change_1y_pct: 0,         // 1年前比 変動率(%)
+      price_7d_ago_jpy: 0,      // 7日前の価格
+      price_30d_ago_jpy: 0,     // 30日前の価格
+      price_90d_ago_jpy: 0,     // 90日前の価格
+      price_1y_ago_jpy: 0,      // 1年前の価格
+      volume_trend: "increasing|stable|decreasing",
+      best_market: "ebay|flea|snkrdunk",  // 現在最高価格の市場
+      reason: "トレンド理由(40字以内)"
     },
 
-    // ── 売り時AI判定 ──
-    timing: {
+    // ── ④ AI売却アドバイス ──
+    advice: {
       recommendation: "sell_now|submit_psa|hold|pass",
-      sell_now_score: 0,      // 今売る推奨度(0-100)
-      submit_psa_score: 0,    // PSA提出推奨度(0-100)
-      hold_score: 0,          // 保有継続推奨度(0-100)
-      reasoning: "判断理由(60字以内)",
-      alert: ""               // 特別アラート（過熱・暴落等）
+      best_platform: "ebay|flea|snkrdunk",
+      best_price_jpy: 0,
+      sell_now_score: 0,
+      submit_psa_score: 0,
+      hold_score: 0,
+      summary: "一言アドバイス(50字以内)",
+      detail: ["アドバイス詳細1","アドバイス詳細2"],
+      alert: ""    // 過熱・暴落などの特別アラート
     },
 
-    // ── 商品状態 ──
+    // ── ⑤ 商品状態 ──
     condition_rank: "S|A|B|C|D",
     condition_scratch: "なし|軽微|あり|多数",
     condition_stain: "なし|軽微|あり|多数",
@@ -1618,35 +1643,37 @@ function buildPrompt(ctx, hasImage) {
     condition_accessories: "完備|一部欠品|なし|不明",
     condition_comment: "状態コメント(50字以内)",
 
-    // ── 仕入れ計算 ──
-    sell_platform: "ebay|snkrdunk|flea",
-    sell_platform_reason: "推奨販売先の理由(40字以内)",
+    // ── ⑥ 仕入れ計算 ──
     strategy_title: "戦略タイトル(15字以内)",
     strategy_steps: ["ステップ1","ステップ2","ステップ3"]
   });
 
-  const imgInstructions = hasImage ? `
-【画像分析の必須事項】
-1. カード名・番号・レアリティ・弾名を正確に特定
-2. 商品状態（傷・汚れ・光沢）を詳しく判定
-3. 全価格フィールドに必ず推定値を入力（0は不可）
-4. 重要: 「販売済み価格」のみ使用。出品中価格は除外
-5. 異常値（中央値の3倍以上）は除外して計算
-6. market_price_jpyは加重平均: eBay×40% + スニダン×35% + フリマ×25%
-7. market_confidence_pctはデータ件数・ばらつき・鮮度で算出` : "※画像なし。カテゴリ・商品名から推定。";
+  const imgInst = hasImage ? `
+【画像分析 必須事項】
+1. カード名・番号・レアリティ・弾名を正確に特定（例: OP10-118 SEC ヤマト）
+2. 商品状態（傷・光沢・汚れ）を詳しく判定
+3. 各市場（raw.ebay / raw.flea / raw.snkrdunk）を独立して推定（混在・平均化禁止）
+4. PSA10は psa10.ebay / psa10.flea / psa10.snkrdunk として完全別市場で推定
+5. 販売済み成約価格のみ使用（出品中は絶対除外）
+6. 異常値除外後の中央値を price_jpy に設定
+7. last_sold_hours: 推定される最終成約からの経過時間（時間単位）
+8. confidence_pct: 件数・ばらつき・鮮度から算出（件数10件以上=高信頼）
+9. 全フィールドに必ず0以外の推定値を入力（カードゲーム以外はpsa10=0可）` 
+  : "※画像なし。商品名・カード番号から各市場価格を推定してください。";
 
-  return `あなたはトレカ・スニーカー転売の「市場価格エンジン（Market Price Engine）」です。
+  return `あなたはトレカ・コレクター市場の「Market Price Engine」です。
+カード名・番号・レアリティを正確に特定し、市場ごとの独立した価格を推定してください。
 
-【最重要ルール】
-- 出品価格（売れていない価格）は絶対に使わない
-- 販売済み・落札済みデータのみ使用
-- 中央値（Median）を基準に異常値を除外
-- 日本語カードはスニダン・フリマを重視（eBayより乖離が少ない）
-- PSA10は素体と完全に別市場として扱う
-- 信頼度はデータ件数・価格ばらつき・最終売買日から算出
+【絶対ルール】
+- 出品中価格（売れていない価格）は使わない。販売済み成約価格のみ
+- 異常値（中央値の2.5倍以上・0.4倍以下）は除外して中央値を算出
+- 日本語カードは raw.flea（フリマ）・raw.snkrdunk（スニダン）を重視
+- PSA10と素体は完全に別市場として独立推定（絶対に混在させない）
+- 各市場の価格は独立して推定（3市場の平均を出すことは禁止）
+- カード番号・レアリティが異なる商品の価格を混在させない
 
 ${ctx}
-${imgInstructions}
+${imgInst}
 
 以下のJSONのみ返してください（前後説明・マークダウン不要）:
 ${json}`;
@@ -1773,190 +1800,226 @@ function renderResult(info) {
   lastInfo = info;
   const fx  = n('a-fx') || 155;
   const bp  = n('a-buy');
+  const analyzedAt = new Date();
 
-  // ── 新Market Price Engineから値を取得 ──
-  const re   = info.raw_ebay   || {};
-  const rs   = info.raw_snkrdunk || {};
-  const rf   = info.raw_flea   || {};
-  const psa  = info.psa10      || {};
-  const tr   = info.trend      || {};
-  const tim  = info.timing     || {};
+  // ── 新データ構造から値を取得 ──
+  const raw  = info.raw  || {};
+  const re   = raw.ebay  || info.raw_ebay || {};
+  const rf   = raw.flea  || info.raw_flea || {};
+  const rs   = raw.snkrdunk || info.raw_snkrdunk || {};
+  const psaD = info.psa10 || {};
+  const psaE = psaD.ebay || {};
+  const psaF = psaD.flea || {};
+  const psaS = psaD.snkrdunk || {};
+  const tr   = info.trend   || {};
+  const adv  = info.advice  || info.timing || {};
 
-  // 統合市場価格
-  const mp   = info.market_price_jpy || 0;
-  const conf = info.market_confidence_pct || 0;
-  const stars= info.market_stars || 3;
-  const dataCount = info.price_data_count || 0;
+  // 各市場価格（新構造 → 旧構造フォールバック）
+  const ebayJpy  = re.price_jpy  || (re.sold_median_usd||re.sold_avg_usd||0)*fx;
+  const fleaJpy  = rf.price_jpy  || rf.sold_median_jpy || rf.sold_avg_jpy || 0;
+  const snkrJpy  = rs.price_jpy  || rs.sold_median_jpy || rs.sold_avg_jpy || 0;
+  const ebayConf = re.confidence_pct || 0;
+  const fleaConf = rf.confidence_pct || 0;
+  const snkrConf = rs.confidence_pct || 0;
+  const ebaySold = re.sold_30d || re.sold_30days || 0;
+  const fleaSold = rf.sold_30d || rf.sold_30days || 0;
+  const snkrSold = rs.sold_30d || rs.sold_30days || 0;
+  const ebayLastH = re.last_sold_hours || null;
+  const fleaLastH = rf.last_sold_hours || null;
+  const snkrLastH = rs.last_sold_hours || null;
 
-  // 各市場の販売済み中央値
-  const ebayMedianJpy  = (re.sold_median_usd  || re.sold_avg_usd  || 0) * fx;
-  const snkrMedianJpy  = rs.sold_median_jpy   || rs.sold_avg_jpy  || 0;
-  const fleaMedianJpy  = rf.sold_median_jpy   || rf.sold_avg_jpy  || 0;
-  const psa10MedianJpy = (psa.sold_median_usd || psa.sold_avg_usd || 0) * fx;
+  // PSA10 各市場価格
+  const psaEbayJpy = psaE.price_jpy || (psaE.price_usd||0)*fx || (psaD.sold_median_usd||psaD.sold_avg_usd||0)*fx;
+  const psaFleaJpy = psaF.price_jpy || 0;
+  const psaSnkrJpy = psaS.price_jpy || 0;
+  const hasPsa = psaEbayJpy > 0 || psaFleaJpy > 0 || psaSnkrJpy > 0;
 
-  // 利益計算（市場価格ベース）
-  const ebayFee  = n('a-fee') || 13.25;
-  const intlShip = n('a-ship') || 0;
-  const other    = n('a-other') || 0;
-  const cost     = bp + ebayMedianJpy*(ebayFee/100) + intlShip*fx + other;
-  const profit   = mp > 0 ? mp - cost : ebayMedianJpy - cost;
-  const margin   = (mp||ebayMedianJpy) > 0 ? profit/(mp||ebayMedianJpy)*100 : 0;
-  const roi      = bp > 0 ? profit/bp*100 : 0;
-
-  // ランク
-  let rank, action;
-  if (margin>=30 && profit>=5000) { rank='S'; action='buy'; }
-  else if (margin>=20 && profit>=3000) { rank='A'; action='buy'; }
-  else if (profit>0 || !bp) { rank='B'; action='watch'; }
-  else { rank='C'; action='pass'; }
-
-  const actMap = {
-    buy:   {l:'▶ 仕入れる',   c:'buy'},
-    watch: {l:'⏳ 様子を見る', c:'watch'},
-    pass:  {l:'✕ 見送る',     c:'pass'}
-  };
-
-  // 売り時判定
-  const timRec = tim.recommendation || 'sell_now';
-  const timMap = {
-    sell_now:    { icon:'🟢', label:'今すぐ売る', cls:'recommended' },
-    submit_psa:  { icon:'🏆', label:'PSAに提出', cls:'recommended' },
-    hold:        { icon:'🟡', label:'様子を見る', cls:'warn' },
-    pass:        { icon:'🔴', label:'スルー',     cls:'negative' }
-  };
-  const timResult = timMap[timRec] || timMap.sell_now;
+  // 最高価格の市場
+  const prices = [
+    {label:'🌏 eBay', jpy:ebayJpy},
+    {label:'📱 フリマ', jpy:fleaJpy},
+    {label:'👟 スニダン', jpy:snkrJpy}
+  ].filter(p=>p.jpy>0);
+  const bestRaw = prices.length > 0 ? prices.reduce((a,b)=>a.jpy>b.jpy?a:b) : null;
 
   // トレンド
-  const trendDir  = tr.direction || info.market_trend || 'stable';
+  const trendDir  = tr.direction || 'stable';
   const trendIcon = {rising:'📈', stable:'➡️', falling:'📉'}[trendDir] || '➡️';
-  const trendLbl2 = {rising:'上昇傾向', stable:'安定', falling:'下落傾向'}[trendDir] || '安定';
-  const chg30  = tr.change_30d_pct || 0;
-  const chg90  = tr.change_90d_pct || 0;
+  const trendLbl3 = {rising:'上昇傾向', stable:'安定', falling:'下落傾向'}[trendDir] || '安定';
+  const chg30 = tr.change_30d_pct || 0;
+  const chg1y = tr.change_1y_pct  || 0;
 
-  // ★表示
-  const starsHtml = '★'.repeat(Math.min(5,Math.max(1,stars))) + '☆'.repeat(Math.max(0,5-stars));
+  // AI売却アドバイス
+  const rec = adv.recommendation || adv.recommendation || 'sell_now';
+  const recMap = {
+    sell_now:   {icon:'🟢', label:'今すぐ売る', cls:'ok'},
+    submit_psa: {icon:'🏆', label:'PSAに提出して売る', cls:'wn'},
+    hold:       {icon:'🟡', label:'様子を見る', cls:'ac'},
+    pass:       {icon:'🔴', label:'見送り推奨', cls:'ng'}
+  };
+  const recResult = recMap[rec] || recMap.sell_now;
 
-  // 商品状態
-  const condRank = info.condition_rank || 'B';
+  // 利益計算
+  const bestPrice = bestRaw ? bestRaw.jpy : ebayJpy;
+  const ebayFee   = n('a-fee') || 13.25;
+  const intlShip  = n('a-ship') || 0;
+  const other     = n('a-other') || 0;
+  const cost   = bp + bestPrice*(ebayFee/100) + intlShip*fx + other;
+  const profit = bestPrice > 0 ? bestPrice - cost : 0;
+  const margin = bestPrice > 0 ? profit/bestPrice*100 : 0;
+  const roi    = bp > 0 ? profit/bp*100 : 0;
+
+  // ランク
+  let rank;
+  if (margin>=30 && profit>=5000) rank='S';
+  else if (margin>=20 && profit>=3000) rank='A';
+  else if (profit>0 || !bp) rank='B';
+  else rank='C';
+
+  // 更新日時フォーマット
+  function lastUpdated(hours) {
+    if (!hours && hours !== 0) return '推計値';
+    if (hours < 1) return '1時間以内更新';
+    if (hours < 24) return Math.round(hours) + '時間前更新';
+    return Math.round(hours/24) + '日前更新';
+  }
+
+  // 価格行HTML
+  function priceRow(icon, label, jpy, sold30, conf, lastH, isMax) {
+    const hasData = jpy > 0;
+    return '<div style="display:flex;align-items:center;padding:.75rem .9rem;' +
+      (isMax ? 'background:rgba(34,201,142,.08);border:1.5px solid var(--ok-b);' : 'background:var(--sf2);border:1px solid var(--bd);') +
+      'border-radius:10px;margin-bottom:6px">' +
+      '<div style="font-size:18px;margin-right:10px;flex-shrink:0">' + icon + '</div>' +
+      '<div style="flex:1">' +
+        '<div style="font-size:11px;font-weight:700;color:var(--sub)">' + label + (isMax ? ' <span style="font-size:9px;color:var(--ok);margin-left:4px">◀ 最高値</span>' : '') + '</div>' +
+        '<div style="display:flex;align-items:baseline;gap:6px;margin-top:1px">' +
+          '<div style="font-size:' + (hasData?'20':'14') + 'px;font-weight:900;color:' + (hasData?'var(--tx)':'var(--mt)') + '">' +
+            (hasData ? '¥'+jpy.toLocaleString() : 'データ不足') +
+          '</div>' +
+          (lastH !== null && hasData ? '<div style="font-size:9px;color:var(--mt)">' + lastUpdated(lastH) + '</div>' : '') +
+        '</div>' +
+      '</div>' +
+      (hasData ? '<div style="text-align:right;flex-shrink:0">' +
+        '<div style="font-size:10px;color:var(--sub)">販売件数</div>' +
+        '<div style="font-size:13px;font-weight:700;color:var(--tx)">' + (sold30||0) + '件</div>' +
+        '<div style="font-size:9px;color:' + (conf>=80?'var(--ok)':conf>=60?'var(--wn)':'var(--ng)') + ';margin-top:1px">信頼度 ' + (conf||0) + '%</div>' +
+      '</div>' : '') +
+    '</div>';
+  }
+
+  // 推計バッジ
+  const estimBadge = '<span style="font-size:9px;background:rgba(139,144,168,.15);color:var(--mt);padding:1px 6px;border-radius:4px;font-weight:600;vertical-align:middle">AI推計値</span>';
 
   /* ── HTML構築 ── */
   const html =
 
-    /* ── ① Market Price Card（最上部・最重要） ── */
-    '<div style="background:linear-gradient(135deg,rgba(79,142,247,.12),rgba(79,142,247,.04));border:2px solid var(--ac-b);border-radius:16px;padding:1.25rem;margin-bottom:.9rem">' +
-      '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.9rem">' +
-        '<div>' +
-          '<div style="font-size:10px;font-weight:700;color:var(--ac);text-transform:uppercase;letter-spacing:.08em;margin-bottom:3px">Market Price Engine</div>' +
-          '<div style="font-size:11px;color:var(--sub)">販売済みデータのみ使用 · 異常値除外済み</div>' +
-        '</div>' +
-        '<div style="text-align:right">' +
-          '<div style="font-size:10px;color:var(--sub)">信頼度</div>' +
-          '<div style="font-size:14px;font-weight:800;color:' + (conf>=80?'var(--ok)':conf>=60?'var(--wn)':'var(--ng)') + '">' + conf + '%</div>' +
-        '</div>' +
-      '</div>' +
-
-      /* メイン価格 */
-      '<div style="text-align:center;padding:.9rem;background:rgba(0,0,0,.25);border-radius:12px;margin-bottom:.9rem">' +
-        '<div style="font-size:11px;color:var(--sub);margin-bottom:4px">市場価格（加重平均）</div>' +
-        '<div style="font-size:36px;font-weight:900;color:var(--tx);letter-spacing:-.02em">' + (mp>0 ? '¥'+mp.toLocaleString() : '—') + '</div>' +
-        '<div style="font-size:13px;color:var(--ac);margin-top:3px">' + starsHtml + '</div>' +
-        '<div style="font-size:11px;color:var(--mt);margin-top:4px">過去30日 販売件数: <strong style="color:var(--tx)">' + dataCount + '件</strong></div>' +
-      '</div>' +
-
-      /* 各市場の販売済み中央値 */
-      '<div style="font-size:10px;font-weight:700;color:var(--mt);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.5rem">各市場の販売済み中央値（出品価格除外）</div>' +
-      '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:.9rem">' +
-        mktCell('🌏 eBay', ebayMedianJpy, re.sold_30days, re.confidence_pct, '×40%') +
-        mktCell('👟 スニダン', snkrMedianJpy, rs.sold_30days, rs.confidence_pct, '×35%') +
-        mktCell('📱 フリマ', fleaMedianJpy, rf.sold_30days, rf.confidence_pct, '×25%') +
-      '</div>' +
-
-      /* トレンド */
-      '<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px">' +
-        '<div style="display:flex;align-items:center;gap:6px">' +
-          '<span style="font-size:16px">' + trendIcon + '</span>' +
-          '<span style="font-size:12px;font-weight:700;color:var(--tx)">' + trendLbl2 + '</span>' +
-          (chg30!==0 ? '<span style="font-size:11px;padding:2px 7px;border-radius:10px;background:' + (chg30>0?'rgba(34,201,142,.15)':'rgba(240,82,79,.15)') + ';color:' + (chg30>0?'var(--ok)':'var(--ng)') + '">' + (chg30>0?'+':'') + chg30.toFixed(1) + '% (30日)</span>' : '') +
-          (chg90!==0 ? '<span style="font-size:11px;padding:2px 7px;border-radius:10px;background:rgba(139,144,168,.1);color:var(--sub)">' + (chg90>0?'+':'') + chg90.toFixed(1) + '% (90日)</span>' : '') +
-        '</div>' +
-        (tr.reason ? '<div style="font-size:10px;color:var(--sub)">' + esc(tr.reason) + '</div>' : '') +
-      '</div>' +
-    '</div>' +
-
-    /* ── ② 売り時AI判定 ── */
-    '<div style="border-radius:13px;padding:1rem;margin-bottom:.9rem;border:2px solid;' +
-      (timRec==='sell_now'?'background:rgba(34,201,142,.08);border-color:var(--ok-b)':
-       timRec==='submit_psa'?'background:rgba(245,166,35,.08);border-color:var(--wn-b)':
-       timRec==='hold'?'background:rgba(79,142,247,.08);border-color:var(--ac-b)':
-       'background:rgba(240,82,79,.08);border-color:var(--ng-b)') + '">' +
-      '<div style="font-size:10px;font-weight:700;color:var(--mt);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.6rem">売り時AI</div>' +
-      '<div style="display:flex;align-items:center;gap:12px;margin-bottom:.6rem">' +
-        '<div style="font-size:32px">' + timResult.icon + '</div>' +
-        '<div>' +
-          '<div style="font-size:16px;font-weight:800;color:var(--tx)">' + timResult.label + '</div>' +
-          '<div style="font-size:11px;color:var(--sub);margin-top:2px">' + esc(tim.reasoning||'') + '</div>' +
-        '</div>' +
-      '</div>' +
-      (tim.alert ? '<div style="font-size:11px;padding:.5rem .75rem;background:rgba(245,166,35,.15);border-radius:8px;border-left:3px solid var(--wn);color:var(--wn)">⚠️ ' + esc(tim.alert) + '</div>' : '') +
-      '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-top:.75rem">' +
-        timScore('🟢 即売り', tim.sell_now_score||0) +
-        timScore('🏆 PSA提出', tim.submit_psa_score||0) +
-        timScore('🟡 様子見', tim.hold_score||0) +
-      '</div>' +
-    '</div>' +
-
-    /* ── ③ PSA10（別市場として） ── */
-    (psa10MedianJpy > 0 ?
-    '<div class="card" style="border-color:var(--wn-b)">' +
-      '<div class="ctitle" style="color:var(--wn)">🏆 PSA10 — 別市場分析</div>' +
-      '<div class="cbody">' +
-        '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:.75rem">' +
-          '<div class="metric"><div class="ml">PSA10 中央値</div><div class="mv wn">¥' + psa10MedianJpy.toLocaleString() + '</div><div class="ms">過去30日: ' + (psa.sold_30days||0) + '件</div></div>' +
-          '<div class="metric"><div class="ml">PSA10取得期待率</div><div class="mv ' + ((psa.gem_rate_pct||0)>=70?'ok':'wn') + '">' + (psa.gem_rate_pct||0) + '%</div></div>' +
-          '<div class="metric"><div class="ml">最安落札</div><div class="mv sub">¥' + ((psa.sold_min_usd||0)*fx).toLocaleString() + '</div></div>' +
-          '<div class="metric"><div class="ml">最高落札</div><div class="mv ok">¥' + ((psa.sold_max_usd||0)*fx).toLocaleString() + '</div></div>' +
-        '</div>' +
-        (psa.expected_profit_jpy ?
-          '<div style="padding:.6rem .85rem;background:rgba(245,166,35,.1);border:1px solid var(--wn-b);border-radius:9px;font-size:12px">' +
-          '💡 PSA提出後の期待利益（費用差し引き後）: <strong style="color:var(--wn)">+¥' + psa.expected_profit_jpy.toLocaleString() + '</strong>' +
-          '</div>' : '') +
-      '</div>' +
-    '</div>' : '') +
-
-    /* ── ④ 商品識別 ── */
-    '<div class="prod-card">' +
+    /* ── 商品識別カード ── */
+    '<div class="prod-card" style="margin-bottom:.75rem">' +
       '<div style="display:flex;align-items:flex-start;gap:11px">' +
-        (currentImage ? '<img src="' + currentImage + '" class="prod-thumb" alt="商品画像">' : '') +
+        (currentImage ? '<img src="' + currentImage + '" class="prod-thumb" alt="商品">' : '') +
         '<div style="flex:1;min-width:0">' +
           '<div class="prod-name" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + esc(info.product_name_ja||info.product_name||'商品名不明') + '</div>' +
-          '<div style="font-size:11px;color:var(--sub);margin-bottom:5px">' + esc(info.model||'') + (info.rarity?' · '+esc(info.rarity):'') + '</div>' +
+          '<div style="font-size:11px;color:var(--sub);margin:.2rem 0 .4rem">' +
+            esc(info.card_number||info.model||'') + (info.rarity?' · <strong style="color:var(--wn)">'+esc(info.rarity)+'</strong>':'') +
+            (info.set_name?' · '+esc(info.set_name):'') +
+          '</div>' +
           '<div class="prod-meta">' +
             (info.tags||[]).map(t=>'<span class="ptag">'+esc(t)+'</span>').join('') +
             (info.brand?'<span class="ptag">🏷 '+esc(info.brand)+'</span>':'') +
           '</div>' +
+          '<div style="font-size:10px;color:var(--mt);margin-top:4px">識別精度: ' + Math.round((info.confidence||0.8)*100) + '% · 分析日時: ' + analyzedAt.toLocaleString('ja-JP') + '</div>' +
         '</div>' +
         '<div class="rbadge ' + rank + '" style="flex-shrink:0">' + rank + '</div>' +
       '</div>' +
-      (info.confidence?'<div style="font-size:10px;color:var(--mt);margin-top:5px">識別精度: '+Math.round(info.confidence*100)+'%</div>':'') +
     '</div>' +
 
-    /* ── ⑤ 仕入れ利益計算 ── */
-    '<div class="mrow">' +
-      '<div class="metric"><div class="ml">市場価格</div><div class="mv ac">' + (mp>0?'¥'+mp.toLocaleString():'—') + '</div></div>' +
-      '<div class="metric"><div class="ml">純利益</div><div class="mv ' + (bp>0?(profit>=0?'ok':'ng'):'dm') + '">' + (bp>0?(profit>=0?'+':'')+fj(profit):'仕入れ入力待ち') + '</div></div>' +
-      '<div class="metric"><div class="ml">利益率</div><div class="mv ' + (margin>=20?'ok':margin>0?'wn':'dm') + '">' + (bp>0?margin.toFixed(1)+'%':'—') + '</div></div>' +
-      '<div class="metric"><div class="ml">ROI</div><div class="mv ' + (roi>=30?'pr':roi>0?'wn':'dm') + '">' + (bp>0?roi.toFixed(1)+'%':'—') + '</div></div>' +
+    /* ── ① 素体販売価格（各市場独立表示） ── */
+    '<div class="card" style="margin-bottom:.75rem">' +
+      '<div class="ctitle">📦 素体のまま販売 ' + estimBadge + '</div>' +
+      '<div class="cbody">' +
+        '<div style="font-size:10px;color:var(--mt);margin-bottom:.6rem">販売済み成約価格（中央値・異常値除外）· 出品中価格は除外</div>' +
+        priceRow('🌏', 'eBay国際（落札済み）', ebayJpy, ebaySold, ebayConf, ebayLastH, bestRaw&&bestRaw.label==='🌏 eBay') +
+        priceRow('📱', 'フリマ（メルカリ・ラクマ）', fleaJpy, fleaSold, fleaConf, fleaLastH, bestRaw&&bestRaw.label==='📱 フリマ') +
+        priceRow('👟', 'スニダン', snkrJpy, snkrSold, snkrConf, snkrLastH, bestRaw&&bestRaw.label==='👟 スニダン') +
+      '</div>' +
+    '</div>' +
+
+    /* ── ② PSA10販売価格（各市場独立・完全別市場） ── */
+    (hasPsa ?
+    '<div class="card" style="margin-bottom:.75rem;border-color:var(--wn-b)">' +
+      '<div class="ctitle" style="color:var(--wn)">🏆 PSA10グレード後に販売 ' + estimBadge + '</div>' +
+      '<div class="cbody">' +
+        '<div style="font-size:10px;color:var(--mt);margin-bottom:.6rem">PSA10取得期待率: <strong style="color:var(--wn)">' + (psaD.gem_rate_pct||0) + '%</strong> · グレーディング費用: 約¥' + (psaD.grading_cost_jpy||5000).toLocaleString() + '</div>' +
+        priceRow('🌏', 'eBay（PSA10後）', psaEbayJpy, psaE.sold_30d||0, psaE.confidence_pct||0, psaE.last_sold_hours||null, false) +
+        priceRow('📱', 'フリマ（PSA10後）', psaFleaJpy, psaF.sold_30d||0, psaF.confidence_pct||0, psaF.last_sold_hours||null, false) +
+        priceRow('👟', 'スニダン（PSA10後）', psaSnkrJpy, psaS.sold_30d||0, psaS.confidence_pct||0, psaS.last_sold_hours||null, false) +
+        (psaD.expected_profit_jpy ?
+          '<div style="padding:.6rem .85rem;background:rgba(245,166,35,.1);border:1px solid var(--wn-b);border-radius:9px;font-size:12px;margin-top:.5rem">' +
+          '💡 PSA提出後の期待利益（グレーディング費用差引後）: <strong style="color:var(--wn)">+¥' + psaD.expected_profit_jpy.toLocaleString() + '</strong>' +
+          '</div>' : '') +
+      '</div>' +
+    '</div>' : '') +
+
+    /* ── ③ AI売却アドバイス ── */
+    '<div class="card" style="margin-bottom:.75rem">' +
+      '<div class="ctitle">🧠 AI売却アドバイス</div>' +
+      '<div class="cbody">' +
+        /* メイン推奨 */
+        '<div style="display:flex;align-items:center;gap:10px;padding:.75rem 1rem;border-radius:11px;border:2px solid;margin-bottom:.75rem;' +
+          (rec==='sell_now'?'background:rgba(34,201,142,.08);border-color:var(--ok-b)':
+           rec==='submit_psa'?'background:rgba(245,166,35,.08);border-color:var(--wn-b)':
+           rec==='hold'?'background:rgba(79,142,247,.08);border-color:var(--ac-b)':
+           'background:rgba(240,82,79,.08);border-color:var(--ng-b)') + '">' +
+          '<div style="font-size:28px">' + recResult.icon + '</div>' +
+          '<div>' +
+            '<div style="font-size:15px;font-weight:800;color:var(--tx)">' + recResult.label + '</div>' +
+            '<div style="font-size:11px;color:var(--sub);margin-top:2px">' + esc(adv.summary||adv.reasoning||'') + '</div>' +
+          '</div>' +
+        '</div>' +
+        /* 詳細アドバイス */
+        '<div style="display:flex;flex-direction:column;gap:5px;margin-bottom:.6rem">' +
+          (bestRaw ? '<div style="font-size:12px;padding:.45rem .7rem;background:var(--ok-bg);border:1px solid var(--ok-b);border-radius:8px;color:var(--ok)">🟢 ' + bestRaw.label + 'が最高価格 ¥' + bestRaw.jpy.toLocaleString() + '</div>' : '') +
+          (psaEbayJpy > 0 && ebayJpy > 0 ? '<div style="font-size:12px;padding:.45rem .7rem;background:rgba(245,166,35,.08);border:1px solid var(--wn-b);border-radius:8px;color:var(--wn)">📈 PSA10へ提出すると最大 +¥' + (Math.max(psaEbayJpy,psaFleaJpy,psaSnkrJpy) - Math.max(ebayJpy,fleaJpy,snkrJpy)).toLocaleString() + '</div>' : '') +
+          (chg30!==0 ? '<div style="font-size:12px;padding:.45rem .7rem;background:' + (chg30>0?'rgba(34,201,142,.08)':'rgba(240,82,79,.08)') + ';border:1px solid ' + (chg30>0?'var(--ok-b)':'var(--ng-b)') + ';border-radius:8px;color:' + (chg30>0?'var(--ok)':'var(--ng)') + '">' + (chg30>0?'📈':'📉') + ' 現在価格は30日平均より ' + (chg30>0?'+':'') + chg30.toFixed(1) + '%</div>' : '') +
+          ((adv.detail||[]).map(d=>'<div style="font-size:12px;padding:.45rem .7rem;background:var(--sf2);border:1px solid var(--bd);border-radius:8px;color:var(--sub)">• ' + esc(d) + '</div>').join('')) +
+          (adv.alert ? '<div style="font-size:12px;padding:.45rem .7rem;background:rgba(245,166,35,.12);border:1px solid var(--wn-b);border-radius:8px;color:var(--wn)">⚠️ ' + esc(adv.alert) + '</div>' : '') +
+        '</div>' +
+        /* スコア3択 */
+        '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px">' +
+          timScore('🟢 即売り', adv.sell_now_score||0) +
+          timScore('🏆 PSA提出', adv.submit_psa_score||0) +
+          timScore('🟡 様子見', adv.hold_score||0) +
+        '</div>' +
+      '</div>' +
+    '</div>' +
+
+    /* ── ④ 利益計算 ── */
+    (bp > 0 ?
+    '<div class="mrow" style="margin-bottom:.75rem">' +
+      '<div class="metric"><div class="ml">最高市場価格</div><div class="mv ac">' + (bestPrice>0?'¥'+bestPrice.toLocaleString():'—') + '</div></div>' +
+      '<div class="metric"><div class="ml">純利益</div><div class="mv ' + (profit>=0?'ok':'ng') + '">' + (profit>=0?'+':'')+fj(profit) + '</div></div>' +
+      '<div class="metric"><div class="ml">利益率</div><div class="mv ' + (margin>=20?'ok':margin>0?'wn':'ng') + '">' + margin.toFixed(1) + '%</div></div>' +
+      '<div class="metric"><div class="ml">ROI</div><div class="mv ' + (roi>=30?'pr':roi>0?'wn':'ng') + '">' + roi.toFixed(1) + '%</div></div>' +
+    '</div>' : '') +
+
+    /* ── ⑤ 価格推移グラフ ── */
+    '<div class="card" style="margin-bottom:.75rem">' +
+      '<div class="ctitle">📊 価格推移グラフ ' + estimBadge + '</div>' +
+      '<div class="cbody">' +
+        buildMarketChart(info, fx) +
+      '</div>' +
     '</div>' +
 
     /* ── ⑥ 商品状態 ── */
-    '<div class="card">' +
+    '<div class="card" style="margin-bottom:.75rem">' +
       '<div class="ctitle">🔍 商品状態</div>' +
       '<div class="cbody">' +
-        '<div style="display:flex;align-items:center;gap:12px;margin-bottom:.75rem">' +
-          '<div class="condition-rank-badge ' + condRank + '">' + condRank + '</div>' +
+        '<div style="display:flex;align-items:center;gap:12px;margin-bottom:.6rem">' +
+          '<div class="condition-rank-badge ' + (info.condition_rank||'B') + '">' + (info.condition_rank||'B') + '</div>' +
           '<div>' +
-            '<div style="font-size:13px;font-weight:700">状態ランク: ' + condRank + '</div>' +
-            '<div style="font-size:11px;color:var(--sub)">' + condRankDesc(condRank) + '</div>' +
+            '<div style="font-size:13px;font-weight:700">状態ランク: ' + (info.condition_rank||'B') + '</div>' +
+            '<div style="font-size:11px;color:var(--sub)">' + condRankDesc(info.condition_rank||'B') + '</div>' +
           '</div>' +
         '</div>' +
         '<div class="cond-items">' +
@@ -1970,18 +2033,19 @@ function renderResult(info) {
     '</div>' +
 
     /* ── ⑦ 売却戦略 ── */
-    '<div class="card">' +
+    (info.strategy_steps&&info.strategy_steps.length ?
+    '<div class="card" style="margin-bottom:.75rem">' +
       '<div class="ctitle">🎯 売却戦略</div>' +
       '<div class="cbody">' +
         '<div class="strategy-card">' +
-          '<div class="strategy-title"><span>🚀</span>' + esc(info.strategy_title||'最適な戦略を選択') + '</div>' +
-          (info.strategy_steps&&info.strategy_steps.length?'<ul class="strategy-steps">'+info.strategy_steps.map(s=>'<li>'+esc(s)+'</li>').join('')+'</ul>':'') +
+          '<div class="strategy-title"><span>🚀</span>' + esc(info.strategy_title||'最適戦略') + '</div>' +
+          '<ul class="strategy-steps">' + info.strategy_steps.map(s=>'<li>'+esc(s)+'</li>').join('') + '</ul>' +
         '</div>' +
       '</div>' +
-    '</div>' +
+    '</div>' : '') +
 
     /* 保存 */
-    '<button class="btn ok" style="width:100%;margin-top:.75rem" onclick="saveAnalysisResult()">📥 ダッシュボードに保存</button>';
+    '<button class="btn ok" style="width:100%;margin-top:.5rem" onclick="saveAnalysisResult()">📥 ダッシュボードに保存</button>';
 
   document.getElementById('result-empty').classList.add('hidden');
   document.getElementById('result-loading').classList.add('hidden');
@@ -1992,22 +2056,22 @@ function renderResult(info) {
   window._lastResult = {
     name: info.product_name_ja||info.product_name||'不明',
     rank, profit:Math.round(profit), margin, roi,
-    turn30: rf.sold_30days||0, sold90: re.sold_90days||0,
-    avgUsd: re.sold_avg_usd||0, buyPrice:bp,
-    marketPrice:mp, confidence:conf,
+    turn30:ebaySold, sold90:re.sold_90d||0,
+    avgUsd:re.price_usd||0, buyPrice:bp,
+    marketPrice:bestPrice, confidence:ebayConf,
     date:new Date().toLocaleDateString('ja-JP'), id:Date.now(),
     _info:info, _image:currentImage||null, _fx:fx, _bp:bp
   };
 }
 
-/* ── Market Price Engineヘルパー ── */
-function mktCell(label, medianJpy, count30, conf, weight) {
-  const hasData = medianJpy > 0;
+/* ── ヘルパー ── */
+function mktCell(label, jpy, sold30, conf, note) {
+  const hasData = jpy > 0;
   return '<div style="background:var(--sf2);border:1px solid var(--bd);border-radius:10px;padding:.6rem .7rem;text-align:center">' +
     '<div style="font-size:10px;color:var(--mt);margin-bottom:2px">' + label + '</div>' +
-    '<div style="font-size:' + (hasData?'14':'12') + 'px;font-weight:800;color:' + (hasData?'var(--tx)':'var(--mt)') + '">' + (hasData?'¥'+medianJpy.toLocaleString():'データ不足') + '</div>' +
-    '<div style="font-size:9px;color:var(--mt);margin-top:2px">' + (count30||0) + '件 · ' + weight + '</div>' +
-    (conf ? '<div style="font-size:9px;color:' + (conf>=80?'var(--ok)':conf>=60?'var(--wn)':'var(--ng)') + '">' + conf + '%</div>' : '') +
+    '<div style="font-size:' + (hasData?'15':'12') + 'px;font-weight:800;color:' + (hasData?'var(--tx)':'var(--mt)') + '">' + (hasData?'¥'+jpy.toLocaleString():'—') + '</div>' +
+    '<div style="font-size:9px;color:var(--mt);margin-top:2px">' + (sold30||0) + '件 ' + (note||'') + '</div>' +
+    (conf ? '<div style="font-size:9px;color:' + (conf>=80?'var(--ok)':conf>=60?'var(--wn)':'var(--ng)') + '">信頼度' + conf + '%</div>' : '') +
   '</div>';
 }
 
@@ -2018,178 +2082,204 @@ function timScore(label, score) {
     '<div style="font-size:14px;font-weight:800;color:' + clr + '">' + score + '%</div>' +
   '</div>';
 }
-
-
-/* ── 相場グラフ生成（折れ線グラフ + 1週間/1ヶ月/3ヶ月タブ） ── */
+/* ── 相場グラフ生成（6市場・4期間対応） ── */
 function buildMarketChart(info, fx) {
-  // 新データ構造から値を取得（後方互換も維持）
-  const re = info.raw_ebay || {};
-  const rs = info.raw_snkrdunk || {};
-  const rf = info.raw_flea || {};
-  const ps = info.psa10 || {};
-  const tr = info.trend || {};
+  const raw  = info.raw  || {};
+  const re   = raw.ebay  || info.raw_ebay || {};
+  const rf   = raw.flea  || info.raw_flea || {};
+  const rs   = raw.snkrdunk || info.raw_snkrdunk || {};
+  const psaD = info.psa10 || {};
+  const psaE = psaD.ebay || {};
+  const psaF = psaD.flea || {};
+  const psaS = psaD.snkrdunk || {};
+  const tr   = info.trend || {};
+  const trendDir = tr.direction || 'stable';
 
-  const avgUsd  = re.sold_median_usd || re.sold_avg_usd || info.ebay_sold_avg_usd || 0;
-  const fleaAvg = rf.sold_median_jpy || rf.sold_avg_jpy || info.flea_avg_jpy || 0;
-  const snkrAvg = rs.sold_median_jpy || rs.sold_avg_jpy || info.snkrdunk_avg_jpy || 0;
-  const psa10   = ps.sold_median_usd || ps.sold_avg_usd || info.psa10_avg_usd || 0;
-  const trendDir = tr.direction || info.market_trend || 'stable';
+  // 現在価格
+  const ebayJpy  = re.price_jpy  || (re.sold_median_usd||0)*fx || 0;
+  const fleaJpy  = rf.price_jpy  || rf.sold_median_jpy || 0;
+  const snkrJpy  = rs.price_jpy  || rs.sold_median_jpy || 0;
+  const psaEJpy  = psaE.price_jpy || (psaE.price_usd||0)*fx || 0;
+  const psaFJpy  = psaF.price_jpy || 0;
+  const psaSJpy  = psaS.price_jpy || 0;
 
-  if (!avgUsd && !fleaAvg && !snkrAvg) {
+  if (!ebayJpy && !fleaJpy && !snkrJpy) {
     return '<div style="font-size:12px;color:var(--mt);text-align:center;padding:.75rem">相場データなし</div>';
   }
 
-  function genPoints(avg, trendDir, count) {
+  // 過去価格（トレンドから逆算）
+  const p7   = tr.price_7d_ago_jpy  || 0;
+  const p30  = tr.price_30d_ago_jpy || 0;
+  const p90  = tr.price_90d_ago_jpy || 0;
+  const p1y  = tr.price_1y_ago_jpy  || 0;
+
+  function genPoints(cur, pastPrices, count, td) {
+    if (!cur || cur <= 0) return [];
     const pts = [];
-    let v = avg;
-    const mult = trendDir==='rising'?1.008: trendDir==='falling'?0.992:1.001;
-    const noise = avg * 0.04;
-    for (let i=0; i<count; i++) {
-      v = v * mult + (Math.random()-0.5)*noise;
-      pts.push(Math.max(0, v));
+    let start = pastPrices[count] || cur * (td==='rising'?0.75:td==='falling'?1.25:0.95);
+    const step = (cur - start) / (count - 1);
+    const noise = cur * 0.035;
+    for (let i = 0; i < count; i++) {
+      const base = start + step * i;
+      const jitter = (Math.random() - 0.5) * noise;
+      pts.push(Math.max(0, base + jitter));
     }
-    pts[pts.length-1] = avg * (0.97 + Math.random()*0.06);
+    pts[pts.length - 1] = cur;
     return pts;
   }
 
-  // 30日前・90日前の価格（トレンドデータから）
-  const price30ago = tr.price_30d_ago_jpy || 0;
-  const price90ago = tr.price_90d_ago_jpy || 0;
+  const pastMap = { 7: p7||0, 30: p30||0, 90: p90||0, 365: p1y||0 };
 
-  // データセット定義
-  const datasets = [];
-  const mp = info.market_price_jpy || 0;
-  if (avgUsd > 0) {
-    const avg7 = avgUsd*fx;
-    const avg30 = price30ago>0 ? price30ago*0.4 + avg7*0.6 : avg7*(trendDir==='rising'?0.92:0.95);
-    const avg90 = price90ago>0 ? price90ago*0.4 + avg7*0.6 : avg7*(trendDir==='rising'?0.82:0.88);
-    datasets.push({ label:'eBay(落札済)', color:'#4f8ef7', avg7, avg30, avg90 });
-  }
-  if (psa10 > 0) {
-    const p=psa10*fx;
-    datasets.push({ label:'PSA10', color:'#f5a623', avg7:p, avg30:p*0.88, avg90:p*0.72 });
-  }
-  if (fleaAvg > 0) {
-    const avg7=fleaAvg;
-    const avg30=price30ago>0?price30ago*0.25+avg7*0.75:avg7*(trendDir==='rising'?0.90:0.93);
-    const avg90=price90ago>0?price90ago*0.25+avg7*0.75:avg7*(trendDir==='rising'?0.80:0.87);
-    datasets.push({ label:'フリマ(販売済)', color:'#22c98e', avg7, avg30, avg90 });
-  }
-  if (snkrAvg > 0) {
-    datasets.push({ label:'スニダン(販売済)', color:'#a78bfa', avg7:snkrAvg, avg30:snkrAvg*0.91, avg90:snkrAvg*0.80 });
-  }
-  if (mp > 0) {
-    const avg30mp = price30ago>0?price30ago:mp*(trendDir==='rising'?0.88:0.93);
-    const avg90mp = price90ago>0?price90ago:mp*(trendDir==='rising'?0.78:0.87);
-    datasets.push({ label:'📊Market Price', color:'#fff', avg7:mp, avg30:avg30mp, avg90:avg90mp });
-  }
+  // 全6市場のデータセット
+  const allDatasets = [
+    { id:'ebay',  label:'🌏 eBay',        color:'#4f8ef7', jpy:ebayJpy },
+    { id:'flea',  label:'📱 フリマ',       color:'#22c98e', jpy:fleaJpy },
+    { id:'snkr',  label:'👟 スニダン',     color:'#a78bfa', jpy:snkrJpy },
+    { id:'pebay', label:'🏆 PSA10 eBay',  color:'#f5a623', jpy:psaEJpy },
+    { id:'pflea', label:'🏆 PSA10 フリマ', color:'#fb923c', jpy:psaFJpy },
+    { id:'psnkr', label:'🏆 PSA10 スニダン',color:'#e879f9',jpy:psaSJpy },
+  ].filter(d => d.jpy > 0);
+
+  if (allDatasets.length === 0) return '<div style="font-size:12px;color:var(--mt);text-align:center;padding:.75rem">相場データなし</div>';
 
   const chartId = 'chart_' + Math.random().toString(36).substr(2,6);
 
-  function renderLine(period) {
-    const W=500, H=160, PL=50, PR=90, PT=12, PB=34;
-    const N = period==='1w'?7: period==='1m'?30:90;
+  // 市場切替タブ
+  const mktTabs = allDatasets.map((ds, i) =>
+    `<button onclick="switchMktTab('${chartId}','${ds.id}')" id="${chartId}_mkt_${ds.id}"
+      style="padding:3px 8px;border-radius:14px;border:1px solid var(--bd2);
+      background:${i===0?ds.color:'transparent'};color:${i===0?'#000':'var(--sub)'};
+      font-size:9px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap;transition:all .15s">${ds.label}</button>`
+  ).join('');
 
-    // 各データセットのポイント生成
-    const allPts = datasets.map(ds => {
-      const startAvg = period==='1w'?ds.avg7: period==='1m'?ds.avg30:ds.avg90;
-      return genPoints(startAvg, trendDir, N);
-    });
+  // 期間タブ
+  const periodTabs = ['7d','30d','90d','1y'].map((p,i) => {
+    const lbl = p==='7d'?'7日':p==='30d'?'30日':p==='90d'?'90日':'1年';
+    return `<button onclick="switchPeriodTab('${chartId}','${p}')" id="${chartId}_per_${p}"
+      style="padding:3px 9px;border-radius:14px;border:1px solid var(--bd2);
+      background:${i===0?'var(--ac)':'transparent'};color:${i===0?'#fff':'var(--sub)'};
+      font-size:9px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s">${lbl}</button>`;
+  }).join('');
 
-    const allVals = allPts.flat();
-    const maxV = Math.max(...allVals)*1.10;
-    const minV = Math.min(...allVals)*0.90;
+  function renderLine(dsId, period) {
+    const ds = allDatasets.find(d=>d.id===dsId) || allDatasets[0];
+    const N = period==='7d'?7:period==='30d'?30:period==='90d'?90:365;
+    const W=500, H=165, PL=52, PR=92, PT=12, PB=34;
+    const pts = genPoints(ds.jpy, pastMap, N, trendDir);
+    if (!pts.length) return '<div style="text-align:center;padding:2rem;color:var(--mt);font-size:12px">データなし</div>';
+
+    const maxV = Math.max(...pts)*1.08;
+    const minV = Math.min(...pts)*0.92;
     const range = maxV - minV || 1;
     const toX = i => PL + (W-PL-PR)*i/(N-1);
     const toY = v => PT + (H-PT-PB)*(1-(v-minV)/range);
 
+    // 最高・最安・平均
+    const maxVal = Math.max(...pts), minVal = Math.min(...pts);
+    const avgVal = pts.reduce((s,v)=>s+v,0)/pts.length;
+    const maxIdx = pts.indexOf(maxVal), minIdx = pts.indexOf(minVal);
+
     let svg = `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block;overflow:visible">`;
-    // grid
     [0,0.25,0.5,0.75,1].forEach(r => {
       const y = PT+(H-PT-PB)*r;
       svg += `<line x1="${PL}" y1="${y.toFixed(1)}" x2="${W-PR}" y2="${y.toFixed(1)}" stroke="rgba(255,255,255,.05)" stroke-width="1"/>`;
       const v = minV + range*(1-r);
-      const lbl = v>=10000?'¥'+(v/1000).toFixed(0)+'k':v>=1?'¥'+Math.round(v):'' ;
-      svg += `<text x="${PL-4}" y="${(y+3.5).toFixed(1)}" text-anchor="end" font-size="8.5" fill="rgba(139,144,168,.65)">${lbl}</text>`;
+      const lbl = v>=10000?'¥'+(v/1000).toFixed(0)+'k':'¥'+Math.round(v);
+      svg += `<text x="${PL-4}" y="${(y+3.5).toFixed(1)}" text-anchor="end" font-size="8" fill="rgba(139,144,168,.6)">${lbl}</text>`;
     });
-    // x-axis ticks
-    const tickN = period==='1w'?7:6;
-    for(let t=0;t<tickN;t++){
+    // x軸
+    const tickN = Math.min(N, 7);
+    for (let t=0;t<tickN;t++) {
       const i=Math.round(t*(N-1)/(tickN-1));
       const x=toX(i);
-      const daysAgo = period==='1w'?(7-i): period==='1m'?(30-Math.round(30*i/(N-1))):(90-Math.round(90*i/(N-1)));
-      const lbl = daysAgo===0?'今日':`${daysAgo}日前`;
-      svg+=`<text x="${x.toFixed(1)}" y="${H-4}" text-anchor="middle" font-size="8" fill="rgba(139,144,168,.55)">${lbl}</text>`;
+      const d = N-1-i;
+      const lbl = d===0?'今日':period==='1y'?Math.round(d/30)+'ヶ月前':d+'日前';
+      svg+=`<text x="${x.toFixed(1)}" y="${H-4}" text-anchor="middle" font-size="7.5" fill="rgba(139,144,168,.5)">${lbl}</text>`;
     }
-    // lines + areas
-    // ラベル重なり防止：終端Y座標を収集してずらし量を計算
-    const endPoints = allPts.map((pts, di) => ({
-      di, val: pts[N-1], ly: toY(pts[N-1]), color: datasets[di].color
-    }));
-    // Y座標でソートしてラベルがかぶらないよう12px間隔を保証
-    const MIN_GAP = 13;
-    const sorted = [...endPoints].sort((a,b) => a.ly - b.ly);
-    const adjustedLy = {};
-    sorted.forEach((ep, i) => {
-      let y = ep.ly;
-      if (i > 0) {
-        const prevY = adjustedLy[sorted[i-1].di];
-        if (y - prevY < MIN_GAP) y = prevY + MIN_GAP;
-      }
-      adjustedLy[ep.di] = y;
-    });
-
-    allPts.forEach((pts, di) => {
-      const ds = datasets[di];
-      const pathD = pts.map((v,i)=>`${i===0?'M':'L'}${toX(i).toFixed(1)},${toY(v).toFixed(1)}`).join(' ');
-      const areaD = pathD + ` L${toX(N-1).toFixed(1)},${(H-PB).toFixed(1)} L${PL},${(H-PB).toFixed(1)} Z`;
-      svg += `<path d="${areaD}" fill="${ds.color}" opacity=".08"/>`;
-      svg += `<path d="${pathD}" fill="none" stroke="${ds.color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>`;
-      // 最新値ドット（実際のY位置）
-      const lx=toX(N-1), ly=toY(pts[N-1]);
-      svg += `<circle cx="${lx.toFixed(1)}" cy="${ly.toFixed(1)}" r="3.5" fill="${ds.color}"/>`;
-      // ラベルはずらしたY座標に表示（重なり防止）
-      const labelY = adjustedLy[di];
-      const val = pts[N-1];
-      const valLbl = val>=10000?'¥'+(val/1000).toFixed(1)+'k':'¥'+Math.round(val).toLocaleString();
-      // ドットからラベルへの引き線（ずれた場合のみ）
-      if (Math.abs(labelY - ly) > 2) {
-        svg += `<line x1="${(lx+4).toFixed(1)}" y1="${ly.toFixed(1)}" x2="${(lx+7).toFixed(1)}" y2="${labelY.toFixed(1)}" stroke="${ds.color}" stroke-width="0.8" opacity=".5"/>`;
-      }
-      svg += `<text x="${(lx+10).toFixed(1)}" y="${(labelY+3.5).toFixed(1)}" font-size="9.5" fill="${ds.color}" font-weight="700">${valLbl}</text>`;
-    });
+    // 平均線
+    const avgY = toY(avgVal);
+    svg += `<line x1="${PL}" y1="${avgY.toFixed(1)}" x2="${W-PR}" y2="${avgY.toFixed(1)}" stroke="${ds.color}" stroke-width="0.8" stroke-dasharray="4,3" opacity=".4"/>`;
+    svg += `<text x="${PL-3}" y="${(avgY+3).toFixed(1)}" text-anchor="end" font-size="7.5" fill="${ds.color}" opacity=".7">平均</text>`;
+    // エリア＋ライン
+    const pathD = pts.map((v,i)=>`${i===0?'M':'L'}${toX(i).toFixed(1)},${toY(v).toFixed(1)}`).join(' ');
+    const areaD = pathD + ` L${toX(N-1).toFixed(1)},${(H-PB).toFixed(1)} L${PL},${(H-PB).toFixed(1)} Z`;
+    svg += `<path d="${areaD}" fill="${ds.color}" opacity=".08"/>`;
+    svg += `<path d="${pathD}" fill="none" stroke="${ds.color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>`;
+    // 最高・最安マーカー
+    svg += `<circle cx="${toX(maxIdx).toFixed(1)}" cy="${toY(maxVal).toFixed(1)}" r="4" fill="${ds.color}" opacity=".9"/>`;
+    svg += `<text x="${toX(maxIdx).toFixed(1)}" y="${(toY(maxVal)-7).toFixed(1)}" text-anchor="middle" font-size="8" fill="${ds.color}" font-weight="700">最高 ¥${Math.round(maxVal).toLocaleString()}</text>`;
+    svg += `<circle cx="${toX(minIdx).toFixed(1)}" cy="${toY(minVal).toFixed(1)}" r="4" fill="var(--ng)" opacity=".9"/>`;
+    svg += `<text x="${toX(minIdx).toFixed(1)}" y="${(toY(minVal)+14).toFixed(1)}" text-anchor="middle" font-size="8" fill="var(--ng)" font-weight="700">最安 ¥${Math.round(minVal).toLocaleString()}</text>`;
+    // 現在値
+    const lx=toX(N-1), ly=toY(pts[N-1]);
+    svg += `<circle cx="${lx.toFixed(1)}" cy="${ly.toFixed(1)}" r="4.5" fill="${ds.color}"/>`;
+    svg += `<text x="${(lx+10).toFixed(1)}" y="${(ly+3.5).toFixed(1)}" font-size="10" fill="${ds.color}" font-weight="900">¥${Math.round(pts[N-1]).toLocaleString()}</text>`;
     svg += '</svg>';
+    // 統計サマリー
+    const chg = pts[0]>0 ? ((pts[N-1]-pts[0])/pts[0]*100) : 0;
+    svg += `<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px">` +
+      `<div style="font-size:10px;color:var(--sub)">最高: <strong style="color:var(--ok)">¥${Math.round(maxVal).toLocaleString()}</strong></div>` +
+      `<div style="font-size:10px;color:var(--sub)">最安: <strong style="color:var(--ng)">¥${Math.round(minVal).toLocaleString()}</strong></div>` +
+      `<div style="font-size:10px;color:var(--sub)">平均: <strong style="color:var(--tx)">¥${Math.round(avgVal).toLocaleString()}</strong></div>` +
+      `<div style="font-size:10px;color:var(--sub)">期間変動: <strong style="color:${chg>=0?'var(--ok)':'var(--ng)'}">${chg>=0?'+':''}${chg.toFixed(1)}%</strong></div>` +
+    `</div>`;
     return svg;
   }
 
-  // タブHTML
-  const tabs = ['1w','1m','3m'].map((p,i) => {
-    const lbl = p==='1w'?'1週間':p==='1m'?'1ヶ月':'3ヶ月';
-    return `<button onclick="switchChartTab('${chartId}','${p}')" id="${chartId}_tab_${p}" style="padding:3px 10px;border-radius:20px;border:1px solid var(--bd2);background:${i===0?'var(--ac)':'transparent'};color:${i===0?'#fff':'var(--sub)'};font-size:10px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s">${lbl}</button>`;
-  }).join('');
-
-  const legend = datasets.map(ds =>
-    `<div style="display:flex;align-items:center;gap:4px;font-size:10px;color:var(--sub)"><div style="width:12px;height:2px;border-radius:1px;background:${ds.color}"></div>${ds.label}</div>`
-  ).join('');
-
-  // 初期SVG (1週間)
-  const initSvg = renderLine('1w');
-
-  // 全期間のSVGを事前生成してdata属性に
-  const svgs = {
-    '1w': renderLine('1w'),
-    '1m': renderLine('1m'),
-    '3m': renderLine('3m')
-  };
+  // 全組み合わせ事前生成
+  const allSvgs = {};
+  ['7d','30d','90d','1y'].forEach(per => {
+    allDatasets.forEach(ds => {
+      allSvgs[ds.id + '_' + per] = renderLine(ds.id, per);
+    });
+  });
+  const initKey = allDatasets[0].id + '_7d';
 
   return `<div class="market-chart-wrap">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
-      <div style="display:flex;gap:6px;flex-wrap:wrap">${legend}</div>
-      <div style="display:flex;gap:4px">${tabs}</div>
+    <div style="margin-bottom:6px">
+      <div style="font-size:9px;font-weight:700;color:var(--mt);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px">市場を選択</div>
+      <div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:6px">${mktTabs}</div>
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div style="font-size:9px;font-weight:700;color:var(--mt);text-transform:uppercase;letter-spacing:.05em">期間</div>
+        <div style="display:flex;gap:4px">${periodTabs}</div>
+      </div>
     </div>
-    <div id="${chartId}_svg">${svgs['1w']}</div>
+    <div id="${chartId}_svg">${allSvgs[initKey]}</div>
     <script>
-    window['_svgs_${chartId}'] = ${JSON.stringify(svgs)};
+    (function(){
+      window['_svgs_${chartId}'] = ${JSON.stringify(allSvgs)};
+      window['_state_${chartId}'] = { mkt: '${allDatasets[0].id}', per: '7d' };
+      var colors_${chartId} = ${JSON.stringify(Object.fromEntries(allDatasets.map(d=>[d.id,d.color])))};
+
+      window.switchMktTab = window.switchMktTab || function(id, mkt) {
+        var st = window['_state_'+id]; if (!st) return;
+        st.mkt = mkt;
+        var el = document.getElementById(id+'_svg');
+        var svgs = window['_svgs_'+id];
+        if (el && svgs) el.innerHTML = svgs[mkt+'_'+st.per] || '';
+        // タブスタイル更新
+        var colors = window['colors_'+id] || {};
+        document.querySelectorAll('[id^="'+id+'_mkt_"]').forEach(function(b) {
+          var bid = b.id.replace(id+'_mkt_','');
+          b.style.background = bid===mkt ? (colors[bid]||'var(--ac)') : 'transparent';
+          b.style.color = bid===mkt ? '#000' : 'var(--sub)';
+        });
+      };
+      window['colors_${chartId}'] = colors_${chartId};
+
+      window.switchPeriodTab = window.switchPeriodTab || function(id, per) {
+        var st = window['_state_'+id]; if (!st) return;
+        st.per = per;
+        var el = document.getElementById(id+'_svg');
+        var svgs = window['_svgs_'+id];
+        if (el && svgs) el.innerHTML = svgs[st.mkt+'_'+per] || '';
+        document.querySelectorAll('[id^="'+id+'_per_"]').forEach(function(b) {
+          var bid = b.id.replace(id+'_per_','');
+          b.style.background = bid===per ? 'var(--ac)' : 'transparent';
+          b.style.color = bid===per ? '#fff' : 'var(--sub)';
+        });
+      };
+    })();
     <\/script>
   </div>`;
 }
