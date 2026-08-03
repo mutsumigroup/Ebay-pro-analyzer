@@ -2249,36 +2249,7 @@ function buildMarketChart(info, fx) {
     (function(){
       window['_svgs_${chartId}'] = ${JSON.stringify(allSvgs)};
       window['_state_${chartId}'] = { mkt: '${allDatasets[0].id}', per: '7d' };
-      var colors_${chartId} = ${JSON.stringify(Object.fromEntries(allDatasets.map(d=>[d.id,d.color])))};
-
-      window.switchMktTab = window.switchMktTab || function(id, mkt) {
-        var st = window['_state_'+id]; if (!st) return;
-        st.mkt = mkt;
-        var el = document.getElementById(id+'_svg');
-        var svgs = window['_svgs_'+id];
-        if (el && svgs) el.innerHTML = svgs[mkt+'_'+st.per] || '';
-        // タブスタイル更新
-        var colors = window['colors_'+id] || {};
-        document.querySelectorAll('[id^="'+id+'_mkt_"]').forEach(function(b) {
-          var bid = b.id.replace(id+'_mkt_','');
-          b.style.background = bid===mkt ? (colors[bid]||'var(--ac)') : 'transparent';
-          b.style.color = bid===mkt ? '#000' : 'var(--sub)';
-        });
-      };
-      window['colors_${chartId}'] = colors_${chartId};
-
-      window.switchPeriodTab = window.switchPeriodTab || function(id, per) {
-        var st = window['_state_'+id]; if (!st) return;
-        st.per = per;
-        var el = document.getElementById(id+'_svg');
-        var svgs = window['_svgs_'+id];
-        if (el && svgs) el.innerHTML = svgs[st.mkt+'_'+per] || '';
-        document.querySelectorAll('[id^="'+id+'_per_"]').forEach(function(b) {
-          var bid = b.id.replace(id+'_per_','');
-          b.style.background = bid===per ? 'var(--ac)' : 'transparent';
-          b.style.color = bid===per ? '#fff' : 'var(--sub)';
-        });
-      };
+      window['_colors_${chartId}'] = ${JSON.stringify(Object.fromEntries(allDatasets.map(d=>[d.id,d.color])))};
     })();
     <\/script>
   </div>`;
@@ -2875,6 +2846,37 @@ window.switchChartTab = function(id, period) {
     tb.style.background = p === period ? 'var(--ac)' : 'transparent';
     tb.style.color = p === period ? '#fff' : 'var(--sub)';
     tb.style.borderColor = p === period ? 'var(--ac)' : 'var(--bd2)';
+  });
+};
+
+window.switchMktTab = function(id, mkt) {
+  var st = window['_state_' + id];
+  if (!st) return;
+  st.mkt = mkt;
+  var el  = document.getElementById(id + '_svg');
+  var svgs = window['_svgs_' + id];
+  if (el && svgs) el.innerHTML = svgs[mkt + '_' + st.per] || '<div style="text-align:center;padding:2rem;color:var(--mt);font-size:12px">データなし</div>';
+  var colors = window['_colors_' + id] || {};
+  document.querySelectorAll('[id^="' + id + '_mkt_"]').forEach(function(b) {
+    var bid = b.id.replace(id + '_mkt_', '');
+    b.style.background = bid === mkt ? (colors[bid] || 'var(--ac)') : 'transparent';
+    b.style.color = bid === mkt ? '#000' : 'var(--sub)';
+    b.style.borderColor = bid === mkt ? (colors[bid] || 'var(--ac)') : 'var(--bd2)';
+  });
+};
+
+window.switchPeriodTab = function(id, per) {
+  var st = window['_state_' + id];
+  if (!st) return;
+  st.per = per;
+  var el  = document.getElementById(id + '_svg');
+  var svgs = window['_svgs_' + id];
+  if (el && svgs) el.innerHTML = svgs[st.mkt + '_' + per] || '<div style="text-align:center;padding:2rem;color:var(--mt);font-size:12px">データなし</div>';
+  document.querySelectorAll('[id^="' + id + '_per_"]').forEach(function(b) {
+    var bid = b.id.replace(id + '_per_', '');
+    b.style.background = bid === per ? 'var(--ac)' : 'transparent';
+    b.style.color = bid === per ? '#fff' : 'var(--sub)';
+    b.style.borderColor = bid === per ? 'var(--ac)' : 'var(--bd2)';
   });
 };
 
