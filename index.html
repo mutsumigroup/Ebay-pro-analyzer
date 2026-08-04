@@ -354,11 +354,38 @@ footer{text-align:center;font-size:11px;color:var(--mt);padding:1.5rem 1rem;bord
   .pg-title{font-size:15px;margin-bottom:2px}
   .pg-sub{font-size:11px;margin-bottom:.9rem}
 
-  /* ヘッダー */
-  header{padding:0 .75rem;height:48px}
-  .logo{font-size:13px;gap:7px}
+  /* ヘッダー：スマホは2段構造 */
+  header{
+    padding:0;
+    height:auto;
+    flex-direction:column;
+    align-items:stretch;
+  }
+  .logo{
+    padding:0 .75rem;
+    height:44px;
+    font-size:13px;
+    gap:7px;
+  }
   .logo-mark{width:26px;height:26px;font-size:13px}
-  .nav-btn{height:30px;padding:0 10px;font-size:11px}
+  .hdr-right{
+    display:flex;
+    border-top:1px solid var(--bd);
+    padding:0 .5rem;
+    height:38px;
+    gap:4px;
+    overflow-x:auto;
+    scrollbar-width:none;
+  }
+  .hdr-right::-webkit-scrollbar{display:none}
+  .nav-btn{
+    height:28px;
+    padding:0 10px;
+    font-size:11px;
+    flex-shrink:0;
+    border-radius:6px;
+    margin:auto 0;
+  }
 
   /* sync-banner スマホ対応 */
   #sync-banner{padding:5px .75rem;font-size:11px;flex-wrap:nowrap;gap:6px}
@@ -2035,6 +2062,12 @@ function buildPrompt(ctx, hasImage) {
 
   return `あなたはトレカ・コレクター市場の「Market Price Engine」です。
 カード名・番号・レアリティを正確に特定し、市場ごとの独立した価格を推定してください。
+
+【前提条件（最重要）】
+- カードの状態は「綺麗・良好（Aランク以上）」を前提として価格・売却タイミングを算出する
+- 傷・折れ・汚れなし、光沢あり、角のダメージなしの状態を基準とすること
+- 売却タイミングの判断も「状態良好のカードが市場に出た場合」で判定する
+- PSA10期待率も状態良好を前提とした推定値を設定する
 
 【絶対ルール】
 - 出品中価格（売れていない価格）は使わない。販売済み成約価格のみ
