@@ -359,9 +359,15 @@ footer{text-align:center;font-size:11px;color:var(--mt);padding:1.5rem 1rem;bord
   .logo{font-size:13px;gap:7px}
   .logo-mark{width:26px;height:26px;font-size:13px}
   .nav-btn{height:30px;padding:0 10px;font-size:11px}
-  #sync-banner{padding:5px .75rem;font-size:11px}
-  #sync-banner .sync-dot{display:none}
-  #sync-banner>span:first-of-type{display:none}
+
+  /* sync-banner スマホ対応 */
+  #sync-banner{padding:5px .75rem;font-size:11px;flex-wrap:nowrap;gap:6px}
+  #sync-banner .sync-dot{width:6px;height:6px;flex-shrink:0}
+  #sync-banner #sync-status{font-size:10px;flex-shrink:0}
+  #sync-banner #sync-count{display:none}
+  #sync-banner .sync-actions{gap:4px;margin-left:auto;flex-shrink:0}
+  #sync-banner .apikey-status{display:none}
+  #sync-banner .sync-btn{font-size:10px;padding:2px 7px;height:24px}
 
   /* グリッド */
   .an-layout{grid-template-columns:1fr}
@@ -478,7 +484,7 @@ footer{text-align:center;font-size:11px;color:var(--mt);padding:1.5rem 1rem;bord
 <!-- ═══ LOGIN MODAL ═══ -->
 <div id="apikey-modal">
   <div class="apikey-box">
-    <div class="apikey-logo">🤖</div>
+    <div class="apikey-logo" style="background:linear-gradient(135deg,#7c6ef7,#a78bfa);font-size:22px">🐕</div>
     <div class="apikey-title">ShibaScan AI</div>
 
     <!-- タブ切替 -->
@@ -524,13 +530,12 @@ footer{text-align:center;font-size:11px;color:var(--mt);padding:1.5rem 1rem;bord
 <!-- STATUS BAR -->
 <div id="sync-banner">
   <div class="sync-dot synced" id="sync-dot"></div>
-  <span id="sync-status" style="color:var(--sub)">データ保存: ローカル</span>
+  <span id="sync-status" style="color:var(--sub)">接続済み</span>
   <span id="sync-count" style="color:var(--mt)"></span>
   <div class="sync-actions">
     <div class="apikey-status" onclick="openApiKeyModal()" title="APIキーを変更">
-      <img id="user-avatar" class="user-avatar" alt="user">
       <div class="apikey-status-dot" id="apikey-dot"></div>
-      <span class="apikey-status-lbl" id="apikey-lbl">APIキー未設定</span>
+      <span class="apikey-status-lbl" id="apikey-lbl">未設定</span>
     </div>
     <button class="sync-btn" onclick="exportCSV()">📤 CSV出力</button>
     <button class="sync-btn" style="color:var(--ng)" onclick="clearAll()">🗑 全削除</button>
@@ -540,7 +545,7 @@ footer{text-align:center;font-size:11px;color:var(--mt);padding:1.5rem 1rem;bord
 <!-- ═══ HEADER ═══ -->
 <header>
   <div class="logo">
-    <div class="logo-mark">e</div>
+    <div class="logo-mark" style="background:linear-gradient(135deg,#7c6ef7,#a78bfa);font-size:15px">🐕</div>
     ShibaScan AI
   </div>
   <div class="hdr-right">
@@ -553,8 +558,8 @@ footer{text-align:center;font-size:11px;color:var(--mt);padding:1.5rem 1rem;bord
 
 <!-- ═══════════ ANALYZE ═══════════ -->
 <div class="page active" id="page-analyze">
-  <div class="pg-title">商品分析</div>
-  <div class="pg-sub">写真またはURLから商品を特定し、相場・状態・売却アドバイス・戦略をAIが総合分析します</div>
+  <div class="pg-title">📸 カード分析</div>
+  <div class="pg-sub">写真を撮るだけでeBay・スニダン・フリマの相場をAIが即分析</div>
 
   <div class="an-layout">
     <!-- Left inputs -->
