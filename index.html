@@ -433,11 +433,12 @@ footer{text-align:center;font-size:11px;color:var(--mt);padding:1.5rem 1rem;bord
   .score-bar-label{width:65px;font-size:9px}
 }
 
-/* スマホ用ボトムナビ */
+/* スマホ：ヘッダータブを使用・ボトムナビ非表示 */
 @media(max-width:600px){
-  .page{padding-bottom:80px}
-  #bottom-nav{display:flex}
-  header .hdr-right{display:none}
+  .page{padding-bottom:1rem}
+  #bottom-nav{display:none}
+  header .hdr-right{gap:3px}
+  .nav-btn{height:26px;padding:0 7px;font-size:10px;border-radius:8px}
 }
 @media(min-width:601px){
   #bottom-nav{display:none}
