@@ -1455,16 +1455,27 @@ function openCamera() {
 
 async function handleCameraCapture(file) {
   if (!file) return;
-  // プレビュー表示
   const reader = new FileReader();
   reader.onload = async function(e) {
-    currentImage = e.target.result;
-    document.getElementById('prev-img').src = currentImage;
-    document.getElementById('up-placeholder').classList.add('hidden');
-    document.getElementById('up-preview').classList.remove('hidden');
-    document.getElementById('analyze-photo-btn').disabled = false;
-    // 撮影後に自動分析スタート
-    await analyzePhoto();
+    const img = new Image();
+    img.onload = async function() {
+      const MAX = 600;
+      let w = img.width, h = img.height;
+      if (w > MAX || h > MAX) {
+        if (w > h) { h = Math.round(h * MAX / w); w = MAX; }
+        else       { w = Math.round(w * MAX / h); h = MAX; }
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      currentImage = canvas.toDataURL('image/jpeg', 0.82);
+      document.getElementById('prev-img').src = currentImage;
+      document.getElementById('up-placeholder').classList.add('hidden');
+      document.getElementById('up-preview').classList.remove('hidden');
+      document.getElementById('analyze-photo-btn').disabled = false;
+      await analyzePhoto();
+    };
+    img.src = e.target.result;
   };
   reader.readAsDataURL(file);
 }
@@ -1486,11 +1497,25 @@ function handleFile(file) {
   if (!isImg) { alert('画像ファイルを選択してください（PNG・JPG・スクショ対応）'); return; }
   const reader = new FileReader();
   reader.onload = function(e) {
-    currentImage = e.target.result;
-    document.getElementById('prev-img').src = currentImage;
-    document.getElementById('up-placeholder').classList.add('hidden');
-    document.getElementById('up-preview').classList.remove('hidden');
-    document.getElementById('analyze-photo-btn').disabled = false;
+    // Canvasでリサイズ圧縮してからcurrentImageに保存
+    const img = new Image();
+    img.onload = function() {
+      const MAX = 600; // 最大600px
+      let w = img.width, h = img.height;
+      if (w > MAX || h > MAX) {
+        if (w > h) { h = Math.round(h * MAX / w); w = MAX; }
+        else       { w = Math.round(w * MAX / h); h = MAX; }
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      currentImage = canvas.toDataURL('image/jpeg', 0.82);
+      document.getElementById('prev-img').src = currentImage;
+      document.getElementById('up-placeholder').classList.add('hidden');
+      document.getElementById('up-preview').classList.remove('hidden');
+      document.getElementById('analyze-photo-btn').disabled = false;
+    };
+    img.src = e.target.result;
   };
   reader.readAsDataURL(file);
 }
@@ -3010,10 +3035,12 @@ function renderDash() {
   }).join('');
 
   var isMobile = window.innerWidth <= 600;
-  var cols = isMobile ? 3 : 5;
+  var isTablet = window.innerWidth <= 900 && window.innerWidth > 600;
+  var cols = isMobile ? 2 : isTablet ? 3 : 5;
+  var gap  = isMobile ? '8px' : '12px';
 
   dc.innerHTML =
-    '<div style="display:grid;grid-template-columns:repeat(' + cols + ',1fr);gap:' + (isMobile?'8px':'12px') + ';padding:2px">' +
+    '<div style="display:grid;grid-template-columns:repeat(' + cols + ',1fr);gap:' + gap + ';padding:2px">' +
       cards +
     '</div>';
 }
