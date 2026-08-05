@@ -2971,13 +2971,13 @@ function renderDash() {
 
     // カード画像エリア
     var imgArea = imgSrc
-      ? '<div style="width:100%;aspect-ratio:3/4;overflow:hidden;border-radius:8px 8px 0 0;background:var(--sf2);position:relative">' +
-          '<img src="' + imgSrc + '" style="width:100%;height:100%;object-fit:cover">' +
-          '<div style="position:absolute;top:6px;right:6px;background:rgba(0,0,0,.7);border-radius:6px;width:24px;height:24px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;color:' + rankClr + '">' + d.rank + '</div>' +
+      ? '<div style="width:100%;aspect-ratio:3/4;overflow:hidden;border-radius:8px 8px 0 0;background:#111;position:relative">' +
+          '<img src="' + imgSrc + '" style="width:100%;height:100%;object-fit:contain;display:block">' +
+          '<div style="position:absolute;top:5px;right:5px;background:' + rankClr + ';border-radius:5px;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;color:#000">' + d.rank + '</div>' +
         '</div>'
       : '<div style="width:100%;aspect-ratio:3/4;background:var(--sf2);border-radius:8px 8px 0 0;display:flex;align-items:center;justify-content:center;font-size:32px;position:relative">' +
           '🃏' +
-          '<div style="position:absolute;top:6px;right:6px;background:rgba(0,0,0,.7);border-radius:6px;width:24px;height:24px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;color:' + rankClr + '">' + d.rank + '</div>' +
+          '<div style="position:absolute;top:5px;right:5px;background:' + rankClr + ';border-radius:5px;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;color:#000">' + d.rank + '</div>' +
         '</div>';
 
     return '<div onclick="openDetailModal(' + d.id + ')" style="background:var(--sf);border:1px solid var(--bd);border-radius:10px;cursor:pointer;transition:transform .15s,border-color .15s;overflow:hidden" ' +
