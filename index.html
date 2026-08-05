@@ -2457,6 +2457,7 @@ function renderResult(info) {
   const rc = document.getElementById('result-content');
   rc.innerHTML = html;
   rc.classList.remove('hidden');
+  initChartData(rc);  // グラフのタブを有効化
 
   window._lastResult = {
     name: info.product_name_ja||info.product_name||'不明',
@@ -2640,7 +2641,11 @@ function buildMarketChart(info, fx) {
   });
   const initKey = allDatasets[0].id + '_7d';
 
-  return `<div class="market-chart-wrap">
+  return `<div class="market-chart-wrap"
+    data-chart-id="${chartId}"
+    data-svgs="${encodeURIComponent(JSON.stringify(allSvgs))}"
+    data-init-mkt="${allDatasets[0].id}"
+    data-colors="${encodeURIComponent(JSON.stringify(Object.fromEntries(allDatasets.map(d=>[d.id,d.color]))))}">
     <div style="margin-bottom:6px">
       <div style="font-size:9px;font-weight:700;color:var(--mt);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px">市場を選択</div>
       <div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:6px">${mktTabs}</div>
@@ -2650,13 +2655,6 @@ function buildMarketChart(info, fx) {
       </div>
     </div>
     <div id="${chartId}_svg">${allSvgs[initKey]}</div>
-    <script>
-    (function(){
-      window['_svgs_${chartId}'] = ${JSON.stringify(allSvgs)};
-      window['_state_${chartId}'] = { mkt: '${allDatasets[0].id}', per: '7d' };
-      window['_colors_${chartId}'] = ${JSON.stringify(Object.fromEntries(allDatasets.map(d=>[d.id,d.color])))};
-    })();
-    <\/script>
   </div>`;
 }
 
@@ -3218,6 +3216,7 @@ function openDetailModal(id) {
   document.getElementById('detail-body').innerHTML = html;
   document.getElementById('detail-modal').classList.remove('hidden');
   document.body.style.overflow = 'hidden';
+  initChartData(document.getElementById('detail-body'));  // グラフのタブを有効化
 }
 
 // ── 最新情報に更新 ──
@@ -3353,6 +3352,20 @@ function exportCSV(){
   a.href="data:text/csv;charset=utf-8,\uFEFF"+encodeURIComponent(rows.map(function(r){return r.join(",");}).join("\n"));
   a.download='ebay_'+new Date().toISOString().slice(0,10)+'.csv';
   a.click();
+}
+
+/* ── グラフデータ初期化（innerHTML後に必ず呼ぶ） ── */
+function initChartData(container) {
+  var charts = (container || document).querySelectorAll('[data-chart-id]');
+  charts.forEach(function(el) {
+    var id     = el.getAttribute('data-chart-id');
+    var svgs   = JSON.parse(decodeURIComponent(el.getAttribute('data-svgs') || '{}'));
+    var initMkt = el.getAttribute('data-init-mkt') || '';
+    var colors = JSON.parse(decodeURIComponent(el.getAttribute('data-colors') || '{}'));
+    window['_svgs_'   + id] = svgs;
+    window['_state_'  + id] = { mkt: initMkt, per: '7d' };
+    window['_colors_' + id] = colors;
+  });
 }
 
 /* ── グラフタブ切替（グローバル定義） ── */
