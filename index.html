@@ -2044,9 +2044,25 @@ function showLoading(msg) {
   document.getElementById('loading-msg').textContent = msg || 'AIが分析中...';
 }
 function showError(msg) {
-  document.getElementById('result-loading').classList.add('hidden');
+  const loadingEl = document.getElementById('result-loading');
+  if (loadingEl) {
+    loadingEl.style.transition = 'opacity .25s';
+    loadingEl.style.opacity = '0';
+    setTimeout(() => { loadingEl.classList.add('hidden'); loadingEl.style.opacity = ''; }, 250);
+  }
+  // 入力エリアを復元
+  const uploadArea   = document.getElementById('upload-area');
+  const analyzeBtn   = document.getElementById('analyze-photo-btn');
+  const settingsCard = document.querySelector('#page-analyze .card');
+  setTimeout(() => {
+    [uploadArea, analyzeBtn, settingsCard].forEach(el => {
+      if (!el) return;
+      el.style.display = '';
+      requestAnimationFrame(() => { el.style.opacity = '1'; el.style.transform = 'translateY(0)'; });
+    });
+  }, 250);
   const rc = document.getElementById('result-content');
-  rc.innerHTML = '<div class="tip ng"><span>❌</span><span>' + esc(msg) + '</span></div>';
+  rc.innerHTML = '<div class="error-box" style="margin-top:12px">❌ ' + esc(msg) + '</div>';
   rc.classList.remove('hidden');
 }
 
@@ -2329,14 +2345,39 @@ function renderResult(info) {
     '</div>' : '') +
 
     /* 保存 */
-    '<button class="btn ok" style="width:100%;margin-top:.5rem" onclick="saveAnalysisResult()">📥 ダッシュボードに保存</button>';
+    '<button class="btn-secondary" style="width:100%;margin-top:.5rem;margin-bottom:8px" onclick="resetToAnalyze()">← もう一枚分析する</button>' +
+    '<button class="btn ok" style="width:100%;background:var(--acc);color:#fff;border-color:var(--acc);height:48px;border-radius:var(--r-btn);font-size:14px;font-weight:700" onclick="saveAnalysisResult()">保存リストに追加</button>';
 
   document.getElementById('result-empty').classList.add('hidden');
-  document.getElementById('result-loading').classList.add('hidden');
+  const loadingEl = document.getElementById('result-loading');
   const rc = document.getElementById('result-content');
+
   rc.innerHTML = html;
-  rc.classList.remove('hidden');
-  initChartData(rc);  // グラフのタブを有効化
+  initChartData(rc);
+
+  // ローディングをフェードアウト→結果をフェードイン
+  if (loadingEl) {
+    loadingEl.style.transition = 'opacity .25s';
+    loadingEl.style.opacity = '0';
+    setTimeout(() => {
+      loadingEl.classList.add('hidden');
+      loadingEl.style.opacity = '';
+      rc.style.opacity = '0';
+      rc.style.transform = 'translateY(16px)';
+      rc.style.transition = 'opacity .4s, transform .4s';
+      rc.classList.remove('hidden');
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          rc.style.opacity = '1';
+          rc.style.transform = 'translateY(0)';
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+      });
+    }, 220);
+  } else {
+    rc.classList.remove('hidden');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
 
   window._lastResult = {
     name: info.product_name_ja||info.product_name||'不明',
@@ -3344,6 +3385,37 @@ window.switchPeriodTab = function(id, per) {
 document.getElementById('sync-count').textContent = history_data.length > 0 ? '（' + history_data.length + '件）' : '';
 
 
+/* ── 分析画面にスムーズに戻る ── */
+function resetToAnalyze() {
+  const rc = document.getElementById('result-content');
+  if (rc) {
+    rc.style.transition = 'opacity .25s, transform .25s';
+    rc.style.opacity = '0';
+    rc.style.transform = 'translateY(10px)';
+    setTimeout(() => {
+      rc.classList.add('hidden');
+      rc.style.opacity = '';
+      rc.style.transform = '';
+      // 入力エリアを復元
+      const uploadArea   = document.getElementById('upload-area');
+      const analyzeBtn   = document.getElementById('analyze-photo-btn');
+      const settingsCard = document.querySelector('#page-analyze .card');
+      [uploadArea, analyzeBtn, settingsCard].forEach(el => {
+        if (!el) return;
+        el.style.display = '';
+        el.style.opacity = '0';
+        el.style.transform = 'translateY(10px)';
+        el.style.transition = 'opacity .35s, transform .35s';
+        requestAnimationFrame(() => requestAnimationFrame(() => {
+          el.style.opacity = '1';
+          el.style.transform = 'translateY(0)';
+        }));
+      });
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }, 220);
+  }
+}
+
 /* ── New UI helpers ── */
 function toggleAccordion() {
   const body  = document.getElementById('accordion-body');
@@ -3366,11 +3438,45 @@ function showPage(id, el) {
 }
 
 function showLoading(msg) {
-  document.getElementById('result-loading').classList.remove('hidden');
-  document.getElementById('result-content').classList.add('hidden');
-  const errEl = document.getElementById('result-error');
-  if (errEl) errEl.classList.add('hidden');
-  if (msg) document.getElementById('loading-msg').textContent = msg;
+  // 入力エリアを隠してローディングをフェードイン
+  const uploadArea  = document.getElementById('upload-area');
+  const analyzeBtn  = document.getElementById('analyze-photo-btn');
+  const settingsCard = document.querySelector('#page-analyze .card');
+  const loadingEl   = document.getElementById('result-loading');
+  const contentEl   = document.getElementById('result-content');
+  const errorEl     = document.getElementById('result-error');
+
+  // 結果・エラーを非表示
+  if (contentEl) contentEl.classList.add('hidden');
+  if (errorEl)   errorEl.classList.add('hidden');
+
+  // 入力エリアをフェードアウト
+  [uploadArea, analyzeBtn, settingsCard].forEach(el => {
+    if (el) { el.style.transition = 'opacity .3s, transform .3s'; el.style.opacity = '0'; el.style.transform = 'translateY(-8px)'; }
+  });
+
+  setTimeout(() => {
+    [uploadArea, analyzeBtn, settingsCard].forEach(el => { if (el) el.style.display = 'none'; });
+    if (loadingEl) {
+      loadingEl.classList.remove('hidden');
+      loadingEl.style.opacity = '0';
+      loadingEl.style.transform = 'translateY(20px)';
+      loadingEl.style.transition = 'opacity .35s, transform .35s';
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          loadingEl.style.opacity = '1';
+          loadingEl.style.transform = 'translateY(0)';
+        });
+      });
+    }
+    // 最上部にスクロール
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, 280);
+
+  if (msg) {
+    const msgEl = document.getElementById('loading-msg');
+    if (msgEl) msgEl.textContent = msg;
+  }
 }
 
 function showError(msg) {
