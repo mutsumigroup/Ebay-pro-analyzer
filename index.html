@@ -2917,36 +2917,45 @@ function renderDash() {
 
 function openDetailModal(id) {
   const d = history_data.find(function(x){ return x.id === id; });
-  if (!d) return;
-  let imgSrc = d._image || '';
+  if (!d) { console.warn('openDetailModal: id not found', id); return; }
+
+  let imgSrc = d._thumb || d._image || '';
   try { imgSrc = imgSrc || localStorage.getItem('img_' + id) || ''; } catch(e) {}
 
   const rank = d.rank || 'B';
   const info = d._info;
   const fx   = d._fx || n('a-fx') || 155;
+  const rankColors = {S:'var(--ok)',A:'var(--acc)',B:'var(--wn)',C:'var(--ng)'};
+  const rankClr = rankColors[rank] || 'var(--muted)';
 
   // ヒーロー（商品画像）
   const hero = document.getElementById('detail-hero');
-  if (imgSrc) {
-    hero.innerHTML = `<img src="${imgSrc}" alt="${esc(d.name)}" style="width:100%;max-height:220px;object-fit:contain;display:block">
-      <div class="detail-hero-badge"><div class="detail-hero-rank ${rank}">${rank}</div></div>`;
-  } else {
-    hero.innerHTML = `<div class="detail-hero-no-img">📦</div>
-      <div class="detail-hero-badge"><div class="detail-hero-rank ${rank}">${rank}</div></div>`;
+  if (hero) {
+    if (imgSrc) {
+      hero.innerHTML = `<img src="${imgSrc}" alt="${esc(d.name)}" style="width:100%;max-height:220px;object-fit:contain;display:block;background:var(--bg)">`;
+    } else {
+      hero.innerHTML = `<div style="text-align:center;padding:24px;font-size:48px;background:var(--bg)">🃏</div>`;
+    }
   }
 
   // info がない場合は簡易表示
   if (!info) {
     const ip = d.profit >= 0;
     document.getElementById('detail-body').innerHTML = `
-      <div class="detail-name">${esc(d.name)}</div>
-      <div class="detail-sub-name">${d.date||''}</div>
-      <div class="detail-stats-row" style="margin:.75rem 0">
-        <div class="detail-stat"><div class="detail-stat-lbl">純利益</div><div class="detail-stat-val" style="color:${ip?'var(--ok)':'var(--ng)'}">${ip?'+':''}${fj(d.profit)}</div></div>
-        <div class="detail-stat"><div class="detail-stat-lbl">利益率</div><div class="detail-stat-val">${d.margin.toFixed(1)}%</div></div>
-        <div class="detail-stat"><div class="detail-stat-lbl">ROI</div><div class="detail-stat-val">${d.roi.toFixed(1)}%</div></div>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+        <span style="display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:8px;font-size:14px;font-weight:900;background:rgba(0,0,0,.08);color:${rankClr}">${rank}</span>
+        <div>
+          <div class="detail-name">${esc(d.name)}</div>
+          <div class="detail-sub" style="font-size:12px;color:var(--sub)">${d.date||''}</div>
+        </div>
       </div>
-      <button class="detail-refresh-btn" onclick="refreshDetailAnalysis(${id})"><span>🔄</span> 最新情報に更新</button>
+      <div class="kpi-grid" style="margin-bottom:16px">
+        <div class="kpi-item"><div class="kpi-label">純利益</div><div class="kpi-value ${ip?'ok':'ng'}">${ip?'+':''}${fj(d.profit)}</div></div>
+        <div class="kpi-item"><div class="kpi-label">利益率</div><div class="kpi-value">${d.margin.toFixed(1)}%</div></div>
+        <div class="kpi-item"><div class="kpi-label">ROI</div><div class="kpi-value">${d.roi.toFixed(1)}%</div></div>
+        <div class="kpi-item"><div class="kpi-label">登録日</div><div class="kpi-value" style="font-size:14px">${d.date||'--'}</div></div>
+      </div>
+      <button class="detail-refresh-btn" onclick="refreshDetailAnalysis(${id})">🔄 最新情報に更新</button>
       <button class="detail-close-btn" onclick="closeDetailModal()">閉じる</button>`;
     document.getElementById('detail-modal').classList.remove('hidden');
     document.body.style.overflow = 'hidden';
@@ -3034,25 +3043,31 @@ function openDetailModal(id) {
     </div>`;
   }
 
-  const estimBadge = '<span style="font-size:9px;background:rgba(139,144,168,.15);color:var(--mt);padding:1px 5px;border-radius:4px;font-weight:600">AI推計値</span>';
+  const estimBadge = '<span style="font-size:9px;background:rgba(0,0,0,.07);color:var(--sub);padding:1px 5px;border-radius:4px;font-weight:600">AI推計値</span>';
   const analyzedAt = d.date || new Date().toLocaleDateString('ja-JP');
 
   let html = '';
 
   // 商品名・識別情報
-  html += `<div class="detail-name">${esc(info.product_name_ja||info.product_name||d.name)}</div>
-  <div class="detail-sub-name">
-    ${esc(info.card_number||info.model||'')}${info.rarity?' · <strong style="color:var(--wn)">'+esc(info.rarity)+'</strong>':''}
-    ${info.set_name?' · '+esc(info.set_name):''}
-  </div>
-  <div style="font-size:10px;color:var(--mt);margin-bottom:.75rem">分析日: ${analyzedAt} · 識別精度: ${Math.round((info.confidence||0.8)*100)}%</div>`;
+  html += `<div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+    <span style="display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:8px;font-size:14px;font-weight:900;background:rgba(0,0,0,.08);color:${rankClr}">${rank}</span>
+    <div style="flex:1;min-width:0">
+      <div class="detail-name">${esc(info.product_name_ja||info.product_name||d.name)}</div>
+      <div class="detail-sub">
+        ${esc(info.card_number||info.model||'')}${info.rarity?' · <strong style="color:var(--acc)">'+esc(info.rarity)+'</strong>':''}
+        ${info.set_name?' · '+esc(info.set_name):''}
+      </div>
+      <div style="font-size:10px;color:var(--muted);margin-top:2px">分析日: ${analyzedAt}</div>
+    </div>
+  </div>`;
 
   // KPI行
   const ip = d.profit >= 0;
-  html += `<div class="detail-stats-row" style="margin-bottom:.75rem">
-    <div class="detail-stat"><div class="detail-stat-lbl">純利益</div><div class="detail-stat-val" style="color:${ip?'var(--ok)':'var(--ng)'}">${ip?'+':''}${fj(d.profit)}</div></div>
-    <div class="detail-stat"><div class="detail-stat-lbl">利益率</div><div class="detail-stat-val" style="color:var(--${d.margin>=20?'ok':d.margin>0?'wn':'ng'})">${d.margin.toFixed(1)}%</div></div>
-    <div class="detail-stat"><div class="detail-stat-lbl">ROI</div><div class="detail-stat-val" style="color:var(--${d.roi>=30?'pr':d.roi>0?'wn':'ng'})">${d.roi.toFixed(1)}%</div></div>
+  html += `<div class="kpi-grid" style="margin-bottom:14px">
+    <div class="kpi-item"><div class="kpi-label">純利益</div><div class="kpi-value ${ip?'ok':'ng'}">${ip?'+':''}${fj(d.profit)}</div></div>
+    <div class="kpi-item"><div class="kpi-label">利益率</div><div class="kpi-value ${d.margin>=20?'ok':d.margin>0?'':'ng'}">${d.margin.toFixed(1)}%</div></div>
+    <div class="kpi-item"><div class="kpi-label">ROI</div><div class="kpi-value ${d.roi>=30?'acc':d.roi>0?'':'ng'}">${d.roi.toFixed(1)}%</div></div>
+    <div class="kpi-item"><div class="kpi-label">仕入れ価格</div><div class="kpi-value" style="font-size:16px">${d.buyPrice>0?fj(d.buyPrice):'--'}</div></div>
   </div>`;
 
   // ① 素体販売価格
