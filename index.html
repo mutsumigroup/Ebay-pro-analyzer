@@ -800,6 +800,8 @@ input[type=number]:focus,input[type=text]:focus,input[type=email]:focus,input[ty
   <div class="card">
     <div class="card-title">データ管理</div>
     <div style="display:flex;flex-direction:column;gap:8px">
+      <button class="btn-primary" onclick="kvSyncLoad().then(ok=>{if(ok){renderDash();showToast('☁️ 同期完了！');}else{showToast('同期失敗（ログイン確認）')}})" style="height:48px;background:#4A90D9;border-color:#4A90D9">☁️ クラウドからデータを同期</button>
+      <button class="btn-secondary" onclick="kvSyncSave().then(()=>showToast('☁️ クラウドに保存しました'))" style="height:44px">☁️ クラウドに今すぐ保存</button>
       <button class="btn-secondary" onclick="exportCSV()" style="height:44px">CSVエクスポート</button>
       <button class="btn-secondary" onclick="exportAllData()" style="height:44px">バックアップ（JSON）</button>
       <label style="width:100%">
@@ -1567,7 +1569,6 @@ async function doAuth() {
 
 function completeLogin(email, apiKey) {
   _apiKey = apiKey;
-  // セッション保存
   try {
     localStorage.setItem('anthropic_api_key', apiKey);
     localStorage.setItem('current_user_email', email);
@@ -1577,6 +1578,14 @@ function completeLogin(email, apiKey) {
   updateLoginUI(email);
   document.getElementById('apikey-modal').classList.add('hidden');
   showToast('✅ ログインしました');
+  // ログイン後にクラウドからデータ同期
+  setTimeout(async () => {
+    const loaded = await kvSyncLoad();
+    if (loaded) {
+      showToast('☁️ クラウドからデータを同期しました');
+      renderDash();
+    }
+  }, 600);
 }
 
 function updateLoginUI(email) {
@@ -3416,7 +3425,115 @@ function resetToAnalyze() {
   }
 }
 
-/* ── New UI helpers ── */
+/* ── KV クラウド同期 ── */
+const KV_SYNC_INTERVAL = 5 * 60 * 1000; // 5分ごとに自動同期
+let _kvSyncing = false;
+
+async function kvSyncSave() {
+  const email = (() => { try { return localStorage.getItem('current_user_email') || ''; } catch(e) { return ''; } })();
+  const workerOk = WORKER_URL && WORKER_URL !== 'YOUR_WORKER_URL_HERE';
+  if (!email || !workerOk || _kvSyncing) return;
+  _kvSyncing = true;
+  try {
+    // _thumbは別途保存（容量削減のため本体から除外）
+    const payload = {
+      history: history_data.map(d => { const c = Object.assign({}, d); delete c._thumb; return c; }),
+      thumbs:  Object.fromEntries(
+        history_data.filter(d => d._thumb).map(d => ['thumb_' + d.id, d._thumb])
+      ),
+      savedAt: Date.now()
+    };
+    await fetch(WORKER_URL + '/sync', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-User-Email': email },
+      body: JSON.stringify(payload)
+    });
+    updateSyncStatus('synced');
+  } catch(e) {
+    console.warn('KV save error:', e.message);
+    updateSyncStatus('error');
+  } finally { _kvSyncing = false; }
+}
+
+async function kvSyncLoad() {
+  const email = (() => { try { return localStorage.getItem('current_user_email') || ''; } catch(e) { return ''; } })();
+  const workerOk = WORKER_URL && WORKER_URL !== 'YOUR_WORKER_URL_HERE';
+  if (!email || !workerOk) return false;
+  updateSyncStatus('syncing');
+  try {
+    const res = await fetch(WORKER_URL + '/sync?email=' + encodeURIComponent(email));
+    if (!res.ok) return false;
+    const data = await res.json();
+    if (!data.history) return false;
+
+    // クラウドとローカルをマージ（新しい方を優先）
+    const cloudItems  = data.history || [];
+    const localItems  = history_data;
+    const merged      = mergeHistoryData(localItems, cloudItems);
+    history_data      = merged;
+
+    // サムネを復元
+    if (data.thumbs) {
+      history_data.forEach(d => {
+        const thumb = data.thumbs['thumb_' + d.id];
+        if (thumb) d._thumb = thumb;
+        else {
+          try {
+            const local = localStorage.getItem('thumb_' + d.id);
+            if (local) d._thumb = local;
+          } catch(e) {}
+        }
+      });
+    }
+
+    saveToStorage();
+    updateSyncStatus('synced');
+    return true;
+  } catch(e) {
+    console.warn('KV load error:', e.message);
+    updateSyncStatus('error');
+    return false;
+  }
+}
+
+function mergeHistoryData(local, cloud) {
+  const map = new Map();
+  // ローカルを先に入れる
+  local.forEach(d => map.set(d.id, d));
+  // クラウドのデータ（ローカルにないものを追加）
+  cloud.forEach(d => { if (!map.has(d.id)) map.set(d.id, d); });
+  // 日付順でソート
+  return Array.from(map.values()).sort((a, b) => (b.id || 0) - (a.id || 0));
+}
+
+function updateSyncStatus(status) {
+  const dot    = document.getElementById('apikey-dot');
+  const lbl    = document.getElementById('apikey-lbl');
+  const synclbl = document.getElementById('sync-status');
+  if (status === 'syncing') {
+    if (dot)     dot.style.background = '#f5a623';
+    if (synclbl) synclbl.textContent = '同期中...';
+  } else if (status === 'synced') {
+    if (dot)     dot.style.background = 'var(--ok)';
+    if (lbl)     lbl.textContent = '接続済み';
+    if (synclbl) synclbl.textContent = '同期済み ✓';
+    setTimeout(() => { if (synclbl) synclbl.textContent = '接続済み'; }, 2000);
+  } else {
+    if (dot)     dot.style.background = '#ccc';
+    if (synclbl) synclbl.textContent = '同期失敗';
+  }
+}
+
+// saveToStorageをオーバーライド（保存時にKVにも反映）
+const _origSaveToStorage = saveToStorage;
+function saveToStorage() {
+  _origSaveToStorage();
+  // デバウンス: 2秒後にKVに保存（連続保存を防ぐ）
+  clearTimeout(window._kvSaveTimer);
+  window._kvSaveTimer = setTimeout(() => kvSyncSave(), 2000);
+}
+
+
 function toggleAccordion() {
   const body  = document.getElementById('accordion-body');
   const arrow = document.getElementById('acc-arrow');
@@ -3615,6 +3732,17 @@ document.addEventListener('DOMContentLoaded', function() {
   }
   checkMobileCamera();
   window.addEventListener('resize', checkMobileCamera);
+
+  // 起動時にKVからデータを同期（ログイン済みの場合）
+  const savedEmail = (() => { try { return localStorage.getItem('current_user_email') || ''; } catch(e) { return ''; } })();
+  if (savedEmail) {
+    setTimeout(async () => {
+      const loaded = await kvSyncLoad();
+      if (loaded) renderDash();
+    }, 1000);
+    // 5分ごとに自動同期
+    setInterval(() => kvSyncLoad().then(ok => { if (ok) renderDash(); }), KV_SYNC_INTERVAL);
+  }
 });
 </script>
 </body>
