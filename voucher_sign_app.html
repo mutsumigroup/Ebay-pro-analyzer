@@ -1,0 +1,1226 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Voucher Sign</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+:root{
+  --bg:#f0f4f8;--surface:#fff;--border:#d1dce8;
+  --navy:#1a3252;--blue:#2563eb;--green:#16a34a;--text:#1e293b;--muted:#64748b;
+}
+html,body{height:100%;background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:var(--text);}
+
+.header{background:var(--navy);color:#fff;padding:14px 16px 12px;display:flex;align-items:center;gap:10px;}
+.header-icon{font-size:22px;}
+.header-text{flex:1;}
+.header-title{font-size:17px;font-weight:800;letter-spacing:.02em;}
+.header-sub{font-size:12px;color:#94a3b8;margin-top:1px;}
+.header-badge{background:var(--blue);color:#fff;font-size:13px;font-weight:800;padding:4px 10px;border-radius:20px;white-space:nowrap;}
+.header-badge.all-done{background:var(--green);}
+
+.body{padding:16px;display:flex;flex-direction:column;gap:12px;max-width:480px;margin:0 auto;}
+
+.upload-screen{display:flex;flex-direction:column;gap:16px;}
+.upload-box{
+  background:var(--surface);border:2.5px dashed var(--border);border-radius:14px;
+  padding:36px 20px;display:flex;flex-direction:column;align-items:center;gap:14px;
+  cursor:pointer;transition:border-color .2s,background .2s;
+}
+.upload-box:active,.upload-box.drag{border-color:var(--blue);background:#eff6ff;}
+.upload-icon{font-size:48px;line-height:1;}
+.upload-label{font-size:16px;font-weight:800;color:var(--text);}
+.upload-sub{font-size:13px;font-weight:600;color:var(--muted);text-align:center;line-height:1.6;}
+#fileInput{display:none;}
+.upload-note{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 14px;font-size:13px;font-weight:500;color:var(--muted);line-height:1.8;}
+.upload-note strong{color:var(--text);}
+
+.processing{display:none;flex-direction:column;align-items:center;gap:16px;padding:40px 20px;}
+.spinner{width:44px;height:44px;border:4px solid var(--border);border-top-color:var(--blue);border-radius:50%;animation:spin .8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.proc-label{font-size:15px;font-weight:700;color:var(--text);}
+
+.app-screen{display:none;flex-direction:column;gap:12px;}
+.info-strip{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px 14px;font-size:13px;font-weight:500;color:var(--muted);line-height:1.9;}
+.info-strip strong{color:var(--text);font-weight:800;}
+.sec-label{font-size:12px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;padding:0 2px;}
+.crew-card{background:var(--surface);border:1.5px solid var(--border);border-radius:12px;padding:14px 16px;display:flex;align-items:center;gap:14px;cursor:pointer;transition:border-color .15s;-webkit-user-select:none;user-select:none;}
+.crew-card:active{opacity:.85;}
+.crew-card.done{border-color:var(--green);background:#f0fdf4;}
+.crew-avatar{width:40px;height:40px;border-radius:50%;background:var(--navy);color:#fff;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:900;flex-shrink:0;}
+.crew-card.done .crew-avatar{background:var(--green);}
+.crew-body{flex:1;min-width:0;}
+.crew-name{font-size:15px;font-weight:800;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.crew-rank{font-size:13px;font-weight:600;color:var(--muted);margin-top:2px;}
+.crew-right{display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0;}
+.crew-sig-thumb{height:30px;width:70px;object-fit:contain;background:#fff;border:1px solid var(--border);border-radius:4px;}
+.status-chip{font-size:11px;font-weight:800;padding:3px 8px;border-radius:10px;background:#e2e8f0;color:var(--muted);white-space:nowrap;}
+.status-chip.done{background:#dcfce7;color:var(--green);}
+.status-chip.tap{background:#dbeafe;color:var(--blue);}
+.progress-wrap{height:4px;background:#d1dce8;border-radius:4px;overflow:hidden;}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--blue),var(--green));border-radius:4px;transition:width .4s ease;width:0%;}
+.dl-btn{width:100%;padding:16px;border-radius:12px;border:none;cursor:pointer;font-size:16px;font-weight:900;letter-spacing:.02em;display:flex;align-items:center;justify-content:center;gap:10px;background:#d1dce8;color:#94a3b8;transition:background .2s,color .2s,transform .1s;}
+.dl-btn.ready{background:var(--green);color:#fff;}
+.dl-btn.ready:active{transform:scale(.97);}
+.reset-btn{background:none;border:1.5px solid var(--border);border-radius:10px;padding:10px;width:100%;font-size:13px;font-weight:700;color:var(--muted);cursor:pointer;}
+.reset-btn:active{opacity:.7;}
+.receipt-section{margin-top:8px;}
+.receipt-box{background:var(--surface,#fff);border:2px dashed #f59e0b;border-radius:12px;padding:16px;text-align:center;cursor:pointer;transition:border-color .2s,background .2s;-webkit-user-select:none;user-select:none;}
+.receipt-box:active,.receipt-box.drag{border-color:#d97706;background:#fffbeb;}
+.receipt-icon{font-size:28px;margin-bottom:6px;}
+.receipt-label{font-size:14px;font-weight:800;color:#1e293b;}
+.receipt-sub{font-size:11px;color:#64748b;margin-top:3px;}
+.receipt-preview{margin-top:8px;background:#fff;border:1px solid #fde68a;border-radius:8px;overflow:hidden;position:relative;}
+.receipt-preview img{width:100%;display:block;max-height:160px;object-fit:contain;}
+.receipt-remove{position:absolute;top:6px;right:6px;background:#dc2626;color:#fff;border:none;border-radius:50%;width:24px;height:24px;font-size:14px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;font-weight:700;}
+.receipt-info{background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:8px 12px;font-size:11px;color:#92400e;margin-top:6px;line-height:1.6;}
+#receiptInput{display:none;}
+.version-card{background:var(--surface-2,#fff);border:0.5px solid var(--border,#d1dce8);border-radius:10px;overflow:hidden;margin-top:4px;}
+.version-header{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;cursor:pointer;-webkit-user-select:none;user-select:none;}
+.version-header-left{display:flex;align-items:center;gap:8px;}
+.version-title{font-size:12px;font-weight:700;color:#64748b;}
+.version-current{font-size:11px;font-weight:600;background:#dbeafe;color:#1d4ed8;padding:2px 7px;border-radius:8px;}
+.version-arrow{font-size:11px;color:#94a3b8;transition:transform .2s;}
+.version-arrow.open{transform:rotate(180deg);}
+.version-body{display:none;border-top:0.5px solid #d1dce8;}
+.version-body.open{display:block;}
+.version-item{padding:10px 14px;border-bottom:0.5px solid #f1f5f9;}
+.version-item:last-child{border-bottom:none;}
+.version-item-header{display:flex;align-items:center;gap:8px;margin-bottom:5px;}
+.ver-num{font-size:11px;font-weight:700;color:#1e293b;}
+.ver-date{font-size:10px;color:#94a3b8;}
+.ver-tag{font-size:10px;font-weight:600;padding:1px 6px;border-radius:6px;}
+.ver-tag.new{background:#dcfce7;color:#15803d;}
+.ver-tag.fix{background:#fef3c7;color:#92400e;}
+.ver-changes{list-style:none;padding:0;margin:0;}
+.ver-changes li{font-size:11px;color:#475569;padding:2px 0;padding-left:12px;position:relative;}
+.ver-changes li::before{content:'·';position:absolute;left:3px;color:#94a3b8;}
+
+.sign-overlay{display:none;position:fixed;inset:0;background:#1a3252;z-index:999;flex-direction:column;overflow:hidden;}
+.sign-overlay.open{display:flex;}
+.sign-preview-area{flex-shrink:0;position:relative;overflow:hidden;background:#f8fafc;height:110px;border-bottom:2px solid var(--blue);}
+.sign-preview-area img{position:absolute;display:block;}
+.sign-row-hl{position:absolute;background:rgba(37,99,235,.12);border:2px solid var(--blue);pointer-events:none;}
+.sign-name-bar{background:#0f2744;padding:10px 16px;display:flex;align-items:center;gap:10px;flex-shrink:0;}
+.sign-name-label{flex:1;}
+.sign-person-name{font-size:16px;font-weight:800;color:#93c5fd;}
+.sign-person-rank{font-size:13px;font-weight:600;color:#64748b;margin-top:1px;}
+.sign-tip{font-size:13px;font-weight:600;color:#475569;}
+.sign-canvas-area{flex:1;display:flex;flex-direction:column;padding:12px 14px 16px;gap:10px;min-height:0;max-height:calc(100vh - 280px);}
+.canvas-inner{flex:1;min-height:120px;max-height:340px;position:relative;border:2px dashed #3b82f6;border-radius:10px;background:#fff;overflow:hidden;touch-action:none;}
+.canvas-inner canvas{display:block;width:100%;height:100%;}
+.canvas-ghost{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:#94a3b8;font-size:17px;font-weight:700;text-align:center;pointer-events:none;transition:opacity .2s;display:flex;flex-direction:column;align-items:center;gap:6px;}
+.canvas-ghost .ghost-icon{font-size:32px;opacity:.4;}
+.sign-btns{display:flex;gap:10px;flex-shrink:0;padding-bottom:env(safe-area-inset-bottom,0px);}
+.s-btn{flex:1;padding:14px;border-radius:10px;border:none;font-size:15px;font-weight:800;cursor:pointer;-webkit-user-select:none;user-select:none;}
+.s-btn:active{opacity:.8;}
+.s-btn-cancel{background:#0f2744;color:#64748b;}
+.s-btn-clear{background:#1e3a5f;color:#94a3b8;}
+.s-btn-save{background:var(--blue);color:#fff;}
+.s-btn-save:disabled{background:#1e3a5f;color:#475569;}
+
+/* ── モード選択 ── */
+.mode-select{display:flex;flex-direction:column;gap:10px;}
+.mode-label{font-size:13px;font-weight:800;color:#64748b;text-align:center;text-transform:uppercase;letter-spacing:.07em;}
+.mode-btn{width:100%;padding:18px 16px;border-radius:14px;border:2px solid var(--border,#d1dce8);background:#fff;display:flex;align-items:center;gap:14px;cursor:pointer;transition:border-color .15s,background .15s;-webkit-user-select:none;user-select:none;text-align:left;}
+.mode-btn:active{opacity:.85;}
+.mode-btn.sign-mode{border-color:#2563eb;}
+.mode-btn.receipt-mode{border-color:#f59e0b;}
+.mode-btn-icon{font-size:28px;flex-shrink:0;}
+.mode-btn-text{}
+.mode-btn-title{font-size:15px;font-weight:800;color:#1e293b;}
+.mode-btn-sub{font-size:12px;color:#64748b;margin-top:2px;line-height:1.4;}
+
+/* ── Receipt Attach Mode ── */
+.receipt-attach-screen{display:none;flex-direction:column;gap:12px;}
+.ra-box{background:#fff;border:2px dashed var(--border,#d1dce8);border-radius:12px;padding:20px 16px;text-align:center;cursor:pointer;transition:border-color .2s;-webkit-user-select:none;user-select:none;position:relative;}
+.ra-box:active,.ra-box.has-file{border-color:#16a34a;background:#f0fdf4;}
+.ra-box.drag{border-color:#2563eb;background:#eff6ff;}
+.ra-box-icon{font-size:32px;margin-bottom:6px;}
+.ra-box-label{font-size:14px;font-weight:800;color:#1e293b;}
+.ra-box-sub{font-size:11px;color:#64748b;margin-top:3px;}
+.ra-preview{width:100%;max-height:120px;object-fit:contain;border-radius:6px;margin-top:8px;display:none;}
+.ra-filename{font-size:11px;font-weight:600;color:#16a34a;margin-top:4px;display:none;}
+.ra-dl-btn{width:100%;padding:16px;border-radius:12px;border:none;cursor:pointer;font-size:15px;font-weight:900;background:#d1dce8;color:#94a3b8;display:flex;align-items:center;justify-content:center;gap:8px;transition:background .2s;}
+.ra-dl-btn.ready{background:#16a34a;color:#fff;}
+.ra-dl-btn.ready:active{opacity:.85;}
+.ra-back{background:none;border:1.5px solid var(--border,#d1dce8);border-radius:10px;padding:10px;width:100%;font-size:13px;font-weight:700;color:#64748b;cursor:pointer;}
+.ra-back:active{opacity:.7;}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-icon">&#9875;</div>
+  <div class="header-text">
+    <div class="header-title">Voucher Sign</div>
+    <div class="header-sub" id="headerSub">Upload a PDF to get started</div>
+  </div>
+  <div class="header-badge" id="headerBadge" style="display:none;">0 / 0</div>
+</div>
+
+<div class="body">
+  <div class="upload-screen" id="uploadScreen">
+
+    <!-- モード選択 -->
+    <div class="mode-select" id="modeSelect">
+      <div class="mode-label">SELECT MODE</div>
+      <div class="mode-btn sign-mode" onclick="showSignUpload()">
+        <div class="mode-btn-icon">✍️</div>
+        <div class="mode-btn-text">
+          <div class="mode-btn-title">Collect Signatures</div>
+          <div class="mode-btn-sub">Upload a Voucher PDF and collect crew signatures</div>
+        </div>
+      </div>
+      <div class="mode-btn receipt-mode" onclick="showReceiptAttach()">
+        <div class="mode-btn-icon">🧾</div>
+        <div class="mode-btn-text">
+          <div class="mode-btn-title">Attach Receipt</div>
+          <div class="mode-btn-sub">Add a receipt to a signed Voucher PDF</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- サインモード：PDFアップロード -->
+    <div id="signUploadArea" style="display:none;flex-direction:column;gap:12px;">
+      <label for="fileInput" class="upload-box" id="uploadBox" style="cursor:pointer;display:block;">
+        <div class="upload-icon">📄</div>
+        <div class="upload-label">Tap to select PDF</div>
+        <div class="upload-sub">Upload your Voucher PDF here</div>
+        <input type="file" id="fileInput" accept="application/pdf">
+      </label>
+      <div class="upload-note">
+        <strong>Sign column is detected automatically</strong><br>
+        The app will scan the PDF and find each crew member's Sign cell.
+      </div>
+      <button class="ra-back" onclick="backToModeSelect()">← Back to Mode Select</button>
+    </div>
+
+    <!-- Version History -->
+    <div class="version-card">
+      <div class="version-header" onclick="toggleVersion()">
+        <div class="version-header-left">
+          <span class="version-title">&#128221; Version History</span>
+          <span class="version-current">v2.1</span>
+        </div>
+        <span class="version-arrow" id="versionArrow">&#9660;</span>
+      </div>
+      <div class="version-body" id="versionBody">
+        <div class="version-item">
+          <div class="version-item-header">
+            <span class="ver-num">v2.1</span>
+            <span class="ver-date">2026/09/27</span>
+            <span class="ver-tag fix">Fix</span>
+          </div>
+          <ul class="ver-changes">
+            <li>iPhone Safari でファイル選択ボタンが反応しない問題を修正（全ファイル入力を label 方式に変更）</li>
+            <li>Collect Signatures / Attach Receipt 両モードのアップロードボタンをタップ可能な「Choose File」ボタンに改善</li>
+          </ul>
+        </div>
+        <div class="version-item">
+          <div class="version-item-header">
+            <span class="ver-num">v2.0</span>
+            <span class="ver-date">2026/09/25</span>
+            <span class="ver-tag new">New</span>
+          </div>
+          <ul class="ver-changes">
+            <li>モード選択画面を追加（サインモード／Receipt Attach Mode）</li>
+            <li>「Attach Receipt」モード：サイン済みVoucher PDFに領収書画像を後から追加可能に</li>
+            <li>クルーテーブル下・Important Notice上の空白に自動配置</li>
+          </ul>
+        </div>
+        <div class="version-item">
+          <div class="version-item-header">
+            <span class="ver-num">v1.9</span>
+            <span class="ver-date">2026/09/25</span>
+            <span class="ver-tag new">New</span>
+          </div>
+          <ul class="ver-changes">
+            <li>領収書（JPG/PNG）をVoucherの空白スペースに自動貼付する機能を追加</li>
+            <li>クルーテーブルの下・Important Noticeの上に自動配置</li>
+            <li>縦横比を保ちながら最大サイズで中央配置</li>
+          </ul>
+        </div>
+        <div class="version-item">
+          <div class="version-item-header">
+            <span class="ver-num">v1.8</span>
+            <span class="ver-date">2026/09/04</span>
+            <span class="ver-tag fix">Fix</span>
+          </div>
+          <ul class="ver-changes">
+            <li>1文字ずつ分割されたPDFのSign列検出に対応（SELENE LEADER等）</li>
+            <li>サインボタンが画面外に隠れる問題を修正</li>
+            <li>PDF書き込み位置を上に調整</li>
+            <li>Version Historyを追加</li>
+          </ul>
+        </div>
+        <div class="version-item">
+          <div class="version-item-header">
+            <span class="ver-num">v1.7</span>
+            <span class="ver-date">2026/08/30</span>
+            <span class="ver-tag fix">Fix</span>
+          </div>
+          <ul class="ver-changes">
+            <li>サイン保存時にキャンバス全体ではなく描画範囲のみをクロップしてPDFに貼付</li>
+            <li>Sign列の位置をNationality列右端を基準に自動計算</li>
+            <li>PDF書き込み時にサインをSign列中央に配置</li>
+          </ul>
+        </div>
+        <div class="version-item">
+          <div class="version-item-header">
+            <span class="ver-num">v1.6</span>
+            <span class="ver-date">2026/08/30</span>
+            <span class="ver-tag fix">Fix</span>
+          </div>
+          <ul class="ver-changes">
+            <li>サインの線をCatmull-Romスプラインで滑らかに描画</li>
+            <li>デバイスの解像度（DPR）に応じた線幅の自動調整</li>
+            <li>ボールペンらしい自然な線質を実現</li>
+          </ul>
+        </div>
+        <div class="version-item">
+          <div class="version-item-header">
+            <span class="ver-num">v1.5</span>
+            <span class="ver-date">2026/08/30</span>
+            <span class="ver-tag new">New</span>
+          </div>
+          <ul class="ver-changes">
+            <li>PDFアップロード機能を追加（毎回PDFを選択可能に）</li>
+            <li>Sign列・クルー行を自動検出するアルゴリズムを実装</li>
+            <li>スマホ全画面サインオーバーレイを追加</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div><!-- /upload-screen -->
+
+  <!-- Receipt Attach Mode -->
+  <div class="receipt-attach-screen" id="receiptAttachScreen">
+    <div class="sec-label">🧾 Attach Receipt to Voucher</div>
+
+    <!-- Step1: サイン済みVoucher PDF -->
+    <div>
+      <div style="font-size:12px;font-weight:700;color:#64748b;margin-bottom:6px;">STEP 1 ― Signed Voucher PDF</div>
+      <div class="ra-box" id="raVoucherBox">
+        <div class="ra-box-icon">📄</div>
+        <div class="ra-box-label">Select Signed PDF</div>
+        <div class="ra-box-sub">e.g. signed_voucher.pdf</div>
+        <div id="raVoucherName" class="ra-filename"></div>
+        <label for="raVoucherInput" style="display:block;margin-top:14px;padding:13px 0;background:#0ea5e9;color:#fff;border-radius:10px;font-size:15px;font-weight:800;cursor:pointer;text-align:center;-webkit-tap-highlight-color:rgba(0,0,0,0.1);">
+          📄 Choose PDF
+        </label>
+        <input type="file" id="raVoucherInput" accept="application/pdf"
+               style="display:none;">
+      </div>
+    </div>
+
+    <!-- Step2: 領収書 -->
+    <div>
+      <div style="font-size:12px;font-weight:700;color:#64748b;margin-bottom:6px;">STEP 2 ― Receipt Image / PDF</div>
+      <div class="ra-box" id="raReceiptBox">
+        <div class="ra-box-icon" id="raReceiptIcon">🧾</div>
+        <div class="ra-box-label">Select Receipt</div>
+        <div class="ra-box-sub">JPG / PNG / PDF supported</div>
+        <img id="raReceiptPreview" class="ra-preview" alt="">
+        <div id="raReceiptName" class="ra-filename"></div>
+        <!-- iOS Safari対応: labelでinputを囲む。inputはdisplay:noneにしない（clip方式）-->
+        <label for="raReceiptInput" style="display:block;margin-top:14px;padding:13px 0;background:#f59e0b;color:#fff;border-radius:10px;font-size:15px;font-weight:800;cursor:pointer;text-align:center;-webkit-tap-highlight-color:rgba(0,0,0,0.1);">
+          📂 Choose File
+        </label>
+        <input type="file" id="raReceiptInput" accept="image/*,application/pdf"
+               style="display:none;">
+      </div>
+    </div>
+
+    <!-- 実行ボタン -->
+    <button class="ra-dl-btn" id="raDlBtn" onclick="attachReceiptToPDF()">
+      <span>📎</span><span id="raDlBtnText">Please select PDF and Receipt</span>
+    </button>
+    <button class="ra-back" onclick="backToModeSelect()">← Back to Mode Select</button>
+  </div>
+
+  <div class="processing" id="processingScreen">
+    <div class="spinner"></div>
+    <div class="proc-label" id="procLabel">Analyzing PDF...</div>
+  </div>
+
+  <div class="app-screen" id="appScreen">
+    <div class="info-strip" id="infoStrip"></div>
+    <div class="sec-label">CREW — Tap to Sign</div>
+    <div id="crewList"></div>
+    <div class="progress-wrap"><div class="progress-fill" id="progFill"></div></div>
+    <button class="dl-btn" id="dlBtn" disabled onclick="downloadPDF()">
+      <span>📄</span><span id="dlBtnText">Collect signatures</span>
+    </button>
+    <!-- 領収書セクション -->
+    <div class="receipt-section" id="receiptSection">
+      <div class="sec-label">🧾 Receipt (Optional)</div>
+      <div class="receipt-box" id="receiptBox">
+        <div class="receipt-icon">🧾</div>
+        <div class="receipt-label">Tap to add Receipt</div>
+        <div class="receipt-sub">JPG / PNG / PDF supported</div>
+        <label for="receiptInput" style="display:inline-block;margin-top:10px;padding:10px 24px;background:#f59e0b;color:#fff;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;">📂 Choose File</label>
+        <input type="file" id="receiptInput" accept="image/*,application/pdf" style="display:none;">
+      </div>
+      <div class="receipt-info">
+        The receipt will be placed automatically in the blank space below the crew table and above the Important Notice.
+      </div>
+    </div>
+
+    <button class="reset-btn" onclick="resetApp()">&#8635; Load another PDF</button>
+  </div>
+</div>
+
+<div class="sign-overlay" id="signOverlay">
+  <div class="sign-preview-area" id="previewArea">
+    <img id="previewImg" src="" alt="">
+    <div class="sign-row-hl" id="rowHl"></div>
+  </div>
+  <div class="sign-name-bar">
+    <div class="sign-name-label">
+      <div class="sign-person-name" id="overlayName">—</div>
+      <div class="sign-person-rank" id="overlayRank">—</div>
+    </div>
+    <div class="sign-tip">✍ Sign below</div>
+  </div>
+  <div class="sign-canvas-area">
+    <div class="canvas-inner" id="canvasInner">
+      <canvas id="sigCanvas"></canvas>
+      <div class="canvas-ghost" id="canvasGhost">
+        <span class="ghost-icon">✍</span><span>Sign here</span>
+      </div>
+    </div>
+    <div class="sign-btns">
+      <button class="s-btn s-btn-cancel" onclick="closeOverlay()">Cancel</button>
+      <button class="s-btn s-btn-clear" onclick="clearSig()">Clear</button>
+      <button class="s-btn s-btn-save" id="saveBtn" onclick="saveSig()" disabled>Save</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script>
+pdfjsLib.GlobalWorkerOptions.workerSrc =
+  'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+let pdfBytes=null, pageImg=null, crewData=[], sigs={}, currentCrew=null;
+let receiptData=null; // {dataURL, type:'image'|'pdf'}
+let drawing=false, lastX=0, lastY=0, lastW=3.0, lastVel=0;
+let strokePoints=[];   // 一筆分の点 [{x,y}]
+let allStrokes=[];     // 完了したストローク全て（再描画用）
+let pdfPageW=0, pdfPageH=0; // PDF実際のポイントサイズ
+
+/* ── UPLOAD ── */
+// fileInputはlabel内にあるため、document委任で確実に拾う
+document.addEventListener('change', e=>{
+  if(e.target.id==='fileInput' && e.target.files[0]) loadPDF(e.target.files[0]);
+});
+const uploadBox=document.getElementById('uploadBox');
+uploadBox.addEventListener('dragover', e=>{ e.preventDefault(); uploadBox.classList.add('drag'); });
+uploadBox.addEventListener('dragleave', ()=>uploadBox.classList.remove('drag'));
+uploadBox.addEventListener('drop', e=>{
+  e.preventDefault(); uploadBox.classList.remove('drag');
+  const f=e.dataTransfer.files[0];
+  if(f && f.type==='application/pdf') loadPDF(f);
+});
+
+async function loadPDF(file){
+  showScreen('processing');
+  setProc('Loading PDF...');
+  try{
+    const ab=await file.arrayBuffer();
+    pdfBytes=new Uint8Array(ab);
+
+    setProc('Rendering page...');
+    const pdfjsDoc=await pdfjsLib.getDocument({data:pdfBytes.slice()}).promise;
+    const page=await pdfjsDoc.getPage(1);
+
+    // ページ実サイズ（ポイント単位）を記録
+    const vp1=page.getViewport({scale:1});
+    pdfPageW=vp1.width;
+    pdfPageH=vp1.height;
+
+    // プレビュー用画像を生成（2.5倍）
+    const scale=2.5;
+    const vp=page.getViewport({scale});
+    const cvs=document.createElement('canvas');
+    cvs.width=vp.width; cvs.height=vp.height;
+    await page.render({canvasContext:cvs.getContext('2d'),viewport:vp}).promise;
+    pageImg=cvs.toDataURL('image/png');
+    // プレビュー画像の実ピクセルサイズを保存（正規化用）
+    const imgW=vp.width, imgH=vp.height;
+
+    setProc('Detecting Sign column...');
+    const content=await page.getTextContent();
+
+    // ── テキストアイテムを正規化 ──
+    // PDFによっては1文字ずつ別アイテムになる場合があるため
+    // 中心Y座標でライングループ化→近接文字を結合して単語を再構築する
+    const rawItems=[];
+    for(const it of content.items){
+      if(!it.str || !it.str.trim()) continue;
+      const tx=it.transform[4];
+      const ty=it.transform[5];
+      const h=Math.abs(it.height)||8;
+      const yTop=pdfPageH-ty;
+      const yCtr=yTop+h/2;
+      rawItems.push({x:tx, x1:tx+Math.abs(it.width), yCtr, str:it.str});
+    }
+    rawItems.sort((a,b)=>a.x-b.x);
+
+    // 中心Yが±4pt以内のアイテムを同じ行にグループ化
+    const lineGroups=[];
+    for(const ri of rawItems){
+      let placed=false;
+      for(const lg of lineGroups){
+        if(Math.abs(ri.yCtr-lg.yCtr)<4.0){
+          lg.items.push(ri);
+          lg.yCtr=lg.items.reduce((s,i)=>s+i.yCtr,0)/lg.items.length;
+          placed=true; break;
+        }
+      }
+      if(!placed) lineGroups.push({yCtr:ri.yCtr,items:[ri]});
+    }
+
+    // 各ラインをX順に並べ、X間隔4pt以内の文字を結合して単語にする
+    const items=[];
+    for(const lg of lineGroups.sort((a,b)=>a.yCtr-b.yCtr)){
+      lg.items.sort((a,b)=>a.x-b.x);
+      let cur=null;
+      for(const ri of lg.items){
+        if(!cur){cur={...ri};}
+        else if(ri.x-cur.x1<4.0){cur.str+=ri.str;cur.x1=ri.x1;}
+        else{
+          const s=cur.str.trim();
+          if(s) items.push({str:s,raw:s,x:cur.x,y:lg.yCtr,w:cur.x1-cur.x,h:8});
+          cur={...ri};
+        }
+      }
+      if(cur){const s=cur.str.trim();if(s)items.push({str:s,raw:s,x:cur.x,y:lg.yCtr,w:cur.x1-cur.x,h:8});}
+    }
+
+    // ── "Sign" ヘッダーを探す ──
+    // pdf.jsが "Nationality Sign\n< Important..." のように結合する場合があるため
+    // str(最初のトークン) と raw(全体) の両方を検索
+    const signHdr=items.find(it=>/^sign$/i.test(it.str))
+      || items.find(it=>/sign/i.test(it.str) && it.w < 50 && it.str.length < 10)
+      || items.find(it=>/^sign/i.test(it.raw));
+    if(!signHdr) throw new Error('"Sign" column header not found.\nPlease check that the PDF has a "Sign" column.');
+
+    const signHdrY=signHdr.y;
+
+    // ── Nationality ヘッダーを部分一致で探す（フォント分割対策）──
+    const natHdr=items.find(it=>/^nationality/i.test(it.str) && Math.abs(it.y-signHdrY)<20)
+      || items.find(it=>/nation/i.test(it.str) && Math.abs(it.y-signHdrY)<20)
+      || items.find(it=>/nation/i.test(it.raw) && Math.abs(it.y-signHdrY)<20);
+
+    // ── Nationality列データ（FILIPINO等）の右端を取得 ──
+    // Signヘッダーより左にある最も右端のテキストを探す
+    const natDataRights=items
+      .filter(it=> it.y>signHdrY+5 && it.y<signHdrY+300 && it.x+it.w < signHdr.x+10)
+      .map(it=>it.x+it.w);
+    const natRightX = natDataRights.length>0
+      ? Math.max(...natDataRights)
+      : (natHdr ? natHdr.x+natHdr.w : signHdr.x-5);
+
+    const signColLeftX = natRightX + 5;
+    const signColRightX = pdfPageW - 8;
+    const signColX = signHdr.x;
+
+    // ── "No" ヘッダーを探す（部分一致）──
+    const noHdr=items.find(it=>/^no$/i.test(it.str) && Math.abs(it.y-signHdrY)<20)
+      || items.find(it=>/^no/i.test(it.str) && it.w<20 && Math.abs(it.y-signHdrY)<20);
+
+    // ── 行番号を探す ──
+    // No列のX付近 かつ ヘッダーより下にある1〜2桁の数字
+    const noX = noHdr ? noHdr.x : 55;
+    const tableStartY = signHdrY + 5;
+
+    const numItems=items.filter(it=>{
+      if(!/^\d{1,2}$/.test(it.str)) return false;
+      if(it.y < tableStartY) return false;
+      if(Math.abs(it.x - noX) > 120) return false; // 許容範囲を広めに
+      return true;
+    }).sort((a,b)=>a.y-b.y);
+
+    if(numItems.length===0){
+      // フォールバック：数字が見つからない場合、
+      // ヘッダー行の下に均等な行があると仮定
+      throw new Error('Crew row numbers not found.\nPlease check that the PDF table has a No column (1, 2, 3...).');
+    }
+
+    // ── 名前列・Rank列を探す ──
+    const nameHdr=items.find(it=>/^name$/i.test(it.str) && Math.abs(it.y-signHdrY)<20);
+    const rankHdr=items.find(it=>/^rank$/i.test(it.str) && Math.abs(it.y-signHdrY)<20);
+    const nameX=nameHdr ? nameHdr.x : (noX+80);
+    const rankX=rankHdr ? rankHdr.x : (noX+25);
+
+    // ── 各行のデータを組み立て ──
+    crewData=[];
+    for(let i=0;i<numItems.length;i++){
+      const ni=numItems[i];
+      const rowCY=ni.y; // この行の中心Y（近似）
+
+      // 同じ行のテキスト：Y±18pt以内
+      const rowItems=items.filter(it=>
+        it.y>=rowCY-18 && it.y<=rowCY+18
+      );
+
+      // 名前：nameX以降、signColX未満
+      const nameItems=rowItems
+        .filter(it=>it.x>=nameX-10 && it.x<signColX-5)
+        .sort((a,b)=>a.x-b.x);
+      const name=nameItems.map(it=>it.str).join(' ')||`Crew ${ni.str}`;
+
+      // Rank：rankX付近
+      const rankItems=rowItems
+        .filter(it=>it.x>=rankX-5 && it.x<nameX-5)
+        .sort((a,b)=>a.x-b.x);
+      const rank=rankItems.map(it=>it.str).join(' ')||'';
+
+      // 行の境界Y（上端・下端）を決定
+      const prevRowCY = i===0 ? signHdrY : numItems[i-1].y;
+      const nextRowCY = i===numItems.length-1 ? rowCY+40 : numItems[i+1].y;
+      const rowTop    = rowCY - (rowCY - prevRowCY)*0.65;
+      const rowBot    = rowCY + (nextRowCY - rowCY)*0.35;
+
+      // Sign列のX範囲：
+      // Signヘッダー文字の中心を軸に、列幅の約90%をサイン幅とする
+      const signHdrCX = signHdr.x + signHdr.w / 2; // Signヘッダー中心X
+      const colW      = signColRightX - signColLeftX;
+      const halfW     = colW * 0.45;
+      const sigX0     = signHdrCX - halfW;
+      const sigX1     = signHdrCX + halfW;
+
+      crewData.push({
+        no:    parseInt(ni.str),
+        name:  name,
+        rank:  rank,
+        // PDF座標（左上原点・ポイント）
+        pdfX:  sigX0,
+        pdfY:  rowTop,
+        pdfW:  sigX1 - sigX0,
+        pdfH:  rowBot - rowTop,
+        // 正規化（0〜1、左上原点）
+        rowY:  rowTop  / pdfPageH,
+        rowH:  (rowBot - rowTop) / pdfPageH,
+        sigXS: sigX0 / pdfPageW,
+        sigXE: sigX1 / pdfPageW,
+      });
+    }
+
+    sigs={};
+    document.getElementById('infoStrip').innerHTML=
+      `<strong>File:</strong> ${escHtml(file.name)}<br>`+
+      `<strong>Crew:</strong> ${crewData.length}名 &nbsp;|&nbsp; `+
+      `<strong>Sign column:</strong> Auto-detected`;
+    document.getElementById('headerSub').textContent=file.name.replace(/\.pdf$/i,'');
+    renderList();
+    showScreen('app');
+
+  }catch(err){
+    alert('Failed to load PDF.\n\n'+err.message);
+    showScreen('upload');
+  }
+}
+
+function toggleVersion(){
+  const body=document.getElementById('versionBody');
+  const arrow=document.getElementById('versionArrow');
+  body.classList.toggle('open');
+  arrow.classList.toggle('open');
+}
+
+function showScreen(n){
+  document.getElementById('uploadScreen').style.display    = n==='upload'     ?'flex':'none';
+  document.getElementById('processingScreen').style.display= n==='processing' ?'flex':'none';
+  document.getElementById('appScreen').style.display       = n==='app'        ?'flex':'none';
+  document.getElementById('headerBadge').style.display     = n==='app'        ?''   :'none';
+}
+function setProc(m){document.getElementById('procLabel').textContent=m;}
+
+function resetApp(){
+  if(!confirm('Load another PDF?\nAll current signatures will be reset.'))return;
+  pdfBytes=null; pageImg=null; crewData=[]; sigs={}; receiptData=null; document.getElementById('receiptBox').innerHTML=`<div class='receipt-icon'>🧾</div><div class='receipt-label'>Tap to add Receipt</div><div class='receipt-sub'>JPG / PNG / PDF supported</div><label for='receiptInput' style='display:inline-block;margin-top:10px;padding:10px 24px;background:#f59e0b;color:#fff;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;'>📂 Choose File</label><input type='file' id='receiptInput' accept='image/*,application/pdf' style='display:none;'>`;
+  document.getElementById('fileInput').value='';
+  showScreen('upload');
+}
+
+/* ── モード切替 ── */
+function showSignUpload(){
+  document.getElementById('modeSelect').style.display='none';
+  document.getElementById('signUploadArea').style.display='flex';
+}
+function showReceiptAttach(){
+  document.getElementById('uploadScreen').style.display='none';
+  document.getElementById('receiptAttachScreen').style.display='flex';
+  document.getElementById('headerSub').textContent='Receipt Attach Mode';
+}
+function backToModeSelect(){
+  document.getElementById('modeSelect').style.display='flex';
+  document.getElementById('signUploadArea').style.display='none';
+  document.getElementById('uploadScreen').style.display='flex';
+  document.getElementById('receiptAttachScreen').style.display='none';
+  document.getElementById('headerSub').textContent='Upload a PDF to get started';
+}
+
+/* ── Receipt Attach Mode ── */
+let raVoucherBytes=null, raReceiptDataURL=null, raReceiptBytes=null, raReceiptMime=null;
+
+// イベント委任方式: display:noneの親要素内のinputにも確実に反応する
+document.addEventListener('change', async e=>{
+  // サインモードの領収書input
+  if(e.target.id==='receiptInput') onReceiptFile(e);
+
+  if(e.target.id==='raVoucherInput'){
+    const file=e.target.files[0]; if(!file) return;
+    const ab=await file.arrayBuffer();
+    raVoucherBytes=new Uint8Array(ab);
+    document.getElementById('raVoucherBox').classList.add('has-file');
+    const nm=document.getElementById('raVoucherName');
+    nm.textContent='✓ '+file.name; nm.style.display='block';
+    updateRaBtn();
+  }
+  if(e.target.id==='raReceiptInput'){
+    const file=e.target.files[0]; if(!file) return;
+    raReceiptMime=file.type;
+    if(file.type==='application/pdf'){
+      const ab=await file.arrayBuffer();
+      raReceiptBytes=new Uint8Array(ab);
+      raReceiptDataURL=null;
+      document.getElementById('raReceiptIcon').textContent='📋';
+      document.getElementById('raReceiptPreview').style.display='none';
+    } else {
+      raReceiptBytes=null;
+      await new Promise(resolve=>{
+        const reader=new FileReader();
+        reader.onload=ev=>{ raReceiptDataURL=ev.target.result; resolve(); };
+        reader.readAsDataURL(file);
+      });
+      const prev=document.getElementById('raReceiptPreview');
+      prev.src=raReceiptDataURL; prev.style.display='block';
+    }
+    document.getElementById('raReceiptBox').classList.add('has-file');
+    const nm=document.getElementById('raReceiptName');
+    nm.textContent='✓ '+file.name; nm.style.display='block';
+    updateRaBtn();
+  }
+});
+
+function updateRaBtn(){
+  const btn=document.getElementById('raDlBtn');
+  const txt=document.getElementById('raDlBtnText');
+  const hasReceipt = raReceiptDataURL || raReceiptBytes;
+  if(raVoucherBytes && hasReceipt){
+    btn.className='ra-dl-btn ready';
+    txt.textContent='Attach Receipt & Download';
+  } else if(!raVoucherBytes){
+    btn.className='ra-dl-btn';
+    txt.textContent='STEP1: Select Signed PDFしてください';
+  } else {
+    btn.className='ra-dl-btn';
+    txt.textContent='STEP2: Select Receiptしてください';
+  }
+}
+
+async function attachReceiptToPDF(){
+  const hasReceipt = raReceiptDataURL || raReceiptBytes;
+  if(!raVoucherBytes || !hasReceipt) return;
+  const btn=document.getElementById('raDlBtn');
+  const txt=document.getElementById('raDlBtnText');
+  btn.className='ra-dl-btn'; txt.textContent='Processing...'; 
+
+  try{
+    const doc=await PDFLib.PDFDocument.load(raVoucherBytes);
+    const page=doc.getPages()[0];
+    const {width:W, height:H}=page.getSize();
+
+    // ── 空白スペースを検出（クルーテーブル下〜Important Notice上）──
+    const pdfjsDoc=await pdfjsLib.getDocument({data:raVoucherBytes.slice()}).promise;
+    const pg=await pdfjsDoc.getPage(1);
+    const content=await pg.getTextContent();
+
+    // 全テキストを中心Yでグループ化（先ほどのロジックと同じ）
+    const rawItems2=[];
+    for(const it of content.items){
+      if(!it.str||!it.str.trim()) continue;
+      const tx=it.transform[4], ty=it.transform[5];
+      const h2=Math.abs(it.height)||8;
+      rawItems2.push({x:tx,x1:tx+Math.abs(it.width),yCtr:ty+h2/2,str:it.str,yPDF:ty});
+    }
+    // 数字行の最小Y（PDF左下原点）= テーブル最終行
+    const numYs=rawItems2.filter(i=>/^\d{1,2}$/.test(i.str.trim())&&i.yPDF<H*0.8&&i.yPDF>H*0.1).map(i=>i.yPDF);
+    const tableBottomY = numYs.length>0 ? Math.min(...numYs) - 5 : H*0.6;
+
+    // Important Notice のY（PDF左下原点）
+    const impItems=rawItems2.filter(i=>/important/i.test(i.str)&&i.yPDF<H*0.6);
+    const importantTopY = impItems.length>0 ? Math.max(...impItems.map(i=>i.yPDF+15)) : H*0.25;
+
+    // 空白スペース
+    const margin=12;
+    const spaceBottom = importantTopY + margin;
+    const spaceTop    = tableBottomY - margin;
+    const spaceLeft   = W * 0.07;
+    const spaceRight  = W * 0.93;
+    const spaceW      = spaceRight - spaceLeft;
+    const spaceH      = spaceTop - spaceBottom;
+
+    if(spaceH > 20){
+      // 画像埋め込み
+      const imgB64=raReceiptDataURL.split(',')[1];
+      const mime=raReceiptDataURL.split(';')[0].split(':')[1];
+
+      if(raReceiptBytes){
+        // PDFの場合：ArrayBytesから直接埋め込む
+        const receiptPdfDoc=await PDFLib.PDFDocument.load(raReceiptBytes);
+        const [embPage]=await doc.embedPages([receiptPdfDoc.getPages()[0]]);
+        const embDims=embPage.size();
+        const sc=Math.min(spaceW/embDims.width, spaceH/embDims.height, 1.0);
+        const dw=embDims.width*sc, dh=embDims.height*sc;
+        const ox=(spaceW-dw)/2, oy=(spaceH-dh)/2;
+        page.drawPage(embPage,{
+          x: spaceLeft+ox, y: spaceBottom+oy,
+          width: dw, height: dh
+        });
+      } else {
+        // 画像（JPG/PNG）の場合
+        let embImg;
+        if(mime==='image/png') embImg=await doc.embedPng(b64ToU8(imgB64));
+        else embImg=await doc.embedJpg(b64ToU8(imgB64));
+        const dims=embImg.scale(1);
+        const sc=Math.min(spaceW/dims.width, spaceH/dims.height, 1.0);
+        const dw=dims.width*sc, dh=dims.height*sc;
+        const ox=(spaceW-dw)/2, oy=(spaceH-dh)/2;
+        page.drawImage(embImg,{
+          x: spaceLeft+ox, y: spaceBottom+oy,
+          width: dw, height: dh
+        });
+      }
+    }
+
+    const out=await doc.save();
+    const blob=new Blob([out],{type:'application/pdf'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.href=url; a.download='voucher_with_receipt.pdf'; a.click();
+    URL.revokeObjectURL(url);
+
+    txt.textContent='Download Complete ✓';
+    btn.className='ra-dl-btn ready';
+    setTimeout(()=>{ txt.textContent='Attach Receipt & Download'; },3000);
+
+  }catch(err){
+    console.error(err);
+    txt.textContent='An error occurred';
+    btn.className='ra-dl-btn ready';
+  }
+}
+
+/* ── CREW LIST ── */
+function renderList(){
+  const list=document.getElementById('crewList');
+  list.innerHTML='';
+  const done=Object.keys(sigs).length, total=crewData.length;
+  crewData.forEach(c=>{
+    const d=!!sigs[c.no];
+    const div=document.createElement('div');
+    div.className='crew-card'+(d?' done':'');
+    div.onclick=()=>openOverlay(c.no);
+    div.innerHTML=`
+      <div class="crew-avatar">${c.no}</div>
+      <div class="crew-body">
+        <div class="crew-name">${escHtml(c.name)}</div>
+        <div class="crew-rank">${escHtml(c.rank)||'&nbsp;'}</div>
+      </div>
+      <div class="crew-right">
+        ${d?`<img class="crew-sig-thumb" src="${sigs[c.no]}" alt="sign">`:''}
+        <span class="status-chip ${d?'done':'tap'}">${d?'✓ Done':'Tap'}</span>
+      </div>`;
+    list.appendChild(div);
+  });
+  document.getElementById('headerBadge').textContent=done+' / '+total;
+  document.getElementById('headerBadge').className='header-badge'+(done===total&&total>0?' all-done':'');
+  document.getElementById('progFill').style.width=(total>0?done/total*100:0)+'%';
+  const dlBtn=document.getElementById('dlBtn'),dlTxt=document.getElementById('dlBtnText');
+  if(done===total&&total>0){
+    dlBtn.disabled=false; dlBtn.className='dl-btn ready';
+    dlTxt.textContent='Download Signed PDF';
+  }else{
+    dlBtn.disabled=true; dlBtn.className='dl-btn';
+    dlTxt.textContent=`${total-done} more signature(s) needed`;
+  }
+}
+
+/* ── OVERLAY ── */
+function openOverlay(no){
+  currentCrew=crewData.find(c=>c.no===no);
+  if(!currentCrew)return;
+  document.getElementById('overlayName').textContent=currentCrew.name;
+  document.getElementById('overlayRank').textContent=(currentCrew.rank||'—')+' · No.'+currentCrew.no;
+  document.getElementById('previewImg').src=pageImg;
+  document.getElementById('signOverlay').classList.add('open');
+  updatePreview();
+  allStrokes=[]; strokePoints=[];
+  resizeCanvas(); clearSig();
+  if(sigs[no]){
+    const img=new Image();
+    img.onload=()=>{
+      const c=document.getElementById('sigCanvas');
+      c.getContext('2d').drawImage(img,0,0,c.width,c.height);
+      document.getElementById('canvasGhost').style.opacity='0';
+      document.getElementById('saveBtn').disabled=false;
+    };
+    img.src=sigs[no];
+  }
+  document.body.style.overflow='hidden';
+}
+function closeOverlay(){
+  document.getElementById('signOverlay').classList.remove('open');
+  document.body.style.overflow='';
+  currentCrew=null;
+}
+function updatePreview(){
+  if(!currentCrew)return;
+  const area=document.getElementById('previewArea');
+  const img=document.getElementById('previewImg');
+  const hl=document.getElementById('rowHl');
+  const ZOOM=4.0, H_AREA=110;
+  // プレビュー画像のアスペクト比 = pdfPageH/pdfPageW（scale同じなので）
+  const ASPECT=pdfPageH/pdfPageW;
+  const cx=(currentCrew.sigXS+currentCrew.sigXE)/2; // Sign列中心X（正規化）
+  const cy=currentCrew.rowY+currentCrew.rowH/2;
+  const W_AREA=area.getBoundingClientRect().width||360;
+  const imgW=W_AREA*ZOOM, imgH=imgW*ASPECT;
+  const left=W_AREA/2-cx*imgW, top=H_AREA/2-cy*imgH;
+  img.style.cssText=`width:${imgW}px;height:${imgH}px;left:${left}px;top:${top}px;`;
+  hl.style.cssText=`left:${currentCrew.sigXS*imgW+left}px;top:${currentCrew.rowY*imgH+top}px;width:${(currentCrew.sigXE-currentCrew.sigXS)*imgW}px;height:${currentCrew.rowH*imgH}px;`;
+}
+window.addEventListener('resize',updatePreview);
+
+/* ── CANVAS ── */
+function setupCanvas(){
+  const c=document.getElementById('sigCanvas');
+  c.addEventListener('touchstart',ts,{passive:false});
+  c.addEventListener('touchmove', tm,{passive:false});
+  c.addEventListener('touchend',  te,{passive:false});
+  c.addEventListener('mousedown', md);
+  c.addEventListener('mousemove', mm);
+  c.addEventListener('mouseup',   mu);
+  c.addEventListener('mouseleave',mu);
+}
+setupCanvas();
+function resizeCanvas(){
+  const inner=document.getElementById('canvasInner');
+  const c=document.getElementById('sigCanvas');
+  const r=inner.getBoundingClientRect();
+  const dpr=window.devicePixelRatio||1;
+  c.width=r.width*dpr; c.height=r.height*dpr;
+  // scale()は座標系をCSSpxに合わせるが、lineWidthもCSSpx単位になる
+  // → lineWidthをdpr倍にしなくてよい代わり、getXY()の座標はCSSpxのまま使える
+  c.getContext('2d').scale(dpr,dpr);
+  // DPRを保存してdrawSmoothで参照
+  c._dpr=dpr;
+}
+function getXY(e,c){
+  const r=c.getBoundingClientRect(), s=e.touches?e.touches[0]:e;
+  return{x:s.clientX-r.left, y:s.clientY-r.top};
+}
+function beginStroke(p){
+  drawing=true;
+  strokePoints=[{x:p.x, y:p.y}];
+  document.getElementById('canvasGhost').style.opacity='0';
+  document.getElementById('saveBtn').disabled=false;
+}
+function stroke(p){
+  if(!drawing) return;
+  strokePoints.push({x:p.x, y:p.y});
+  // 現在のストロークをキャンバス全体に再描画
+  redrawAll();
+}
+function endStroke(){
+  if(!drawing) return;
+  drawing=false;
+  if(strokePoints.length > 0){
+    allStrokes.push(strokePoints.slice());
+    strokePoints=[];
+  }
+}
+
+// 全ストロークを一から滑らかに描き直す
+function redrawAll(){
+  const canvas=document.getElementById('sigCanvas');
+  // getContext は毎回同じインスタンスを返すが、
+  // resizeCanvas で width/height を再設定すると変換行列がリセットされる。
+  // ここでは width/height は変えないので変換行列は維持されている。
+  const ctx=canvas.getContext('2d');
+  const dpr=canvas._dpr||window.devicePixelRatio||1;
+  // clearRect はCSSpx座標系で（scale済みなので）
+  ctx.clearRect(0, 0, canvas.width/dpr, canvas.height/dpr);
+
+  for(const pts of allStrokes) drawSmooth(ctx, pts, dpr);
+  if(strokePoints.length>0) drawSmooth(ctx, strokePoints, dpr);
+}
+
+// Catmull-Rom スプラインで滑らかに描く
+function drawSmooth(ctx, pts, dpr){
+  if(pts.length===0) return;
+  dpr = dpr || canvas._dpr || window.devicePixelRatio || 1;
+
+  // lineWidth はCSSpx単位。ctx.scale(dpr,dpr)済みなので
+  // lineWidth=N → 画面上 N×dpr 物理ピクセル幅になる。
+  // スマホ(dpr=3)でボールペン相当の太さ: 目標5物理px → lineWidth=5/3≈1.7
+  // → ここでは「見た目の太さ」をCSSpxで指定する
+  // ★ 問題: ctx.scale後もlineWidthはCSSpxで解釈されるため
+  //   lineWidth=4.5 → 4.5CSSpx = 4.5×dpr物理px（十分太い）のはず
+  //   しかし実機で細く見える場合、dprが正しく反映されていない可能性
+  // → 安全策: lineWidthをdprに関係なく物理px換算で設定
+  const LINE_PHYSICAL_PX = 20; // 物理ピクセル数（太さ）
+  ctx.lineWidth   = LINE_PHYSICAL_PX / dpr; // CSSpxに変換
+  ctx.strokeStyle = '#000000';
+  ctx.lineCap     = 'round';
+  ctx.lineJoin    = 'round';
+  ctx.globalAlpha = 1.0;
+
+  if(pts.length===1){
+    ctx.beginPath();
+    ctx.arc(pts[0].x, pts[0].y, (LINE_PHYSICAL_PX/2)/dpr, 0, Math.PI*2);
+    ctx.fillStyle='#000000';
+    ctx.fill();
+    return;
+  }
+
+  ctx.beginPath();
+  ctx.moveTo(pts[0].x, pts[0].y);
+
+  if(pts.length===2){
+    ctx.lineTo(pts[1].x, pts[1].y);
+    ctx.stroke();
+    return;
+  }
+
+  // Catmull-Rom → Bézier 変換
+  for(let i=0; i<pts.length-1; i++){
+    const p0=pts[Math.max(i-1,0)];
+    const p1=pts[i];
+    const p2=pts[i+1];
+    const p3=pts[Math.min(i+2,pts.length-1)];
+    const cp1x=p1.x+(p2.x-p0.x)/6, cp1y=p1.y+(p2.y-p0.y)/6;
+    const cp2x=p2.x-(p3.x-p1.x)/6, cp2y=p2.y-(p3.y-p1.y)/6;
+    ctx.bezierCurveTo(cp1x,cp1y,cp2x,cp2y,p2.x,p2.y);
+  }
+  ctx.stroke();
+}
+
+function ts(e){e.preventDefault();beginStroke(getXY(e,e.target));}
+function tm(e){e.preventDefault();stroke(getXY(e,e.target));}
+function te(e){e.preventDefault();endStroke();}
+function md(e){beginStroke(getXY(e,e.target));}
+function mm(e){stroke(getXY(e,e.target));}
+function mu(){endStroke();}
+function clearSig(){
+  allStrokes=[];
+  strokePoints=[];
+  const c=document.getElementById('sigCanvas');
+  c.getContext('2d').clearRect(0,0,c.width,c.height);
+  document.getElementById('canvasGhost').style.opacity='1';
+  document.getElementById('saveBtn').disabled=true;
+}
+function saveSig(){
+  if(!currentCrew) return;
+  const canvas = document.getElementById('sigCanvas');
+  const dpr    = canvas._dpr || window.devicePixelRatio || 1;
+  const ctx    = canvas.getContext('2d');
+  const pw = canvas.width, ph = canvas.height;
+
+  // サインの描画範囲（物理px）を検出
+  const imgData = ctx.getImageData(0, 0, pw, ph).data;
+  let minX=pw, minY=ph, maxX=0, maxY=0;
+  for(let y=0; y<ph; y++){
+    for(let x=0; x<pw; x++){
+      if(imgData[(y*pw+x)*4+3] > 10){
+        if(x<minX) minX=x; if(x>maxX) maxX=x;
+        if(y<minY) minY=y; if(y>maxY) maxY=y;
+      }
+    }
+  }
+  if(maxX < minX){ minX=0; minY=0; maxX=pw-1; maxY=ph-1; }
+
+  // 余白を追加
+  const m = Math.round(6*dpr);
+  minX=Math.max(0,minX-m); minY=Math.max(0,minY-m);
+  maxX=Math.min(pw-1,maxX+m); maxY=Math.min(ph-1,maxY+m);
+
+  // クロップして別Canvasに書き出し
+  const cropW=maxX-minX+1, cropH=maxY-minY+1;
+  const tmp=document.createElement('canvas');
+  tmp.width=cropW; tmp.height=cropH;
+  tmp.getContext('2d').drawImage(canvas, minX,minY,cropW,cropH, 0,0,cropW,cropH);
+
+  sigs[currentCrew.no]=tmp.toDataURL('image/png');
+  closeOverlay(); renderList();
+}
+
+/* ── DOWNLOAD ── */
+async function downloadPDF(){
+  const btn=document.getElementById('dlBtn'),txt=document.getElementById('dlBtnText');
+  btn.disabled=true; txt.textContent='Generating...';
+  try{
+    const doc=await PDFLib.PDFDocument.load(pdfBytes);
+    const page=doc.getPages()[0];
+    const {width:W,height:H}=page.getSize();
+    for(const crew of crewData){
+      if(!sigs[crew.no])continue;
+      const png=await doc.embedPng(b64ToU8(sigs[crew.no].split(',')[1]));
+      const pad=1;
+      const cellW=crew.pdfW - pad*2;
+      const cellH=crew.pdfH - pad*2;
+
+      // サイン画像のアスペクト比を保ちつつセル中央に配置
+      const pngDims=png.scale(1);
+      const scaleX=cellW/pngDims.width;
+      const scaleY=cellH/pngDims.height;
+      const sc=Math.min(scaleX, scaleY);
+      const drawW=pngDims.width*sc;
+      const drawH=pngDims.height*sc;
+      // セル内で中央揃え
+      const offX=(cellW-drawW)/2;
+      const offY=Math.max(0, (cellH-drawH)/2 - cellH*0.15); // 少し上にずらす
+
+      page.drawImage(png,{
+        x:     crew.pdfX + pad + offX,
+        y:     H - crew.pdfY - crew.pdfH + pad + offY,
+        width: drawW,
+        height:drawH
+      });
+    }
+    // ── 領収書を空白スペースに埋め込む ──
+    if(receiptData){
+      try{
+        // テキスト抽出で空白スペースを検出
+        const pdfjsDoc2=await pdfjsLib.getDocument({data:pdfBytes.slice()}).promise;
+        const pg2=await pdfjsDoc2.getPage(1);
+        const content2=await pg2.getTextContent();
+        const H2=page.getSize().height;
+        const W2=page.getSize().width;
+
+        // 最終クルー行のbottomY（PDF座標系・左下原点）
+        // 数字（行番号）を探す
+        let lastNumY = H2 * 0.7; // デフォルト: ページ上から30%
+        let importantY = H2 * 0.2; // デフォルト: ページ上から80%
+
+        // pdf.jsアイテムから検出
+        for(const it of content2.items){
+          if(!it.str.trim()) continue;
+          const ty = it.transform[5]; // 左下原点Y
+          const str = it.str.trim();
+          // 行番号（1〜99）
+          if(/^\d{1,2}$/.test(str) && ty < H2*0.8 && ty > H2*0.1){
+            lastNumY = Math.min(lastNumY, ty);
+          }
+          // Important Notice
+          if(/important/i.test(str) && ty < H2*0.6){
+            importantY = Math.max(importantY, ty + (it.height||10));
+          }
+        }
+
+        // 空白スペース（左下原点）
+        const margin = 15;
+        const spaceBottom = lastNumY - margin;   // 上から見て「下」= 左下原点で小さいY
+        const spaceTop    = importantY + margin; // 上から見て「上」= 左下原点で大きいY
+        const spaceLeft   = W2 * 0.07;
+        const spaceRight  = W2 * 0.93;
+        const spaceW = spaceRight - spaceLeft;
+        const spaceH = spaceTop - spaceBottom;
+
+        if(spaceH > 20 && spaceW > 20){
+          // 画像を埋め込む
+          const imgB64 = receiptData.dataURL.split(',')[1];
+          const imgMime = receiptData.dataURL.split(';')[0].split(':')[1];
+          let embeddedImg;
+          if(imgMime === 'image/png'){
+            embeddedImg = await doc.embedPng(b64ToU8(imgB64));
+          } else {
+            embeddedImg = await doc.embedJpg(b64ToU8(imgB64));
+          }
+          const dims = embeddedImg.scale(1);
+          // アスペクト比を保ちつつ空白に収める
+          const scaleX = spaceW / dims.width;
+          const scaleY = spaceH / dims.height;
+          const sc = Math.min(scaleX, scaleY, 1.0); // 拡大はしない
+          const drawW2 = dims.width * sc;
+          const drawH2 = dims.height * sc;
+          // 水平中央・垂直中央
+          const ox = (spaceW - drawW2) / 2;
+          const oy = (spaceH - drawH2) / 2;
+          page.drawImage(embeddedImg, {
+            x: spaceLeft + ox,
+            y: spaceBottom + oy,
+            width: drawW2,
+            height: drawH2,
+          });
+        }
+      } catch(rErr){ console.warn('領収書埋め込みエラー:', rErr); }
+    }
+
+    const out=await doc.save();
+    const blob=new Blob([out],{type:'application/pdf'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.href=url; a.download='signed_voucher.pdf'; a.click();
+    URL.revokeObjectURL(url);
+    txt.textContent='Download Complete ✓';
+    setTimeout(()=>{ txt.textContent='Download Signed PDF'; btn.disabled=false; },3000);
+  }catch(err){
+    console.error(err);
+    txt.textContent='An error occurred'; btn.disabled=false;
+  }
+}
+
+/* ── 領収書 ── */
+function onReceiptFile(e){
+  const file = e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    const dataURL = ev.target.result;
+    receiptData = { dataURL, name: file.name };
+    // プレビュー表示
+    const box = document.getElementById('receiptBox');
+    box.innerHTML = `
+      <div class="receipt-preview">
+        <img src="${dataURL}" alt="領収書プレビュー" onerror="this.style.display='none'">
+        <button class="receipt-remove" onclick="removeReceipt(event)">×</button>
+      </div>
+      <div style="font-size:11px;font-weight:600;color:#16a34a;margin-top:6px;">✓ ${escHtml(file.name)}</div>
+      <label for="receiptInput" style="display:inline-block;margin-top:6px;padding:8px 20px;background:#f59e0b;color:#fff;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;">📂 Change File</label>
+      <button class="receipt-remove" onclick="removeReceipt(event)" style="display:block;margin:6px auto 0;">× Remove</button>
+      <input type="file" id="receiptInput" accept="image/*,application/pdf" style="display:none;">
+    `;
+    // document委任のため個別addEventListenerは不要
+  };
+  reader.readAsDataURL(file);
+}
+function removeReceipt(e){
+  e.stopPropagation();
+  receiptData=null;
+  const box=document.getElementById('receiptBox');
+  box.innerHTML=`<div class='receipt-icon'>🧾</div><div class='receipt-label'>Tap to add Receipt</div><div class='receipt-sub'>JPG / PNG / PDF supported</div><label for='receiptInput' style='display:inline-block;margin-top:10px;padding:10px 24px;background:#f59e0b;color:#fff;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;'>📂 Choose File</label><input type='file' id='receiptInput' accept='image/*,application/pdf' style='display:none;'>`;
+  // document委任のため個別addEventListenerは不要
+}
+
+function b64ToU8(s){
+  const b=atob(s),u=new Uint8Array(b.length);
+  for(let i=0;i<b.length;i++)u[i]=b.charCodeAt(i);
+  return u;
+}
+function escHtml(s){
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+showScreen('upload');
+
+</script>
+</body>
+</html>
