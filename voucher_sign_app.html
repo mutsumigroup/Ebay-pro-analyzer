@@ -147,6 +147,15 @@ html,body{height:100%;background:var(--bg);font-family:-apple-system,BlinkMacSys
 .ra-dl-btn.ready:active{opacity:.85;}
 .ra-back{background:none;border:1.5px solid var(--border,#d1dce8);border-radius:10px;padding:10px;width:100%;font-size:13px;font-weight:700;color:#64748b;cursor:pointer;}
 .ra-back:active{opacity:.7;}
+
+/* ── Filename editor ── */
+.filename-editor{display:none;background:#f8fafc;border:1.5px solid #d1dce8;border-radius:10px;padding:10px 12px;margin-bottom:8px;}
+.filename-editor.visible{display:block;}
+.filename-editor-label{font-size:11px;font-weight:700;color:#64748b;margin-bottom:4px;letter-spacing:.5px;}
+.filename-input-row{display:flex;align-items:center;gap:6px;}
+.filename-input{flex:1;border:1.5px solid #d1dce8;border-radius:8px;padding:9px 10px;font-size:14px;font-weight:600;color:#1e293b;background:#fff;outline:none;min-width:0;}
+.filename-input:focus{border-color:#0ea5e9;}
+.filename-ext{font-size:13px;font-weight:700;color:#64748b;white-space:nowrap;}
 </style>
 </head>
 <body>
@@ -350,6 +359,13 @@ html,body{height:100%;background:var(--bg);font-family:-apple-system,BlinkMacSys
     <div class="sec-label">CREW — Tap to Sign</div>
     <div id="crewList"></div>
     <div class="progress-wrap"><div class="progress-fill" id="progFill"></div></div>
+    <div class="filename-editor" id="filenameEditor">
+      <div class="filename-editor-label">SAVE AS</div>
+      <div class="filename-input-row">
+        <input type="text" class="filename-input" id="filenameInput" placeholder="signed_voucher" autocorrect="off" autocapitalize="off" spellcheck="false">
+        <span class="filename-ext">.pdf</span>
+      </div>
+    </div>
     <button class="dl-btn" id="dlBtn" disabled onclick="downloadPDF()">
       <span>📄</span><span id="dlBtnText">Collect signatures</span>
     </button>
@@ -617,6 +633,10 @@ async function loadPDF(file){
       `<strong>Crew:</strong> ${crewData.length}名 &nbsp;|&nbsp; `+
       `<strong>Sign column:</strong> Auto-detected`;
     document.getElementById('headerSub').textContent=file.name.replace(/\.pdf$/i,'');
+    // ファイル名入力欄のデフォルト値をPDF名から生成
+    const baseName = file.name.replace(/\.pdf$/i,'');
+    document.getElementById('filenameInput').value = 'signed_' + baseName;
+    document.getElementById('filenameEditor').classList.remove('visible');
     renderList();
     showScreen('app');
 
@@ -844,12 +864,15 @@ function renderList(){
   document.getElementById('headerBadge').className='header-badge'+(done===total&&total>0?' all-done':'');
   document.getElementById('progFill').style.width=(total>0?done/total*100:0)+'%';
   const dlBtn=document.getElementById('dlBtn'),dlTxt=document.getElementById('dlBtnText');
+  const fnEditor=document.getElementById('filenameEditor');
   if(done===total&&total>0){
     dlBtn.disabled=false; dlBtn.className='dl-btn ready';
     dlTxt.textContent='Download Signed PDF';
+    fnEditor.classList.add('visible');
   }else{
     dlBtn.disabled=true; dlBtn.className='dl-btn';
     dlTxt.textContent=`${total-done} more signature(s) needed`;
+    fnEditor.classList.remove('visible');
   }
 }
 
@@ -1168,7 +1191,9 @@ async function downloadPDF(){
     const blob=new Blob([out],{type:'application/pdf'});
     const url=URL.createObjectURL(blob);
     const a=document.createElement('a');
-    a.href=url; a.download='signed_voucher.pdf'; a.click();
+    const rawName=(document.getElementById('filenameInput').value||'signed_voucher').trim();
+    const dlName=rawName.replace(/\.pdf$/i,'')+'.pdf';
+    a.href=url; a.download=dlName; a.click();
     URL.revokeObjectURL(url);
     txt.textContent='Download Complete ✓';
     setTimeout(()=>{ txt.textContent='Download Signed PDF'; btn.disabled=false; },3000);
