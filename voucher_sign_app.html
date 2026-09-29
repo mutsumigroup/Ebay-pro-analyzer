@@ -628,14 +628,49 @@ async function loadPDF(file){
     }
 
     sigs={};
+
+    // ── 船名を取得 ──
+    // PDFの全テキストを結合して船名ラベルの直後の値を探す
+    let shipName = '';
+    // まずラベル＋値が同一アイテム内にある場合（"M/V EVER GOLDEN" など）
+    const allText = items.map(it=>it.str);
+    for(const it of items){
+      // "M/V", "MV", "S.S.", "Name of Vessel", "Vessel Name", "Ship Name", "Name" ラベルを探す
+      const m = it.str.match(/^(?:M\/V|MV|S\.S\.|SS|F\/V|FV)\s+(.+)/i);
+      if(m && m[1].trim().length > 1){ shipName = m[1].trim(); break; }
+    }
+    // ラベルと値が別アイテムの場合（ラベルの次のアイテムが値）
+    if(!shipName){
+      for(let i=0;i<items.length-1;i++){
+        const s = items[i].str.trim();
+        if(/^(?:vessel\s*name|name\s*of\s*vessel|ship\s*name|m\/v|mv|name\s*of\s*ship)$/i.test(s)){
+          // 同じ行か直下の行の、ラベルより右または次アイテムを取得
+          const labelY = items[i].y;
+          const labelX = items[i].x;
+          const nearby = items.filter(it=>
+            it !== items[i] &&
+            Math.abs(it.y - labelY) < 12 &&
+            it.x > labelX &&
+            it.str.trim().length > 1
+          ).sort((a,b)=>a.x-b.x);
+          if(nearby.length > 0){ shipName = nearby[0].str.trim(); break; }
+        }
+      }
+    }
+    // それでも見つからなければ、PDFファイル名をベースにする
+    const baseName = file.name.replace(/\.pdf$/i,'');
+    const defaultFilename = shipName
+      ? shipName.replace(/[\\/:*?"<>|]/g,'_')   // ファイル名不正文字を除去
+      : 'signed_' + baseName;
+
     document.getElementById('infoStrip').innerHTML=
       `<strong>File:</strong> ${escHtml(file.name)}<br>`+
       `<strong>Crew:</strong> ${crewData.length}名 &nbsp;|&nbsp; `+
-      `<strong>Sign column:</strong> Auto-detected`;
-    document.getElementById('headerSub').textContent=file.name.replace(/\.pdf$/i,'');
-    // ファイル名入力欄のデフォルト値をPDF名から生成
-    const baseName = file.name.replace(/\.pdf$/i,'');
-    document.getElementById('filenameInput').value = 'signed_' + baseName;
+      `<strong>Sign column:</strong> Auto-detected`+
+      (shipName ? ` &nbsp;|&nbsp; <strong>Vessel:</strong> ${escHtml(shipName)}` : '');
+    document.getElementById('headerSub').textContent=shipName || baseName;
+    // ファイル名入力欄にセット
+    document.getElementById('filenameInput').value = defaultFilename;
     document.getElementById('filenameEditor').classList.remove('visible');
     renderList();
     showScreen('app');
