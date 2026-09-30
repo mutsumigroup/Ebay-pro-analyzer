@@ -75,7 +75,7 @@ html,body{height:100%;background:var(--bg);font-family:-apple-system,BlinkMacSys
 .receipt-preview img{width:100%;display:block;max-height:160px;object-fit:contain;}
 .receipt-remove{position:absolute;top:6px;right:6px;background:#dc2626;color:#fff;border:none;border-radius:50%;width:24px;height:24px;font-size:14px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;font-weight:700;}
 .receipt-info{background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:8px 12px;font-size:11px;color:#92400e;margin-top:6px;line-height:1.6;}
-#receiptInput{display:none;}
+/* #receiptInput は label内に置きopacityで隠す */
 .version-card{background:var(--surface-2,#fff);border:0.5px solid var(--border,#d1dce8);border-radius:10px;overflow:hidden;margin-top:4px;}
 .version-header{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;cursor:pointer;-webkit-user-select:none;user-select:none;}
 .version-header-left{display:flex;align-items:center;gap:8px;}
@@ -316,11 +316,12 @@ html,body{height:100%;background:var(--bg);font-family:-apple-system,BlinkMacSys
         <div class="ra-box-label">Select Signed PDF</div>
         <div class="ra-box-sub">e.g. signed_voucher.pdf</div>
         <div id="raVoucherName" class="ra-filename"></div>
-        <label for="raVoucherInput" style="display:block;margin-top:14px;padding:13px 0;background:#0ea5e9;color:#fff;border-radius:10px;font-size:15px;font-weight:800;cursor:pointer;text-align:center;-webkit-tap-highlight-color:rgba(0,0,0,0.1);">
+        <!-- iOS Safari: inputをlabel内に置きopacityで隠す（display:noneはNG） -->
+        <label style="display:block;margin-top:14px;padding:13px 0;background:#0ea5e9;color:#fff;border-radius:10px;font-size:15px;font-weight:800;cursor:pointer;text-align:center;-webkit-tap-highlight-color:rgba(0,0,0,0.1);position:relative;overflow:hidden;">
           📄 Choose PDF
+          <input type="file" id="raVoucherInput" accept="application/pdf"
+                 style="position:absolute;top:0;left:0;width:100%;height:100%;opacity:0;cursor:pointer;font-size:0;">
         </label>
-        <input type="file" id="raVoucherInput" accept="application/pdf"
-               style="display:none;">
       </div>
     </div>
 
@@ -333,12 +334,12 @@ html,body{height:100%;background:var(--bg);font-family:-apple-system,BlinkMacSys
         <div class="ra-box-sub">JPG / PNG / PDF supported</div>
         <img id="raReceiptPreview" class="ra-preview" alt="">
         <div id="raReceiptName" class="ra-filename"></div>
-        <!-- iOS Safari対応: labelでinputを囲む。inputはdisplay:noneにしない（clip方式）-->
-        <label for="raReceiptInput" style="display:block;margin-top:14px;padding:13px 0;background:#f59e0b;color:#fff;border-radius:10px;font-size:15px;font-weight:800;cursor:pointer;text-align:center;-webkit-tap-highlight-color:rgba(0,0,0,0.1);">
+        <!-- iOS Safari: inputをlabel内に置きopacityで隠す（display:noneはNG） -->
+        <label style="display:block;margin-top:14px;padding:13px 0;background:#f59e0b;color:#fff;border-radius:10px;font-size:15px;font-weight:800;cursor:pointer;text-align:center;-webkit-tap-highlight-color:rgba(0,0,0,0.1);position:relative;overflow:hidden;">
           📂 Choose File
+          <input type="file" id="raReceiptInput" accept="image/*,application/pdf"
+                 style="position:absolute;top:0;left:0;width:100%;height:100%;opacity:0;cursor:pointer;font-size:0;">
         </label>
-        <input type="file" id="raReceiptInput" accept="image/*,application/pdf"
-               style="display:none;">
       </div>
     </div>
 
@@ -376,8 +377,10 @@ html,body{height:100%;background:var(--bg);font-family:-apple-system,BlinkMacSys
         <div class="receipt-icon">🧾</div>
         <div class="receipt-label">Tap to add Receipt</div>
         <div class="receipt-sub">JPG / PNG / PDF supported</div>
-        <label for="receiptInput" style="display:inline-block;margin-top:10px;padding:10px 24px;background:#f59e0b;color:#fff;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;">📂 Choose File</label>
-        <input type="file" id="receiptInput" accept="image/*,application/pdf" style="display:none;">
+        <label style="display:inline-block;margin-top:10px;padding:10px 24px;background:#f59e0b;color:#fff;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;position:relative;overflow:hidden;">
+          📂 Choose File
+          <input type="file" id="receiptInput" accept="image/*,application/pdf" style="position:absolute;top:0;left:0;width:100%;height:100%;opacity:0;cursor:pointer;font-size:0;">
+        </label>
       </div>
       <div class="receipt-info">
         The receipt will be placed automatically in the blank space below the crew table and above the Important Notice.
@@ -723,7 +726,7 @@ function setProc(m){document.getElementById('procLabel').textContent=m;}
 
 function resetApp(){
   if(!confirm('Load another PDF?\nAll current signatures will be reset.'))return;
-  pdfBytes=null; pageImg=null; crewData=[]; sigs={}; receiptData=null; document.getElementById('receiptBox').innerHTML=`<div class='receipt-icon'>🧾</div><div class='receipt-label'>Tap to add Receipt</div><div class='receipt-sub'>JPG / PNG / PDF supported</div><label for='receiptInput' style='display:inline-block;margin-top:10px;padding:10px 24px;background:#f59e0b;color:#fff;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;'>📂 Choose File</label><input type='file' id='receiptInput' accept='image/*,application/pdf' style='display:none;'>`;
+  pdfBytes=null; pageImg=null; crewData=[]; sigs={}; receiptData=null; document.getElementById('receiptBox').innerHTML=`<div class='receipt-icon'>🧾</div><div class='receipt-label'>Tap to add Receipt</div><div class='receipt-sub'>JPG / PNG / PDF supported</div><label style='display:inline-block;margin-top:10px;padding:10px 24px;background:#f59e0b;color:#fff;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;position:relative;overflow:hidden;'>📂 Choose File<input type='file' id='receiptInput' accept='image/*,application/pdf' style='position:absolute;top:0;left:0;width:100%;height:100%;opacity:0;cursor:pointer;font-size:0;'></label>`;
   document.getElementById('fileInput').value='';
   showScreen('upload');
 }
@@ -1279,9 +1282,8 @@ function onReceiptFile(e){
         <button class="receipt-remove" onclick="removeReceipt(event)">×</button>
       </div>
       <div style="font-size:11px;font-weight:600;color:#16a34a;margin-top:6px;">✓ ${escHtml(file.name)}</div>
-      <label for="receiptInput" style="display:inline-block;margin-top:6px;padding:8px 20px;background:#f59e0b;color:#fff;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;">📂 Change File</label>
+      <label style="display:inline-block;margin-top:6px;padding:8px 20px;background:#f59e0b;color:#fff;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;position:relative;overflow:hidden;">📂 Change File<input type="file" id="receiptInput" accept="image/*,application/pdf" style="position:absolute;top:0;left:0;width:100%;height:100%;opacity:0;cursor:pointer;font-size:0;"></label>
       <button class="receipt-remove" onclick="removeReceipt(event)" style="display:block;margin:6px auto 0;">× Remove</button>
-      <input type="file" id="receiptInput" accept="image/*,application/pdf" style="display:none;">
     `;
     // document委任のため個別addEventListenerは不要
   };
@@ -1291,7 +1293,7 @@ function removeReceipt(e){
   e.stopPropagation();
   receiptData=null;
   const box=document.getElementById('receiptBox');
-  box.innerHTML=`<div class='receipt-icon'>🧾</div><div class='receipt-label'>Tap to add Receipt</div><div class='receipt-sub'>JPG / PNG / PDF supported</div><label for='receiptInput' style='display:inline-block;margin-top:10px;padding:10px 24px;background:#f59e0b;color:#fff;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;'>📂 Choose File</label><input type='file' id='receiptInput' accept='image/*,application/pdf' style='display:none;'>`;
+  box.innerHTML=`<div class='receipt-icon'>🧾</div><div class='receipt-label'>Tap to add Receipt</div><div class='receipt-sub'>JPG / PNG / PDF supported</div><label style='display:inline-block;margin-top:10px;padding:10px 24px;background:#f59e0b;color:#fff;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;position:relative;overflow:hidden;'>📂 Choose File<input type='file' id='receiptInput' accept='image/*,application/pdf' style='position:absolute;top:0;left:0;width:100%;height:100%;opacity:0;cursor:pointer;font-size:0;'></label>`;
   // document委任のため個別addEventListenerは不要
 }
 
