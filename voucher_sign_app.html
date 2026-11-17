@@ -107,8 +107,8 @@ html,body{height:100%;background:var(--bg);font-family:-apple-system,BlinkMacSys
 .sign-person-name{font-size:16px;font-weight:800;color:#93c5fd;}
 .sign-person-rank{font-size:13px;font-weight:600;color:#64748b;margin-top:1px;}
 .sign-tip{font-size:13px;font-weight:600;color:#475569;}
-.sign-canvas-area{flex:1;display:flex;flex-direction:column;padding:12px 14px 16px;gap:10px;min-height:0;max-height:calc(100vh - 280px);}
-.canvas-inner{flex:1;min-height:120px;max-height:340px;position:relative;border:2px dashed #3b82f6;border-radius:10px;background:#fff;overflow:hidden;touch-action:none;}
+.sign-canvas-area{flex:1;display:flex;flex-direction:column;padding:12px 14px 16px;gap:10px;min-height:0;}
+.canvas-inner{flex:1;min-height:150px;position:relative;border:2px dashed #3b82f6;border-radius:10px;background:#fff;overflow:hidden;touch-action:none;}
 .canvas-inner canvas{display:block;width:100%;height:100%;}
 .canvas-ghost{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:#94a3b8;font-size:17px;font-weight:700;text-align:center;pointer-events:none;transition:opacity .2s;display:flex;flex-direction:column;align-items:center;gap:6px;}
 .canvas-ghost .ghost-icon{font-size:32px;opacity:.4;}
@@ -119,6 +119,58 @@ html,body{height:100%;background:var(--bg);font-family:-apple-system,BlinkMacSys
 .s-btn-clear{background:#1e3a5f;color:#94a3b8;}
 .s-btn-save{background:var(--blue);color:#fff;}
 .s-btn-save:disabled{background:#1e3a5f;color:#475569;}
+
+/* ── サイドパネル：縦向き時は全幅で上部に表示 ── */
+.sign-side-panel{display:flex;flex-direction:column;flex-shrink:0;width:100%;}
+
+/* 通常の縦向きプレビューエリア */
+.sign-preview-area{position:relative;overflow:hidden;background:#f8fafc;height:110px;border-bottom:2px solid var(--blue);}
+
+/* ── CSS回転による擬似横向きサイン画面 ── */
+.sign-overlay.rotated {
+  width: 100vh;
+  height: 100vw;
+  top: calc((100vh - 100vw) / 2);
+  left: calc((100vw - 100vh) / 2);
+  transform: rotate(90deg);
+  transform-origin: center center;
+  flex-direction: row;
+}
+.sign-overlay.rotated .sign-side-panel {
+  width: 200px;
+  flex-shrink: 0;
+  border-right: 2px solid var(--blue);
+  border-bottom: none;
+}
+.sign-overlay.rotated .sign-preview-area {
+  height: auto;
+  flex: 1;
+  border-bottom: 1px solid #1e3a5f;
+}
+.sign-overlay.rotated .sign-name-bar {
+  padding: 8px 12px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+}
+.sign-overlay.rotated #signTip { display: none; }
+.sign-overlay.rotated .sign-canvas-area { max-height: none; padding: 8px 10px; flex: 1; }
+.sign-overlay.rotated .canvas-inner { max-height: none; }
+.sign-overlay.rotated .sign-btns { flex-direction: column; gap: 6px; }
+.sign-overlay.rotated .sign-btns .s-btn { padding: 10px 8px; font-size: 13px; }
+
+/* 実際に横向きの場合もサポート */
+@media (orientation: landscape) and (max-height: 540px) {
+  .sign-overlay.open:not(.rotated){flex-direction:row;}
+  .sign-overlay.open:not(.rotated) .sign-side-panel{width:200px;flex-shrink:0;border-right:2px solid var(--blue);}
+  .sign-overlay.open:not(.rotated) .sign-preview-area{height:auto;flex:1;border-bottom:1px solid #1e3a5f;}
+  .sign-overlay.open:not(.rotated) .sign-name-bar{padding:8px 12px;flex-direction:column;align-items:flex-start;gap:4px;}
+  .sign-overlay.open:not(.rotated) #signTip{display:none;}
+  .sign-overlay.open:not(.rotated) .sign-canvas-area{max-height:none;padding:8px 10px;}
+  .sign-overlay.open:not(.rotated) .canvas-inner{max-height:none;}
+  .sign-overlay.open:not(.rotated) .sign-btns{flex-direction:column;gap:6px;}
+  .sign-overlay.open:not(.rotated) .sign-btns .s-btn{padding:10px 8px;font-size:13px;}
+}
 
 /* ── モード選択 ── */
 .mode-select{display:flex;flex-direction:column;gap:10px;}
@@ -156,6 +208,110 @@ html,body{height:100%;background:var(--bg);font-family:-apple-system,BlinkMacSys
 .filename-input{flex:1;border:1.5px solid #d1dce8;border-radius:8px;padding:9px 10px;font-size:14px;font-weight:600;color:#1e293b;background:#fff;outline:none;min-width:0;}
 .filename-input:focus{border-color:#0ea5e9;}
 .filename-ext{font-size:13px;font-weight:700;color:#64748b;white-space:nowrap;}
+
+/* ── ダウンロード選択モーダル ── */
+#dlChoiceOverlay{visibility:hidden;opacity:0;pointer-events:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);z-index:2147483647;display:flex;align-items:center;justify-content:center;transition:opacity 0.15s;padding:16px;box-sizing:border-box;}
+#dlChoiceOverlay.open{visibility:visible;opacity:1;pointer-events:auto;}
+.dlc-box{background:#fff;border-radius:16px;padding:20px;width:100%;max-width:340px;box-shadow:0 8px 32px rgba(0,0,0,0.25);}
+.dlc-title{font-size:15px;font-weight:800;color:#1e1b4b;margin-bottom:4px;}
+.dlc-sub{font-size:12px;color:#6b7280;margin-bottom:16px;}
+.dlc-btn{width:100%;padding:14px 16px;border-radius:12px;border:1.5px solid #e5e7eb;background:#f9fafb;cursor:pointer;text-align:left;margin-bottom:10px;transition:border-color .15s,background .15s;-webkit-user-select:none;user-select:none;}
+.dlc-btn:last-of-type{margin-bottom:0;}
+.dlc-btn:active{background:#f1f5f9;}
+.dlc-btn-title{font-size:14px;font-weight:800;color:#1e293b;display:flex;align-items:center;gap:8px;}
+.dlc-btn-desc{font-size:11px;color:#64748b;margin-top:3px;line-height:1.5;}
+.dlc-btn.btn-voucher-only{border-color:#d1dce8;}
+.dlc-btn.btn-embed{border-color:#f59e0b;background:#fffbeb;}
+.dlc-btn.btn-merge{border-color:#2563eb;background:#eff6ff;}
+.dlc-cancel{width:100%;margin-top:12px;padding:11px;border-radius:10px;border:1.5px solid #e5e7eb;background:#fff;color:#6b7280;font-size:13px;font-weight:700;cursor:pointer;}
+
+/* ── 署名済み一覧 ── */
+.archive-btn{width:100%;padding:14px 16px;border-radius:14px;border:2px solid #7c3aed;background:#fff;display:flex;align-items:center;gap:14px;cursor:pointer;transition:border-color .15s,background .15s;-webkit-user-select:none;user-select:none;text-align:left;}
+.archive-btn:active{opacity:.85;}
+.archive-btn-icon{font-size:28px;flex-shrink:0;}
+.archive-btn-title{font-size:15px;font-weight:800;color:#1e293b;}
+.archive-btn-sub{font-size:12px;color:#64748b;margin-top:2px;line-height:1.4;}
+.archive-screen{display:none;flex-direction:column;gap:12px;}
+.archive-month-card{background:#fff;border:1.5px solid var(--border);border-radius:12px;overflow:hidden;cursor:pointer;-webkit-user-select:none;user-select:none;}
+.archive-month-header{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:#f8fafc;}
+.archive-month-header:active{background:#f1f5f9;}
+.archive-month-title{font-size:15px;font-weight:800;color:#1e293b;}
+.archive-month-count{font-size:12px;font-weight:600;background:#dbeafe;color:#1d4ed8;padding:2px 8px;border-radius:10px;}
+.archive-month-arrow{font-size:12px;color:#94a3b8;transition:transform .2s;}
+.archive-month-arrow.open{transform:rotate(180deg);}
+.archive-month-items{display:none;border-top:1px solid var(--border);}
+.archive-month-items.open{display:block;}
+.archive-item{display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid #f1f5f9;-webkit-user-select:none;user-select:none;}
+.archive-item:last-child{border-bottom:none;}
+.archive-item-check{width:22px;height:22px;border:2px solid #d1dce8;border-radius:6px;flex-shrink:0;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background .15s,border-color .15s;}
+.archive-item-check.checked{background:#7c3aed;border-color:#7c3aed;}
+.archive-item-check.checked::after{content:'✓';color:#fff;font-size:13px;font-weight:900;}
+.archive-item-info{flex:1;min-width:0;cursor:pointer;}
+.archive-item-name{font-size:13px;font-weight:700;color:#1e293b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.archive-item-meta{font-size:11px;color:#64748b;margin-top:2px;display:flex;align-items:center;gap:6px;}
+.archive-item-type{padding:1px 6px;border-radius:6px;font-size:10px;font-weight:700;}
+.archive-item-type.sign{background:#dbeafe;color:#1d4ed8;}
+.archive-item-type.receipt{background:#fef3c7;color:#92400e;}
+.archive-item-type.upload{background:#e0f2fe;color:#0369a1;}
+.archive-item.confirmed{background:#f0fdf4;}
+.archive-item-actions{display:flex;align-items:center;gap:6px;flex-shrink:0;}
+.archive-item-confirm{padding:6px 10px;border-radius:8px;border:1.5px solid #d1dce8;background:#fff;color:#d1dce8;font-size:14px;cursor:pointer;white-space:nowrap;transition:all .15s;}
+.archive-item-confirm.confirmed{border-color:#16a34a;background:#dcfce7;filter:none;}
+.archive-item-confirm:not(.confirmed){filter:grayscale(1);opacity:0.4;}
+.archive-item-confirm:active{opacity:.7;}
+.archive-item-preview{padding:6px 10px;border-radius:8px;border:1.5px solid #7c3aed;background:#fff;color:#7c3aed;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;}
+.archive-item-preview:active{background:#7c3aed;color:#fff;}
+/* PDFプレビューモーダル */
+#pdfPreviewOverlay{visibility:hidden;opacity:0;pointer-events:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:2147483646;display:flex;flex-direction:column;align-items:stretch;transition:opacity 0.15s;}
+#pdfPreviewOverlay.open{visibility:visible;opacity:1;pointer-events:auto;}
+#pdfPreviewHeader{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:#1e1b4b;flex-shrink:0;gap:8px;}
+#pdfPreviewTitle{color:#fff;font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;}
+#pdfPreviewDlBtn{padding:6px 14px;border-radius:8px;border:none;background:#7c3aed;color:#fff;font-size:13px;font-weight:700;cursor:pointer;flex-shrink:0;}
+#pdfPreviewCloseBtn{padding:6px 12px;border-radius:8px;border:none;background:rgba(255,255,255,0.15);color:#fff;font-size:14px;font-weight:700;cursor:pointer;flex-shrink:0;}
+#pdfPreviewBody{flex:1;overflow:hidden;display:flex;align-items:stretch;}
+.archive-item-del{padding:6px 10px;border-radius:8px;border:1.5px solid #fca5a5;background:#fff;color:#dc2626;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;}
+.archive-item-del:active{background:#fca5a5;}
+.archive-item-rename{padding:6px 10px;border-radius:8px;border:1.5px solid #f59e0b;background:#fff;color:#d97706;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;}
+.archive-item-rename:active{background:#fef3c7;}
+.archive-rename-form{display:flex;align-items:center;gap:6px;padding:8px 12px;background:#fffbeb;border-top:1px solid #fde68a;}
+.archive-rename-input{flex:1;padding:6px 10px;border:1.5px solid #f59e0b;border-radius:8px;font-size:13px;outline:none;}
+.archive-rename-input:focus{border-color:#d97706;box-shadow:0 0 0 2px #fde68a;}
+.archive-rename-save{padding:6px 14px;border-radius:8px;border:none;background:#d97706;color:#fff;font-size:13px;font-weight:700;cursor:pointer;}
+.archive-rename-save:active{opacity:.8;}
+.archive-rename-cancel{padding:6px 12px;border-radius:8px;border:1.5px solid #d1dce8;background:#fff;color:#64748b;font-size:13px;cursor:pointer;}
+.archive-bulk-bar{background:#7c3aed;border-radius:12px;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;}
+.archive-bulk-count{font-size:14px;font-weight:800;color:#fff;}
+.archive-bulk-dl{background:#fff;color:#7c3aed;border:none;border-radius:8px;padding:8px 14px;font-size:13px;font-weight:800;cursor:pointer;}
+.archive-bulk-dl:active{opacity:.8;}
+.archive-bulk-merge{background:#fbbf24;color:#7c3aed;border:none;border-radius:8px;padding:8px 14px;font-size:13px;font-weight:800;cursor:pointer;}
+.archive-bulk-merge:active{opacity:.8;}
+/* 船名サマリー */
+.archive-ship-summary{margin-bottom:12px;background:#fff;border:1.5px solid var(--border);border-radius:12px;overflow:hidden;}
+.archive-ship-summary-header{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;cursor:pointer;-webkit-user-select:none;user-select:none;}
+.archive-ship-summary-header-title{font-size:13px;font-weight:800;color:#1e293b;}
+.archive-ship-summary-arrow{font-size:11px;color:#64748b;transition:transform .2s;}
+.archive-ship-summary-arrow.open{transform:rotate(180deg);}
+.archive-ship-summary-body{display:none;padding:0 14px 12px;}
+.archive-ship-summary-body.open{display:block;}
+.archive-ship-month-label{font-size:11px;font-weight:700;color:#94a3b8;letter-spacing:.5px;margin:8px 0 5px;}
+.archive-ship-chips{display:flex;flex-wrap:wrap;gap:6px;}
+.archive-ship-chip{display:inline-flex;align-items:center;gap:5px;background:#eff6ff;border:1.5px solid #bfdbfe;border-radius:20px;padding:4px 10px;font-size:12px;font-weight:700;color:#1d4ed8;cursor:pointer;transition:background .15s;}
+.archive-ship-chip:active{background:#dbeafe;}
+.archive-ship-chip .chip-count{background:#2563eb;color:#fff;border-radius:10px;padding:1px 7px;font-size:11px;font-weight:800;}
+.archive-empty{text-align:center;padding:40px 20px;color:#94a3b8;}
+.archive-empty-icon{font-size:40px;margin-bottom:12px;}
+.archive-empty-text{font-size:14px;font-weight:700;}
+.archive-empty-sub{font-size:12px;margin-top:4px;line-height:1.5;}
+.archive-add-btn{padding:7px 14px;border-radius:10px;border:1.5px solid #7c3aed;background:#faf5ff;color:#7c3aed;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;}
+.archive-add-btn:active{background:#7c3aed;color:#fff;}
+.archive-select-all-row{display:flex;align-items:center;justify-content:space-between;padding:8px 4px;}
+.archive-select-all-btn{background:none;border:1.5px solid #d1dce8;border-radius:8px;padding:6px 12px;font-size:12px;font-weight:700;color:#64748b;cursor:pointer;}
+.archive-select-all-btn:active{opacity:.7;}
+.archive-del-btn{background:none;border:1.5px solid #fca5a5;border-radius:8px;padding:6px 12px;font-size:12px;font-weight:700;color:#dc2626;cursor:pointer;}
+.archive-del-btn:active{opacity:.7;}
+.save-to-archive-btn{width:100%;padding:12px;border-radius:10px;border:2px solid #7c3aed;background:#faf5ff;color:#7c3aed;font-size:14px;font-weight:800;cursor:pointer;margin-top:4px;display:flex;align-items:center;justify-content:center;gap:8px;}
+.save-to-archive-btn:active{background:#7c3aed;color:#fff;}
+.save-to-archive-btn:disabled{border-color:#d1dce8;background:#f8fafc;color:#94a3b8;cursor:default;}
 </style>
 </head>
 <body>
@@ -189,6 +345,13 @@ html,body{height:100%;background:var(--bg);font-family:-apple-system,BlinkMacSys
           <div class="mode-btn-sub">サイン済みVoucher PDFに領収書を追加</div>
         </div>
       </div>
+      <div class="archive-btn" onclick="showArchive()">
+        <div class="archive-btn-icon">📂</div>
+        <div class="mode-btn-text">
+          <div class="archive-btn-title">署名済み一覧</div>
+          <div class="archive-btn-sub">保存済みのPDFを月別に確認・ダウンロード</div>
+        </div>
+      </div>
     </div>
 
     <!-- サインモード：PDFアップロード -->
@@ -211,11 +374,114 @@ html,body{height:100%;background:var(--bg);font-family:-apple-system,BlinkMacSys
       <div class="version-header" onclick="toggleVersion()">
         <div class="version-header-left">
           <span class="version-title">&#128221; バージョン履歴</span>
-          <span class="version-current">v2.1</span>
+          <span class="version-current">v4.0</span>
         </div>
         <span class="version-arrow" id="versionArrow">&#9660;</span>
       </div>
       <div class="version-body" id="versionBody">
+        <div class="version-item">
+          <div class="version-item-header">
+            <span class="ver-num">v4.0</span>
+            <span class="ver-date">2026/11/03</span>
+            <span class="ver-tag new">New</span>
+          </div>
+          <ul class="ver-changes">
+            <li>「署名済み一覧」機能を追加：ダウンロードしたPDFをデバイス内に保存</li>
+            <li>月別グループ表示・個別選択・一括ダウンロード対応</li>
+            <li>サイン収集モード・領収書添付モード両方から保存可能</li>
+            <li>Firebaseクラウドに保存（全端末で共有・同期）</li>
+          </ul>
+        </div>
+        <div class="version-item">
+          <div class="version-item-header">
+            <span class="ver-num">v3.1</span>
+            <span class="ver-date">2026/10/05</span>
+            <span class="ver-tag fix">Fix</span>
+          </div>
+          <ul class="ver-changes">
+            <li>Linearized PDF（最適化PDF）を%%EOFで誤って切り捨ててしまう問題を修正</li>
+            <li>先頭1024バイト内の /Linearized 検出でPDF種別を自動判定し、切り捨て処理をスキップ</li>
+            <li>MERCURY_LEADER等のLinearized形式PDFが正常に読み込めるよう修正</li>
+          </ul>
+        </div>
+        <div class="version-item">
+          <div class="version-item-header">
+            <span class="ver-num">v3.0</span>
+            <span class="ver-date">2026/10/04</span>
+            <span class="ver-tag fix">Fix</span>
+          </div>
+          <ul class="ver-changes">
+            <li>ChatGPT等がPDF末尾に追記した壊れたXRefインクリメンタルアップデートを除去する修復ロジックを追加（最初の%%EOFで切り捨て）</li>
+            <li>「Inconsistent generation in XRef: 4R」エラーが発生するPDFを確実に読み込めるよう修正</li>
+            <li>iOSでChatGPT編集PDFが黒画面になる問題の修復精度を向上</li>
+          </ul>
+        </div>
+        <div class="version-item">
+          <div class="version-item-header">
+            <span class="ver-num">v2.9</span>
+            <span class="ver-date">2026/10/04</span>
+            <span class="ver-tag fix">Fix</span>
+          </div>
+          <ul class="ver-changes">
+            <li>XRefエラー時に自動修復を試みるフォールバック処理を追加（pdf.js読み込み失敗→pdf-libで修復→再ロードの3段階）</li>
+            <li>ChatGPT等で結合・編集されたXRef破損PDFを確実に読み込めるよう改善</li>
+          </ul>
+        </div>
+        <div class="version-item">
+          <div class="version-item-header">
+            <span class="ver-num">v2.6</span>
+            <span class="ver-date">2026/09/30</span>
+            <span class="ver-tag fix">Fix</span>
+          </div>
+          <ul class="ver-changes">
+            <li>領収書添付モードでもダウンロードファイル名を「船名_Category_JPY金額」形式に自動変更（例: ENERGY_HORIZON_Embark_JPY16000.pdf）</li>
+          </ul>
+        </div>
+        <div class="version-item">
+          <div class="version-item-header">
+            <span class="ver-num">v2.5</span>
+            <span class="ver-date">2026/09/30</span>
+            <span class="ver-tag fix">Fix</span>
+          </div>
+          <ul class="ver-changes">
+            <li>船名検出ロジックを修正（"Name of Vessel:" がpdf.jsで3分割されても確実に取得）</li>
+            <li>ファイル名が「船名_Category_JPY金額」形式で正しく生成されるよう修正</li>
+          </ul>
+        </div>
+        <div class="version-item">
+          <div class="version-item-header">
+            <span class="ver-num">v2.4</span>
+            <span class="ver-date">2026/09/30</span>
+            <span class="ver-tag new">New</span>
+          </div>
+          <ul class="ver-changes">
+            <li>PDFから船名・Category（Embark/Disembarkなど）・Meal allowance合計金額を自動読み取り</li>
+            <li>保存ファイル名を「船名_Category_JPY金額」形式で自動生成（手動編集も可）</li>
+            <li>情報バーを船名・区分・合計の3項目に絞って表示</li>
+          </ul>
+        </div>
+        <div class="version-item">
+          <div class="version-item-header">
+            <span class="ver-num">v2.3</span>
+            <span class="ver-date">2026/09/30</span>
+            <span class="ver-tag fix">Fix</span>
+          </div>
+          <ul class="ver-changes">
+            <li>領収書添付モードでPDF領収書を選択するとエラーになる問題を修正</li>
+            <li>PDF/画像の条件分岐順序を修正（PDFを先に判定するよう変更）</li>
+          </ul>
+        </div>
+        <div class="version-item">
+          <div class="version-item-header">
+            <span class="ver-num">v2.2</span>
+            <span class="ver-date">2026/09/30</span>
+            <span class="ver-tag new">New</span>
+          </div>
+          <ul class="ver-changes">
+            <li>UI全体を日本語化（サイン入力画面のみ英語を維持）</li>
+            <li>保存ファイル名をPDFの船名から自動生成する機能を追加（手動編集も可）</li>
+          </ul>
+        </div>
         <div class="version-item">
           <div class="version-item-header">
             <span class="ver-num">v2.1</span>
@@ -224,7 +490,7 @@ html,body{height:100%;background:var(--bg);font-family:-apple-system,BlinkMacSys
           </div>
           <ul class="ver-changes">
             <li>iPhone Safari でファイル選択ボタンが反応しない問題を修正（全ファイル入力を label 方式に変更）</li>
-            <li>Collect Signatures / Attach Receipt 両モードのアップロードボタンをタップ可能な「Choose File」ボタンに改善</li>
+            <li>Collect Signatures / Attach Receipt 両モードのアップロードボタンをタップ可能なボタンに改善</li>
           </ul>
         </div>
         <div class="version-item">
@@ -347,6 +613,7 @@ html,body{height:100%;background:var(--bg);font-family:-apple-system,BlinkMacSys
     <button class="ra-dl-btn" id="raDlBtn" onclick="attachReceiptToPDF()">
       <span>📎</span><span id="raDlBtnText">PDFと領収書を選択してください</span>
     </button>
+    <button class="save-to-archive-btn" id="raArchiveBtn" disabled onclick="saveReceiptAttachToArchive()">📂 署名済み一覧に保存</button>
     <button class="ra-back" onclick="backToModeSelect()">← モード選択に戻る</button>
   </div>
 
@@ -387,22 +654,62 @@ html,body{height:100%;background:var(--bg);font-family:-apple-system,BlinkMacSys
       </div>
     </div>
 
+    <button class="save-to-archive-btn" id="saveToArchiveBtn" onclick="saveCurrentToArchive()">📂 署名済み一覧に保存</button>
     <button class="reset-btn" onclick="resetApp()">&#8635; 別のPDFを読み込む</button>
+  </div>
+
+  <!-- 署名済み一覧スクリーン -->
+  <div class="archive-screen" id="archiveScreen">
+    <div style="display:flex;align-items:center;justify-content:space-between;">
+      <div class="sec-label">📂 署名済み一覧</div>
+      <button class="archive-add-btn" onclick="document.getElementById('archiveUploadInput').click()">＋ PDFを追加</button>
+      <input type="file" id="archiveUploadInput" accept="application/pdf" style="display:none" onchange="handleArchiveUpload(event)">
+    </div>
+    <!-- 一括操作バー（選択時のみ表示） -->
+    <div id="archiveBulkBar" style="display:none;">
+      <div class="archive-bulk-bar">
+        <span class="archive-bulk-count" id="archiveBulkCount">0件選択中</span>
+        <div style="display:flex;gap:8px;">
+          <button class="archive-bulk-dl" onclick="downloadSelectedArchive()">⬇ 個別DL</button>
+          <button class="archive-bulk-merge" onclick="mergeAndDownloadSelected()">📑 1つに結合</button>
+        </div>
+      </div>
+    </div>
+    <!-- 船名サマリー（折りたたみ） -->
+    <div class="archive-ship-summary" id="archiveShipSummary" style="display:none;">
+      <div class="archive-ship-summary-header" onclick="toggleShipSummary()">
+        <span class="archive-ship-summary-header-title">🚢 船名別 件数</span>
+        <span class="archive-ship-summary-arrow" id="shipSummaryArrow">▼</span>
+      </div>
+      <div class="archive-ship-summary-body" id="archiveShipBody"></div>
+    </div>
+    <!-- 全選択/削除バー -->
+    <div class="archive-select-all-row" id="archiveSelectAllRow" style="display:none;">
+      <button class="archive-select-all-btn" onclick="toggleSelectAll()">☑ 全て選択</button>
+      <button class="archive-del-btn" onclick="deleteSelectedArchive()">🗑 選択削除</button>
+    </div>
+    <div id="archiveList"></div>
+    <button class="ra-back" onclick="backToModeSelect()">← モード選択に戻る</button>
   </div>
 </div>
 
+
 <div class="sign-overlay" id="signOverlay">
-  <div class="sign-preview-area" id="previewArea">
-    <img id="previewImg" src="" alt="">
-    <div class="sign-row-hl" id="rowHl"></div>
-  </div>
-  <div class="sign-name-bar">
-    <div class="sign-name-label">
-      <div class="sign-person-name" id="overlayName">—</div>
-      <div class="sign-person-rank" id="overlayRank">—</div>
+  <!-- 左サイドパネル（横向き時にプレビュー＋名前を表示） -->
+  <div class="sign-side-panel">
+    <div class="sign-preview-area" id="previewArea">
+      <img id="previewImg" src="" alt="">
+      <div class="sign-row-hl" id="rowHl"></div>
     </div>
-    <div class="sign-tip">✍ Sign below</div>
+    <div class="sign-name-bar" id="signNameBar">
+      <div class="sign-name-label">
+        <div class="sign-person-name" id="overlayName">—</div>
+        <div class="sign-person-rank" id="overlayRank">—</div>
+      </div>
+      <div class="sign-tip" id="signTip">✍ Sign below</div>
+    </div>
   </div>
+  <!-- キャンバスエリア -->
   <div class="sign-canvas-area">
     <div class="canvas-inner" id="canvasInner">
       <canvas id="sigCanvas"></canvas>
@@ -414,6 +721,12 @@ html,body{height:100%;background:var(--bg);font-family:-apple-system,BlinkMacSys
       <button class="s-btn s-btn-cancel" onclick="closeOverlay()">Cancel</button>
       <button class="s-btn s-btn-clear" onclick="clearSig()">Clear</button>
       <button class="s-btn s-btn-save" id="saveBtn" onclick="saveSig()" disabled>Save</button>
+    </div>
+    <div style="text-align:center;margin-top:4px;">
+      <button id="rotateSignBtn" onclick="toggleSignRotate()"
+        style="background:none;border:none;color:#64748b;font-size:12px;cursor:pointer;padding:4px 8px;display:flex;align-items:center;gap:4px;margin:0 auto;">
+        <span style="font-size:16px;">⟳</span> 横向きで書く
+      </button>
     </div>
   </div>
 </div>
@@ -452,8 +765,28 @@ async function loadPDF(file){
     const ab=await file.arrayBuffer();
     pdfBytes=new Uint8Array(ab);
 
+    // c2pa等の問題メタデータを除去（ChatGPT等で編集されたPDFがiOSで真っ黒になる問題を防ぐ）
+    setProc('PDFを最適化中...');
+    pdfBytes = await cleanPdfBytes(pdfBytes);
+
     setProc('ページをレンダリング中...');
-    const pdfjsDoc=await pdfjsLib.getDocument({data:pdfBytes.slice()}).promise;
+    // XRef破損PDFに対応: まず通常ロード、失敗したらcleanPdfBytesで再修復して再試行
+    let pdfjsDoc;
+    try{
+      pdfjsDoc=await pdfjsLib.getDocument({data:pdfBytes.slice(), stopAtErrors:false}).promise;
+    }catch(xrefErr){
+      console.warn('pdf.js load failed, trying re-clean:', xrefErr.message);
+      // XRefエラーの場合: cleanPdfBytesで%%EOF切り捨て+pdf-lib再保存してから再ロード
+      try{
+        const repairedBytes=await cleanPdfBytes(pdfBytes);
+        pdfjsDoc=await pdfjsLib.getDocument({data:repairedBytes, stopAtErrors:false}).promise;
+        pdfBytes=repairedBytes; // 修復済みバイトを使用
+      }catch(repairErr){
+        console.warn('repair also failed, trying raw:', repairErr.message);
+        // 最後の手段: 元のバイトで強制ロード
+        pdfjsDoc=await pdfjsLib.getDocument({data:pdfBytes.slice()}).promise;
+      }
+    }
     const page=await pdfjsDoc.getPage(1);
 
     // ページ実サイズ（ポイント単位）を記録
@@ -632,44 +965,50 @@ async function loadPDF(file){
 
     sigs={};
 
-    // ── 船名を取得 ──
-    let shipName = '';
-
-    // パターン1：ラベル＋値が同一アイテム内（例："M/V EVER GOLDEN", "Name of Vessel: LILAC PROMENADE"）
+    // ── ページ全テキストを1行ずつY座標でグループ化（検索用） ──
+    // items は上で作成済み（x, y, str, w プロパティを持つ）
+    // Y座標が近いアイテムを同一行としてまとめる
+    const lineMap = new Map();
     for(const it of items){
-      const m = it.str.match(/(?:name\s+of\s+vessel|vessel\s*name|ship\s*name|m\/v|mv|s\.s\.|ss|f\/v|fv)[:\s]+(.+)/i);
-      if(m && m[1].trim().length > 1){ shipName = m[1].trim(); break; }
+      const yKey = Math.round(it.y / 5) * 5; // 5pt単位でグループ化
+      if(!lineMap.has(yKey)) lineMap.set(yKey, []);
+      lineMap.get(yKey).push(it);
     }
+    // 各行をX順にソート済みの配列にする
+    const lines = [...lineMap.values()].map(row => row.sort((a,b)=>a.x-b.x));
 
-    // パターン2：ラベルと値が別アイテム（最も多いケース）
-    // 「Name of Vessel:」の右側・同じ行にある最初のテキストを船名とする
-    if(!shipName){
-      // ラベルアイテムを特定（コロンあり/なし両対応、部分一致）
-      const labelItem = items.find(it=>
-        /name\s+of\s+vessel|vessel\s*name|ship\s*name/i.test(it.str)
-      );
-      if(labelItem){
-        const lY = labelItem.y;
-        const lX = labelItem.x + labelItem.w; // ラベルの右端
-        // 同じ行（Y±15pt）でラベルより右にある全アイテムを連結
-        const valueItems = items
-          .filter(it=>
-            it !== labelItem &&
-            Math.abs(it.y - lY) < 15 &&
-            it.x >= lX - 5 &&
-            it.str.trim().length > 0
-          )
-          .sort((a,b)=>a.x-b.x);
-        if(valueItems.length > 0){
-          // 連続するアイテムを結合（間にコロンや空白が入る場合も考慮）
-          shipName = valueItems.map(it=>it.str.trim()).join(' ')
-            .replace(/^[:\s]+/,'')  // 先頭のコロン・スペース除去
-            .trim();
+    // ── ヘルパー: ラベルと同じ行の値を取得 ──
+    const getValueOnSameLine = (labelPattern, firstWordOnly=false) => {
+      for(const line of lines){
+        const labelIdx = line.findIndex(it => labelPattern.test(it.str));
+        if(labelIdx >= 0 && labelIdx < line.length - 1){
+          const rest = line.slice(labelIdx + 1);
+          if(firstWordOnly){
+            // 純粋な英字のみのワードを先頭から1つ取得（数字・記号混在は除外）
+            for(const it of rest){
+              const word = it.str.trim().replace(/[:\s]+$/,'');
+              if(/^[A-Za-z]+$/.test(word)) return word;
+            }
+            return rest[0].str.trim();
+          }
+          return rest.map(it=>it.str.trim()).join(' ').replace(/^[:\s]+/,'').trim();
         }
       }
-    }
+      return '';
+    };
 
-    // パターン3：M/V プレフィックスが独立アイテム
+    // ── 船名を取得（"Vessel:" ラベルの右側から取得） ──
+    // pdf.jsは "Name of Vessel:" を3つの別アイテムに分割するため、
+    // 最後のワード "Vessel:" だけをマッチさせる
+    let shipName = getValueOnSameLine(/vessel:/i);
+    // フォールバック: "M/V SHIPNAME" パターン（"Vessel:" が見つからない場合）
+    if(!shipName){
+      for(const it of items){
+        const m = it.str.match(/(?:m\/v|mv|s\.s\.|ss|f\/v|fv)[:\s]+(.+)/i);
+        if(m && m[1].trim().length > 1){ shipName = m[1].trim(); break; }
+      }
+    }
+    // フォールバック2: M/V プレフィックスが独立アイテム
     if(!shipName){
       const mvItem = items.find(it=> /^(?:m\/v|mv|s\.s\.|ss)$/i.test(it.str.trim()));
       if(mvItem){
@@ -685,17 +1024,53 @@ async function loadPDF(file){
       }
     }
 
-    // それでも見つからなければ、PDFファイル名をベースにする
+    // ── Category検出（"Embark"など最初の英語ワードのみ／NH872等の便名は除外） ──
+    let category = getValueOnSameLine(/category/i, true);
+    // 同一アイテム内パターン（"Category: Embark"）
+    if(!category){
+      for(const it of items){
+        const m = it.str.match(/category[:\s]+([A-Za-z]+)/i);
+        if(m && m[1].trim()){ category = m[1].trim(); break; }
+      }
+    }
+
+    // ── Meal allowance Total JPY金額検出 ──
+    // 行内に "Total" と "JPY" と数字がある行を探す
+    let mealTotal = '';
+    for(const line of lines){
+      const lineStr = line.map(it=>it.str).join(' ');
+      // "Total JPY 16,000" パターン
+      if(/total/i.test(lineStr) && /jpy/i.test(lineStr)){
+        // JPYアイテムの直後の数字アイテムを取得
+        const jpyIdx = line.findIndex(it => /^jpy$/i.test(it.str.trim()));
+        if(jpyIdx >= 0 && jpyIdx < line.length - 1){
+          // JPY直後のアイテムから数字を抽出
+          const numStr = line[jpyIdx + 1].str.replace(/[^0-9,]/g,'');
+          if(numStr){ mealTotal = 'JPY' + numStr.replace(/,/g,''); break; }
+        }
+        // JPYと数字が同一アイテムのケース: "JPY16,000"
+        for(const it of line){
+          const m = it.str.match(/jpy\s*([\d,]+)/i);
+          if(m){ mealTotal = 'JPY' + m[1].replace(/,/g,''); break; }
+        }
+        if(mealTotal) break;
+      }
+    }
+
+    // ── ファイル名生成（船名_Category_金額） ──
     const baseName = file.name.replace(/\.pdf$/i,'');
-    const defaultFilename = shipName
-      ? shipName.replace(/[\\/:*?"<>|]/g,'_').replace(/\s+/g,'_')
-      : 'signed_' + baseName;
+    const safe = s => s.replace(/[\\/:*?"<>|]/g,'_').replace(/\s+/g,'_');
+    const parts = [
+      shipName  ? safe(shipName)  : '',
+      category  ? safe(category)  : '',
+      mealTotal ? safe(mealTotal) : ''
+    ].filter(Boolean);
+    const defaultFilename = parts.length > 0 ? parts.join('_') : 'signed_' + baseName;
 
     document.getElementById('infoStrip').innerHTML=
-      `<strong>ファイル:</strong> ${escHtml(file.name)}<br>`+
-      `<strong>クルー:</strong> ${crewData.length}名 &nbsp;|&nbsp; `+
-      `<strong>Sign列:</strong> 自動検出`+
-      (shipName ? ` &nbsp;|&nbsp; <strong>船名:</strong> ${escHtml(shipName)}` : '');
+      (shipName  ? `<strong>船名:</strong> ${escHtml(shipName)}` : '')+
+      (category  ? ` &nbsp;|&nbsp; <strong>区分:</strong> ${escHtml(category)}`   : '')+
+      (mealTotal ? ` &nbsp;|&nbsp; <strong>合計:</strong> ${escHtml(mealTotal)}` : '');
     document.getElementById('headerSub').textContent=shipName || baseName;
     // ファイル名入力欄にセット
     document.getElementById('filenameInput').value = defaultFilename;
@@ -721,14 +1096,24 @@ function showScreen(n){
   document.getElementById('processingScreen').style.display= n==='processing' ?'flex':'none';
   document.getElementById('appScreen').style.display       = n==='app'        ?'flex':'none';
   document.getElementById('headerBadge').style.display     = n==='app'        ?''   :'none';
+  // アーカイブ・受領スクリーンはupload配下にあるため、upload表示時のみ制御
+  if(n!=='upload'){
+    const as=document.getElementById('archiveScreen');
+    if(as) as.style.display='none';
+  }
 }
 function setProc(m){document.getElementById('procLabel').textContent=m;}
 
 function resetApp(){
   if(!confirm('別のPDFを読み込みますか？\n現在のサインはすべてリセットされます。'))return;
-  pdfBytes=null; pageImg=null; crewData=[]; sigs={}; receiptData=null; document.getElementById('receiptBox').innerHTML=`<div class='receipt-icon'>🧾</div><div class='receipt-label'>領収書を追加</div><div class='receipt-sub'>JPG / PNG / PDF 対応</div><label style='display:inline-block;margin-top:10px;padding:10px 24px;background:#f59e0b;color:#fff;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;position:relative;overflow:hidden;'>📂 ファイルを選択<input type='file' id='receiptInput' accept='image/*,application/pdf' style='position:absolute;top:0;left:0;width:100%;height:100%;opacity:0;cursor:pointer;font-size:0;'></label>`;
+  pdfBytes=null; pageImg=null; crewData=[]; sigs={}; receiptData=null;
+  _lastSignedPdfBytes=null; _lastSignedFilename=null;
+  document.getElementById('receiptBox').innerHTML=`<div class='receipt-icon'>🧾</div><div class='receipt-label'>領収書を追加</div><div class='receipt-sub'>JPG / PNG / PDF 対応</div><label style='display:inline-block;margin-top:10px;padding:10px 24px;background:#f59e0b;color:#fff;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;position:relative;overflow:hidden;'>📂 ファイルを選択<input type='file' id='receiptInput' accept='image/*,application/pdf' style='position:absolute;top:0;left:0;width:100%;height:100%;opacity:0;cursor:pointer;font-size:0;'></label>`;
   document.getElementById('fileInput').value='';
+  const archBtn=document.getElementById('saveToArchiveBtn');
+  if(archBtn){archBtn.textContent='📂 署名済み一覧に保存';archBtn.style.cssText='';}
   showScreen('upload');
+  backToModeSelect();
 }
 
 /* ── モード切替 ── */
@@ -741,14 +1126,6 @@ function showReceiptAttach(){
   document.getElementById('receiptAttachScreen').style.display='flex';
   document.getElementById('headerSub').textContent='領収書添付モード';
 }
-function backToModeSelect(){
-  document.getElementById('modeSelect').style.display='flex';
-  document.getElementById('signUploadArea').style.display='none';
-  document.getElementById('uploadScreen').style.display='flex';
-  document.getElementById('receiptAttachScreen').style.display='none';
-  document.getElementById('headerSub').textContent='PDFをアップロードして開始';
-}
-
 /* ── Receipt Attach Mode ── */
 let raVoucherBytes=null, raReceiptDataURL=null, raReceiptBytes=null, raReceiptMime=null;
 
@@ -760,7 +1137,8 @@ document.addEventListener('change', async e=>{
   if(e.target.id==='raVoucherInput'){
     const file=e.target.files[0]; if(!file) return;
     const ab=await file.arrayBuffer();
-    raVoucherBytes=new Uint8Array(ab);
+    // c2pa等の問題メタデータを除去（ChatGPT等で編集されたPDFがiOSで真っ黒になる問題を防ぐ）
+    raVoucherBytes = await cleanPdfBytes(new Uint8Array(ab));
     document.getElementById('raVoucherBox').classList.add('has-file');
     const nm=document.getElementById('raVoucherName');
     nm.textContent='✓ '+file.name; nm.style.display='block';
@@ -808,20 +1186,114 @@ function updateRaBtn(){
   }
 }
 
-async function attachReceiptToPDF(){
-  const hasReceipt = raReceiptDataURL || raReceiptBytes;
-  if(!raVoucherBytes || !hasReceipt) return;
+/* ── RAモード：ファイル名生成共通 ── */
+async function _buildRaFilename(raVoucherBytesLocal){
+  const doc2=await pdfjsLib.getDocument({data:raVoucherBytesLocal.slice(), stopAtErrors:false}).promise;
+  const pg2=await doc2.getPage(1);
+  const content2=await pg2.getTextContent();
+  const pg2size = (await doc2.getPage(1)).getViewport({scale:1});
+  const H2 = pg2size.height;
+  const rawItems2=[];
+  for(const it of content2.items){
+    if(!it.str||!it.str.trim()) continue;
+    const tx=it.transform[4], ty=it.transform[5];
+    const h2=Math.abs(it.height)||8;
+    rawItems2.push({x:tx,x1:tx+Math.abs(it.width),yCtr:ty+h2/2,str:it.str,yPDF:ty});
+  }
+  const raItems = rawItems2.map(i=>({x:i.x, y: H2 - i.yPDF, str:i.str}));
+  const raLineMap = new Map();
+  for(const it of raItems){
+    const yKey = Math.round(it.y / 5) * 5;
+    if(!raLineMap.has(yKey)) raLineMap.set(yKey, []);
+    raLineMap.get(yKey).push(it);
+  }
+  const raLines = [...raLineMap.values()].map(row => row.sort((a,b)=>a.x-b.x));
+  const raGetVal = (pat, firstWordOnly=false) => {
+    for(const line of raLines){
+      const idx = line.findIndex(it => pat.test(it.str));
+      if(idx >= 0 && idx < line.length - 1){
+        const rest = line.slice(idx + 1);
+        if(firstWordOnly){
+          for(const it of rest){
+            const w = it.str.trim().replace(/[:\s]+$/,'');
+            if(/^[A-Za-z]+$/.test(w)) return w;
+          }
+          return rest[0].str.trim();
+        }
+        return rest.map(it=>it.str.trim()).join(' ').replace(/^[:\s]+/,'').trim();
+      }
+    }
+    return '';
+  };
+  let raShipName = raGetVal(/vessel:/i);
+  if(!raShipName){
+    for(const it of raItems){
+      const m = it.str.match(/(?:m\/v|mv|s\.s\.|ss|f\/v|fv)[:\s]+(.+)/i);
+      if(m && m[1].trim().length > 1){ raShipName = m[1].trim(); break; }
+    }
+  }
+  let raCategory = raGetVal(/category/i, true);
+  if(!raCategory){
+    for(const it of raItems){
+      const m = it.str.match(/category[:\s]+([A-Za-z]+)/i);
+      if(m && m[1].trim()){ raCategory = m[1].trim(); break; }
+    }
+  }
+  let raMealTotal = '';
+  for(const line of raLines){
+    const lineStr = line.map(it=>it.str).join(' ');
+    if(/total/i.test(lineStr) && /jpy/i.test(lineStr)){
+      const jpyIdx = line.findIndex(it => /^jpy$/i.test(it.str.trim()));
+      if(jpyIdx >= 0 && jpyIdx < line.length - 1){
+        const numStr = line[jpyIdx + 1].str.replace(/[^0-9,]/g,'');
+        if(numStr){ raMealTotal = 'JPY' + numStr.replace(/,/g,''); break; }
+      }
+      for(const it of line){
+        const m = it.str.match(/jpy\s*([\d,]+)/i);
+        if(m){ raMealTotal = 'JPY' + m[1].replace(/,/g,''); break; }
+      }
+      if(raMealTotal) break;
+    }
+  }
+  const safe = s => s.replace(/[\\/:*?"<>|]/g,'_').replace(/\s+/g,'_');
+  const raParts = [
+    raShipName  ? safe(raShipName)  : '',
+    raCategory  ? safe(raCategory)  : '',
+    raMealTotal ? safe(raMealTotal) : ''
+  ].filter(Boolean);
+  return raParts.length > 0 ? raParts.join('_') + '.pdf' : 'voucher_with_receipt.pdf';
+}
+
+function _raFinish(out, raFilename){
+  const blob=new Blob([out],{type:'application/pdf'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url; a.download=raFilename; a.click();
+  URL.revokeObjectURL(url);
+  _lastReceiptPdfBytes = new Uint8Array(out);
+  _lastReceiptFilename = raFilename;
+  const raArchBtn = document.getElementById('raArchiveBtn');
+  if(raArchBtn){ raArchBtn.disabled=false; raArchBtn.textContent='📂 署名済み一覧に保存'; raArchBtn.style.cssText=''; }
+  const txt=document.getElementById('raDlBtnText');
+  const btn=document.getElementById('raDlBtn');
+  txt.textContent='ダウンロード完了 ✓';
+  btn.className='ra-dl-btn ready';
+  setTimeout(()=>{ txt.textContent='領収書を添付してダウンロード'; },3000);
+}
+
+/* ── RAモード：埋め込み（既存ロジック） ── */
+async function _doRaEmbed(){
   const btn=document.getElementById('raDlBtn');
   const txt=document.getElementById('raDlBtnText');
   btn.className='ra-dl-btn'; txt.textContent='処理中...';
 
   try{
-    const doc=await PDFLib.PDFDocument.load(raVoucherBytes);
+    const doc=await PDFLib.PDFDocument.load(raVoucherBytes, {throwOnInvalidObject:false, updateMetadata:false});
     const page=doc.getPages()[0];
     const {width:W, height:H}=page.getSize();
 
     // ── 空白スペースを検出（クルーテーブル下〜Important Notice上）──
-    const pdfjsDoc=await pdfjsLib.getDocument({data:raVoucherBytes.slice()}).promise;
+    const pdfjsDoc=await pdfjsLib.getDocument({data:raVoucherBytes.slice(), stopAtErrors:false}).promise;
     const pg=await pdfjsDoc.getPage(1);
     const content=await pg.getTextContent();
 
@@ -851,10 +1323,6 @@ async function attachReceiptToPDF(){
     const spaceH      = spaceTop - spaceBottom;
 
     if(spaceH > 20){
-      // 画像埋め込み
-      const imgB64=raReceiptDataURL.split(',')[1];
-      const mime=raReceiptDataURL.split(';')[0].split(':')[1];
-
       if(raReceiptBytes){
         // PDFの場合：ArrayBytesから直接埋め込む
         const receiptPdfDoc=await PDFLib.PDFDocument.load(raReceiptBytes);
@@ -867,8 +1335,10 @@ async function attachReceiptToPDF(){
           x: spaceLeft+ox, y: spaceBottom+oy,
           width: dw, height: dh
         });
-      } else {
+      } else if(raReceiptDataURL){
         // 画像（JPG/PNG）の場合
+        const imgB64=raReceiptDataURL.split(',')[1];
+        const mime=raReceiptDataURL.split(';')[0].split(':')[1];
         let embImg;
         if(mime==='image/png') embImg=await doc.embedPng(b64ToU8(imgB64));
         else embImg=await doc.embedJpg(b64ToU8(imgB64));
@@ -883,21 +1353,136 @@ async function attachReceiptToPDF(){
       }
     }
 
-    const out=await doc.save();
-    const blob=new Blob([out],{type:'application/pdf'});
-    const url=URL.createObjectURL(blob);
-    const a=document.createElement('a');
-    a.href=url; a.download='voucher_with_receipt.pdf'; a.click();
-    URL.revokeObjectURL(url);
+    // ── ファイル名を自動生成（船名_Category_JPY金額形式） ──
+    // rawItems2 から items 形式（x, y, str）に変換
+    const raItems = rawItems2.map(i=>({x:i.x, y: H - i.yPDF, str:i.str}));
 
-    txt.textContent='ダウンロード完了 ✓';
-    btn.className='ra-dl-btn ready';
-    setTimeout(()=>{ txt.textContent='領収書を添付してダウンロード'; },3000);
+    // Y座標5pt単位でグループ化
+    const raLineMap = new Map();
+    for(const it of raItems){
+      const yKey = Math.round(it.y / 5) * 5;
+      if(!raLineMap.has(yKey)) raLineMap.set(yKey, []);
+      raLineMap.get(yKey).push(it);
+    }
+    const raLines = [...raLineMap.values()].map(row => row.sort((a,b)=>a.x-b.x));
+
+    const raGetVal = (pat, firstWordOnly=false) => {
+      for(const line of raLines){
+        const idx = line.findIndex(it => pat.test(it.str));
+        if(idx >= 0 && idx < line.length - 1){
+          const rest = line.slice(idx + 1);
+          if(firstWordOnly){
+            for(const it of rest){
+              const w = it.str.trim().replace(/[:\s]+$/,'');
+              if(/^[A-Za-z]+$/.test(w)) return w;
+            }
+            return rest[0].str.trim();
+          }
+          return rest.map(it=>it.str.trim()).join(' ').replace(/^[:\s]+/,'').trim();
+        }
+      }
+      return '';
+    };
+
+    let raShipName = raGetVal(/vessel:/i);
+    if(!raShipName){
+      for(const it of raItems){
+        const m = it.str.match(/(?:m\/v|mv|s\.s\.|ss|f\/v|fv)[:\s]+(.+)/i);
+        if(m && m[1].trim().length > 1){ raShipName = m[1].trim(); break; }
+      }
+    }
+
+    let raCategory = raGetVal(/category/i, true);
+    if(!raCategory){
+      for(const it of raItems){
+        const m = it.str.match(/category[:\s]+([A-Za-z]+)/i);
+        if(m && m[1].trim()){ raCategory = m[1].trim(); break; }
+      }
+    }
+
+    let raMealTotal = '';
+    for(const line of raLines){
+      const lineStr = line.map(it=>it.str).join(' ');
+      if(/total/i.test(lineStr) && /jpy/i.test(lineStr)){
+        const jpyIdx = line.findIndex(it => /^jpy$/i.test(it.str.trim()));
+        if(jpyIdx >= 0 && jpyIdx < line.length - 1){
+          const numStr = line[jpyIdx + 1].str.replace(/[^0-9,]/g,'');
+          if(numStr){ raMealTotal = 'JPY' + numStr.replace(/,/g,''); break; }
+        }
+        for(const it of line){
+          const m = it.str.match(/jpy\s*([\d,]+)/i);
+          if(m){ raMealTotal = 'JPY' + m[1].replace(/,/g,''); break; }
+        }
+        if(raMealTotal) break;
+      }
+    }
+
+    const out=await doc.save();
+    const raFilename = await _buildRaFilename(raVoucherBytes);
+    _raFinish(out, raFilename);
 
   }catch(err){
     console.error(err);
     txt.textContent='エラーが発生しました';
     btn.className='ra-dl-btn ready';
+  }
+}
+
+/* ── RAモード：ページ結合 ── */
+async function _doRaMerge(){
+  const btn=document.getElementById('raDlBtn');
+  const txt=document.getElementById('raDlBtnText');
+  btn.className='ra-dl-btn'; txt.textContent='結合中...';
+  try{
+    const voucherDoc = await PDFLib.PDFDocument.load(raVoucherBytes, {throwOnInvalidObject:false, updateMetadata:false});
+    const mergedDoc = await PDFLib.PDFDocument.create();
+    const [voucherPage] = await mergedDoc.copyPages(voucherDoc, [0]);
+    mergedDoc.addPage(voucherPage);
+
+    const A4W = 595, A4H = 842;
+    const margin = 30;
+    if(raReceiptBytes){
+      // PDF領収書：各ページをA4に拡大して配置
+      const receiptDoc = await PDFLib.PDFDocument.load(raReceiptBytes);
+      const pageCount = receiptDoc.getPageCount();
+      for(let i=0;i<pageCount;i++){
+        const embPages = await mergedDoc.embedPages([receiptDoc.getPages()[i]]);
+        const embPage = embPages[0];
+        const srcSize = embPage.size();
+        const sc = Math.min((A4W-margin*2)/srcSize.width, (A4H-margin*2)/srcSize.height);
+        const drawW = srcSize.width*sc, drawH = srcSize.height*sc;
+        const newPage = mergedDoc.addPage([A4W, A4H]);
+        newPage.drawPage(embPage, {
+          x:(A4W-drawW)/2, y:(A4H-drawH)/2, width:drawW, height:drawH
+        });
+      }
+    } else if(raReceiptDataURL){
+      // 画像領収書：A4ページに拡大して配置
+      const imgB64 = raReceiptDataURL.split(',')[1];
+      const mime = raReceiptDataURL.split(';')[0].split(':')[1];
+      const imgBytes = b64ToU8(imgB64);
+      let embImg;
+      if(mime === 'image/png') embImg = await mergedDoc.embedPng(imgBytes);
+      else embImg = await mergedDoc.embedJpg(imgBytes);
+      const receiptPage = mergedDoc.addPage([A4W, A4H]);
+      const dims = embImg.scale(1);
+      const sc = Math.min((A4W-margin*2)/dims.width, (A4H-margin*2)/dims.height);
+      const drawW = dims.width*sc, drawH = dims.height*sc;
+      receiptPage.drawImage(embImg, {
+        x:(A4W-drawW)/2, y:(A4H-drawH)/2, width:drawW, height:drawH
+      });
+    }
+
+    const out = await mergedDoc.save();
+    const raFilename = await _buildRaFilename(raVoucherBytes);
+    _raFinish(out, raFilename);
+
+  }catch(err){
+    console.error(err);
+    const txt2=document.getElementById('raDlBtnText');
+    const btn2=document.getElementById('raDlBtn');
+    txt2.textContent='エラーが発生しました';
+    btn2.className='ra-dl-btn ready';
   }
 }
 
@@ -963,9 +1548,27 @@ function openOverlay(no){
   document.body.style.overflow='hidden';
 }
 function closeOverlay(){
-  document.getElementById('signOverlay').classList.remove('open');
+  const overlay = document.getElementById('signOverlay');
+  overlay.classList.remove('open');
+  overlay.classList.remove('rotated');
   document.body.style.overflow='';
+  // ボタンテキストをリセット
+  const btn = document.getElementById('rotateSignBtn');
+  if(btn) btn.innerHTML = '<span style="font-size:16px;">⟳</span> 横向きで書く';
   currentCrew=null;
+}
+
+function toggleSignRotate(){
+  const overlay = document.getElementById('signOverlay');
+  const btn = document.getElementById('rotateSignBtn');
+  const isRotated = overlay.classList.toggle('rotated');
+  if(isRotated){
+    btn.innerHTML = '<span style="font-size:16px;">⟳</span> 縦向きに戻す';
+  } else {
+    btn.innerHTML = '<span style="font-size:16px;">⟳</span> 横向きで書く';
+  }
+  // レイアウト変更後にキャンバスをリサイズ
+  setTimeout(()=>{ resizeCanvas(); }, 50);
 }
 function updatePreview(){
   if(!currentCrew)return;
@@ -983,7 +1586,10 @@ function updatePreview(){
   img.style.cssText=`width:${imgW}px;height:${imgH}px;left:${left}px;top:${top}px;`;
   hl.style.cssText=`left:${currentCrew.sigXS*imgW+left}px;top:${currentCrew.rowY*imgH+top}px;width:${(currentCrew.sigXE-currentCrew.sigXS)*imgW}px;height:${currentCrew.rowH*imgH}px;`;
 }
-window.addEventListener('resize',updatePreview);
+window.addEventListener('resize', ()=>{ updatePreview(); resizeCanvas(); });
+window.addEventListener('orientationchange', ()=>{
+  setTimeout(()=>{ updatePreview(); resizeCanvas(); }, 300);
+});
 
 /* ── CANVAS ── */
 function setupCanvas(){
@@ -1146,82 +1752,180 @@ function saveSig(){
 
   sigs[currentCrew.no]=tmp.toDataURL('image/png');
   closeOverlay(); renderList();
+
+  // 全員サイン完了したら自動でPDF生成してアーカイブに保存
+  const done = Object.keys(sigs).length;
+  const total = crewData.length;
+  if(done === total && total > 0){
+    _autoSaveToArchive();
+  }
+}
+
+async function _autoSaveToArchive(){
+  const archBtn = document.getElementById('saveToArchiveBtn');
+  if(archBtn){ archBtn.textContent = '📂 保存中...'; archBtn.style.opacity='0.7'; }
+  try{
+    const doc = await _buildSignedDoc();
+    const out = await doc.save();
+    const bytes = new Uint8Array(out);
+    const rawName = (document.getElementById('filenameInput').value || 'signed_voucher').trim();
+    const dlName = rawName.replace(/\.pdf$/i, '') + '.pdf';
+    _lastSignedPdfBytes = bytes;
+    _lastSignedFilename = dlName;
+    await saveToArchive(bytes, dlName, 'sign');
+    if(archBtn){
+      archBtn.textContent = '✓ 署名済み一覧に保存しました';
+      archBtn.style.opacity = '1';
+      archBtn.style.background = '#dcfce7';
+      archBtn.style.borderColor = '#16a34a';
+      archBtn.style.color = '#15803d';
+    }
+  }catch(e){
+    console.error('自動保存エラー:', e);
+    if(archBtn){ archBtn.textContent = '📂 署名済み一覧に保存'; archBtn.style.opacity='1'; archBtn.style.cssText=''; }
+  }
 }
 
 /* ── DOWNLOAD ── */
-async function downloadPDF(){
+/* ── サイン画像をPDFに描き込む共通処理 ── */
+async function _buildSignedDoc(){
+  const doc=await PDFLib.PDFDocument.load(pdfBytes);
+  const page=doc.getPages()[0];
+  const {width:W,height:H}=page.getSize();
+  for(const crew of crewData){
+    if(!sigs[crew.no])continue;
+    const png=await doc.embedPng(b64ToU8(sigs[crew.no].split(',')[1]));
+    const pad=1;
+    const cellW=crew.pdfW - pad*2;
+    const cellH=crew.pdfH - pad*2;
+    const pngDims=png.scale(1);
+    const scaleX=cellW/pngDims.width;
+    const scaleY=cellH/pngDims.height;
+    const sc=Math.min(scaleX, scaleY);
+    const drawW=pngDims.width*sc;
+    const drawH=pngDims.height*sc;
+    const offX=(cellW-drawW)/2;
+    const offY=Math.max(0, (cellH-drawH)/2 - cellH*0.15);
+    page.drawImage(png,{
+      x:     crew.pdfX + pad + offX,
+      y:     H - crew.pdfY - crew.pdfH + pad + offY,
+      width: drawW,
+      height:drawH
+    });
+  }
+  return doc;
+}
+
+/* ── ダウンロードモーダル ── */
+let _dlChoiceMode = 'sign'; // 'sign' | 'ra'
+
+function downloadPDF(){
+  if(receiptData){
+    _dlChoiceMode = 'sign';
+    // Voucherのみボタンを表示
+    document.querySelector('.dlc-btn.btn-voucher-only').style.display='';
+    const overlay = document.getElementById('dlChoiceOverlay');
+    overlay.classList.add('open');
+  } else {
+    _doDownloadVoucherOnly();
+  }
+}
+
+function attachReceiptToPDF(){
+  const hasReceipt = raReceiptDataURL || raReceiptBytes;
+  if(!raVoucherBytes || !hasReceipt) return;
+  _dlChoiceMode = 'ra';
+  // RAモードではVoucherのみボタンを非表示
+  document.querySelector('.dlc-btn.btn-voucher-only').style.display='none';
+  const overlay = document.getElementById('dlChoiceOverlay');
+  overlay.classList.add('open');
+}
+
+function dlChoiceCancel(){
+  document.getElementById('dlChoiceOverlay').classList.remove('open');
+}
+function dlChoiceSelect(mode){
+  document.getElementById('dlChoiceOverlay').classList.remove('open');
+  if(_dlChoiceMode === 'ra'){
+    if(mode==='embed') _doRaEmbed();
+    else if(mode==='merge') _doRaMerge();
+  } else {
+    if(mode==='voucher') _doDownloadVoucherOnly();
+    else if(mode==='embed') _doDownloadEmbed();
+    else if(mode==='merge') _doDownloadMerge();
+  }
+}
+
+/* ── ダウンロード共通完了処理 ── */
+function _dlFinish(out, dlName){
+  const blob=new Blob([out],{type:'application/pdf'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url; a.download=dlName; a.click();
+  URL.revokeObjectURL(url);
+  _lastSignedPdfBytes = new Uint8Array(out);
+  _lastSignedFilename = dlName;
+  const archBtn = document.getElementById('saveToArchiveBtn');
+  if(archBtn){ archBtn.disabled=false; archBtn.textContent='📂 署名済み一覧に保存'; archBtn.style.cssText=''; }
+  const txt=document.getElementById('dlBtnText');
+  const btn=document.getElementById('dlBtn');
+  txt.textContent='ダウンロード完了 ✓';
+  setTimeout(()=>{ txt.textContent='サイン済みPDFをダウンロード'; btn.disabled=false; },3000);
+}
+function _getDlName(){
+  const rawName=(document.getElementById('filenameInput').value||'signed_voucher').trim();
+  return rawName.replace(/\.pdf$/i,'')+'.pdf';
+}
+
+/* ── ① Voucherのみ ── */
+async function _doDownloadVoucherOnly(){
   const btn=document.getElementById('dlBtn'),txt=document.getElementById('dlBtnText');
   btn.disabled=true; txt.textContent='生成中...';
   try{
-    const doc=await PDFLib.PDFDocument.load(pdfBytes);
-    const page=doc.getPages()[0];
-    const {width:W,height:H}=page.getSize();
-    for(const crew of crewData){
-      if(!sigs[crew.no])continue;
-      const png=await doc.embedPng(b64ToU8(sigs[crew.no].split(',')[1]));
-      const pad=1;
-      const cellW=crew.pdfW - pad*2;
-      const cellH=crew.pdfH - pad*2;
+    const doc = await _buildSignedDoc();
+    const out = await doc.save();
+    _dlFinish(out, _getDlName());
+  }catch(err){
+    console.error(err);
+    txt.textContent='エラーが発生しました'; btn.disabled=false;
+  }
+}
 
-      // サイン画像のアスペクト比を保ちつつセル中央に配置
-      const pngDims=png.scale(1);
-      const scaleX=cellW/pngDims.width;
-      const scaleY=cellH/pngDims.height;
-      const sc=Math.min(scaleX, scaleY);
-      const drawW=pngDims.width*sc;
-      const drawH=pngDims.height*sc;
-      // セル内で中央揃え
-      const offX=(cellW-drawW)/2;
-      const offY=Math.max(0, (cellH-drawH)/2 - cellH*0.15); // 少し上にずらす
-
-      page.drawImage(png,{
-        x:     crew.pdfX + pad + offX,
-        y:     H - crew.pdfY - crew.pdfH + pad + offY,
-        width: drawW,
-        height:drawH
-      });
-    }
-    // ── 領収書を空白スペースに埋め込む ──
+/* ── ② 領収書を埋め込み（既存ロジック） ── */
+async function _doDownloadEmbed(){
+  const btn=document.getElementById('dlBtn'),txt=document.getElementById('dlBtnText');
+  btn.disabled=true; txt.textContent='生成中...';
+  try{
+    const doc = await _buildSignedDoc();
+    const page = doc.getPages()[0];
     if(receiptData){
       try{
-        // テキスト抽出で空白スペースを検出
-        const pdfjsDoc2=await pdfjsLib.getDocument({data:pdfBytes.slice()}).promise;
+        const pdfjsDoc2=await pdfjsLib.getDocument({data:pdfBytes.slice(), stopAtErrors:false}).promise;
         const pg2=await pdfjsDoc2.getPage(1);
         const content2=await pg2.getTextContent();
         const H2=page.getSize().height;
         const W2=page.getSize().width;
-
-        // 最終クルー行のbottomY（PDF座標系・左下原点）
-        // 数字（行番号）を探す
-        let lastNumY = H2 * 0.7; // デフォルト: ページ上から30%
-        let importantY = H2 * 0.2; // デフォルト: ページ上から80%
-
-        // pdf.jsアイテムから検出
+        let lastNumY = H2 * 0.7;
+        let importantY = H2 * 0.2;
         for(const it of content2.items){
           if(!it.str.trim()) continue;
-          const ty = it.transform[5]; // 左下原点Y
+          const ty = it.transform[5];
           const str = it.str.trim();
-          // 行番号（1〜99）
           if(/^\d{1,2}$/.test(str) && ty < H2*0.8 && ty > H2*0.1){
             lastNumY = Math.min(lastNumY, ty);
           }
-          // Important Notice
           if(/important/i.test(str) && ty < H2*0.6){
             importantY = Math.max(importantY, ty + (it.height||10));
           }
         }
-
-        // 空白スペース（左下原点）
         const margin = 15;
-        const spaceBottom = lastNumY - margin;   // 上から見て「下」= 左下原点で小さいY
-        const spaceTop    = importantY + margin; // 上から見て「上」= 左下原点で大きいY
+        const spaceBottom = lastNumY - margin;
+        const spaceTop    = importantY + margin;
         const spaceLeft   = W2 * 0.07;
         const spaceRight  = W2 * 0.93;
         const spaceW = spaceRight - spaceLeft;
         const spaceH = spaceTop - spaceBottom;
-
         if(spaceH > 20 && spaceW > 20){
-          // 画像を埋め込む
           const imgB64 = receiptData.dataURL.split(',')[1];
           const imgMime = receiptData.dataURL.split(';')[0].split(':')[1];
           let embeddedImg;
@@ -1231,13 +1935,11 @@ async function downloadPDF(){
             embeddedImg = await doc.embedJpg(b64ToU8(imgB64));
           }
           const dims = embeddedImg.scale(1);
-          // アスペクト比を保ちつつ空白に収める
           const scaleX = spaceW / dims.width;
           const scaleY = spaceH / dims.height;
-          const sc = Math.min(scaleX, scaleY, 1.0); // 拡大はしない
+          const sc = Math.min(scaleX, scaleY, 1.0);
           const drawW2 = dims.width * sc;
           const drawH2 = dims.height * sc;
-          // 水平中央・垂直中央
           const ox = (spaceW - drawW2) / 2;
           const oy = (spaceH - drawH2) / 2;
           page.drawImage(embeddedImg, {
@@ -1249,17 +1951,66 @@ async function downloadPDF(){
         }
       } catch(rErr){ console.warn('領収書埋め込みエラー:', rErr); }
     }
+    const out = await doc.save();
+    _dlFinish(out, _getDlName());
+  }catch(err){
+    console.error(err);
+    txt.textContent='エラーが発生しました'; btn.disabled=false;
+  }
+}
 
-    const out=await doc.save();
-    const blob=new Blob([out],{type:'application/pdf'});
-    const url=URL.createObjectURL(blob);
-    const a=document.createElement('a');
-    const rawName=(document.getElementById('filenameInput').value||'signed_voucher').trim();
-    const dlName=rawName.replace(/\.pdf$/i,'')+'.pdf';
-    a.href=url; a.download=dlName; a.click();
-    URL.revokeObjectURL(url);
-    txt.textContent='ダウンロード完了 ✓';
-    setTimeout(()=>{ txt.textContent='サイン済みPDFをダウンロード'; btn.disabled=false; },3000);
+/* ── ③ ページ結合（Voucher + 領収書を複数ページの1PDFに） ── */
+async function _doDownloadMerge(){
+  const btn=document.getElementById('dlBtn'),txt=document.getElementById('dlBtnText');
+  btn.disabled=true; txt.textContent='結合中...';
+  try{
+    // Step1: 署名済みVoucherを作成
+    const voucherDoc = await _buildSignedDoc();
+    const mergedDoc = await PDFLib.PDFDocument.create();
+
+    // Step2: VoucherページをmergedDocにコピー
+    const [voucherPage] = await mergedDoc.copyPages(voucherDoc, [0]);
+    mergedDoc.addPage(voucherPage);
+
+    // Step3: 領収書をページとして追加（A4に拡大して配置）
+    const A4W2 = 595, A4H2 = 842, margin2 = 30;
+    if(receiptData){
+      const mime = receiptData.dataURL.split(';')[0].split(':')[1];
+      if(mime === 'application/pdf'){
+        // PDF領収書 → 各ページをA4に拡大して配置
+        const receiptPdfBytes = b64ToU8(receiptData.dataURL.split(',')[1]);
+        const receiptDoc = await PDFLib.PDFDocument.load(receiptPdfBytes);
+        const pageCount = receiptDoc.getPageCount();
+        for(let i=0;i<pageCount;i++){
+          const embPages = await mergedDoc.embedPages([receiptDoc.getPages()[i]]);
+          const embPage = embPages[0];
+          const srcSize = embPage.size();
+          const sc = Math.min((A4W2-margin2*2)/srcSize.width, (A4H2-margin2*2)/srcSize.height);
+          const drawW = srcSize.width*sc, drawH = srcSize.height*sc;
+          const newPage = mergedDoc.addPage([A4W2, A4H2]);
+          newPage.drawPage(embPage, {
+            x:(A4W2-drawW)/2, y:(A4H2-drawH)/2, width:drawW, height:drawH
+          });
+        }
+      } else {
+        // 画像領収書 → A4ページを作成して拡大配置
+        const imgB64 = receiptData.dataURL.split(',')[1];
+        const imgBytes = b64ToU8(imgB64);
+        let embImg;
+        if(mime === 'image/png') embImg = await mergedDoc.embedPng(imgBytes);
+        else embImg = await mergedDoc.embedJpg(imgBytes);
+        const receiptPage = mergedDoc.addPage([A4W2, A4H2]);
+        const dims = embImg.scale(1);
+        const sc = Math.min((A4W2-margin2*2)/dims.width, (A4H2-margin2*2)/dims.height);
+        const drawW = dims.width*sc, drawH = dims.height*sc;
+        receiptPage.drawImage(embImg, {
+          x:(A4W2-drawW)/2, y:(A4H2-drawH)/2, width:drawW, height:drawH
+        });
+      }
+    }
+
+    const out = await mergedDoc.save();
+    _dlFinish(out, _getDlName());
   }catch(err){
     console.error(err);
     txt.textContent='エラーが発生しました'; btn.disabled=false;
@@ -1297,6 +2048,74 @@ function removeReceipt(e){
   // document委任のため個別addEventListenerは不要
 }
 
+// ── PDF クリーンアップ（c2pa除去・XRef修復） ──
+// ChatGPT等がPDF末尾にc2paメタデータを追記する際、XRefが壊れることがある。
+// 修復策:
+//  通常PDF: 最初の%%EOFで切り捨て（ChatGPT追記のXRef破損除去）→ pdf-libで再保存
+//  Linearized PDF: %%EOF切り捨てはスキップ（中間に合法的な%%EOFがある）→ pdf-libで再保存のみ
+async function cleanPdfBytes(bytes){
+  // Linearized PDF判定（先頭1024バイト内に /Linearized があるか）
+  // Linearized PDFでは先頭部分に合法的な %%EOF が含まれるため切り捨て不可
+  let isLinearized = false;
+  try{
+    const head = bytes.slice(0, Math.min(1024, bytes.length));
+    // "/Linearized" をバイト列で検索
+    const linTag = new Uint8Array([0x2F,0x4C,0x69,0x6E,0x65,0x61,0x72,0x69,0x7A,0x65,0x64]); // /Linearized
+    for(let i = 0; i < head.length - 11; i++){
+      if(head[i]===0x2F && head[i+1]===0x4C && head[i+2]===0x69 && head[i+3]===0x6E &&
+         head[i+4]===0x65 && head[i+5]===0x61 && head[i+6]===0x72 && head[i+7]===0x69 &&
+         head[i+8]===0x7A && head[i+9]===0x65 && head[i+10]===0x64){
+        isLinearized = true;
+        break;
+      }
+    }
+  }catch(e){}
+
+  // Step1: %%EOF切り捨て（通常PDFのみ、Linearized PDFはスキップ）
+  let trimmed = bytes;
+  if(!isLinearized){
+    try{
+      let firstEof = -1;
+      for(let i = 0; i < bytes.length - 5; i++){
+        if(bytes[i]===0x25 && bytes[i+1]===0x25 && bytes[i+2]===0x45 && bytes[i+3]===0x4F && bytes[i+4]===0x46){
+          firstEof = i;
+          break;
+        }
+      }
+      if(firstEof > 0 && firstEof < bytes.length - 10){
+        // 最初のEOFの後にまだデータがある → ChatGPT追記を除去
+        trimmed = bytes.slice(0, firstEof + 5);
+        console.log(`PDF trimmed: ${bytes.length} -> ${trimmed.length} bytes (removed appended data)`);
+      }
+    }catch(e){
+      console.warn('PDF trim failed:', e.message);
+      trimmed = bytes;
+    }
+  } else {
+    console.log('Linearized PDF detected, skipping %%EOF trim');
+  }
+
+  // Step2: pdf-libで再保存（XRefを再構築・c2paメタデータ除去）
+  const loadOpts = [
+    {ignoreEncryption:true, throwOnInvalidObject:false, updateMetadata:false},
+    {ignoreEncryption:true, throwOnInvalidObject:false},
+    {ignoreEncryption:true},
+  ];
+  for(const opts of loadOpts){
+    try{
+      const doc = await PDFLib.PDFDocument.load(trimmed, opts);
+      const out  = await doc.save();
+      console.log('PDF cleanup succeeded');
+      return new Uint8Array(out);
+    }catch(e){
+      console.warn('PDF cleanup attempt failed:', e.message);
+    }
+  }
+  // pdf-lib失敗時はtrimmedをそのまま返す（pdf.jsはXRef破損でも読める場合がある）
+  console.warn('pdf-lib cleanup failed, returning trimmed bytes');
+  return trimmed;
+}
+
 function b64ToU8(s){
   const b=atob(s),u=new Uint8Array(b.length);
   for(let i=0;i<b.length;i++)u[i]=b.charCodeAt(i);
@@ -1306,8 +2125,786 @@ function escHtml(s){
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
+/* ══════════════════════════════════════════════
+   Firebase Firestore アーカイブ機能（全端末共有）
+   ══════════════════════════════════════════════ */
+
+// Firebase設定
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyAHyk1paQzrD6_8nQfELCz9NX2H_nCYKNQ",
+  authDomain: "voucher-sign.firebaseapp.com",
+  projectId: "voucher-sign",
+  storageBucket: "voucher-sign.firebasestorage.app",
+  messagingSenderId: "891258466774",
+  appId: "1:891258466774:web:2826292646d6408e337477"
+};
+
+let _fbApp = null;
+let _fbDb  = null;
+
+async function getFirestore(){
+  if(_fbDb) return _fbDb;
+  // Firebase SDKをCDNから動的ロード（まだロードしていない場合のみ）
+  if(!window._firebase_load_promise){
+    window._firebase_load_promise = Promise.all([
+      loadScript('https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js'),
+      loadScript('https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js')
+    ]);
+  }
+  await window._firebase_load_promise;
+  if(!_fbApp){
+    // すでに初期化済みなら既存のappを使う
+    try{
+      _fbApp = firebase.app();
+    }catch(e){
+      _fbApp = firebase.initializeApp(FIREBASE_CONFIG);
+    }
+  }
+  _fbDb = firebase.firestore(_fbApp);
+  return _fbDb;
+}
+
+function loadScript(src){
+  return new Promise((resolve, reject) => {
+    if(document.querySelector(`script[src="${src}"]`)){ resolve(); return; }
+    const s = document.createElement('script');
+    s.src = src;
+    s.onload = resolve;
+    s.onerror = reject;
+    document.head.appendChild(s);
+  });
+}
+
+// pdfBytesをbase64文字列に変換（Firestoreに保存するため）
+function uint8ToBase64(u8){
+  let bin = '';
+  for(let i = 0; i < u8.length; i++) bin += String.fromCharCode(u8[i]);
+  return btoa(bin);
+}
+
+// base64文字列をUint8Arrayに戻す
+function base64ToUint8(b64){
+  const bin = atob(b64);
+  const u8  = new Uint8Array(bin.length);
+  for(let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i);
+  return u8;
+}
+
+async function saveToArchive(pdfBytes, filename, type, customDate){
+  // type: 'sign' | 'receipt' | 'upload'
+  // customDate: 'YYYY-MM-DD' string (optional, for upload type)
+  try{
+    const db = await getFirestore();
+    const bytes = pdfBytes instanceof Uint8Array ? pdfBytes : new Uint8Array(pdfBytes);
+    let savedAt;
+    if(customDate){
+      // 日付のみ: YYYY-MM-DD → その日の正午ISOとして保存（タイムゾーン問題を避ける）
+      savedAt = customDate + 'T00:00:00.000Z';
+    } else {
+      savedAt = new Date().toISOString();
+    }
+    const record = {
+      filename,
+      type,
+      savedAt,
+      dateOnly: !!customDate,  // 日付のみフラグ
+      pdfBase64: uint8ToBase64(bytes)
+    };
+    const ref = await db.collection('vouchers').add(record);
+    return ref.id;
+  }catch(e){
+    console.error('saveToArchive error:', e);
+    throw e;
+  }
+}
+
+async function getAllArchive(){
+  try{
+    const db = await getFirestore();
+    const snap = await db.collection('vouchers').orderBy('savedAt','desc').get();
+    return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  }catch(e){
+    console.error('getAllArchive error:', e);
+    return [];
+  }
+}
+
+async function getArchiveById(id){
+  try{
+    const db = await getFirestore();
+    const doc = await db.collection('vouchers').doc(id).get();
+    if(!doc.exists) return null;
+    return { id: doc.id, ...doc.data() };
+  }catch(e){
+    console.error('getArchiveById error:', e);
+    return null;
+  }
+}
+
+async function deleteArchiveIds(ids){
+  try{
+    const db = await getFirestore();
+    const batch = db.batch();
+    for(const id of ids){
+      batch.delete(db.collection('vouchers').doc(id));
+    }
+    await batch.commit();
+  }catch(e){
+    console.error('deleteArchiveIds error:', e);
+    throw e;
+  }
+}
+
+/* ── アーカイブ画面 ── */
+let archiveSelectedIds = new Set();
+
+async function showArchive(){
+  document.getElementById('modeSelect').style.display='none';
+  document.getElementById('uploadScreen').style.display='flex';
+  document.getElementById('archiveScreen').style.display='flex';
+  document.getElementById('headerSub').textContent='署名済み一覧';
+  archiveSelectedIds = new Set();
+  await renderArchive();
+}
+
+function backToModeSelect(){
+  // すべてのサブ画面を隠してモード選択に戻る
+  document.getElementById('signUploadArea').style.display='none';
+  document.getElementById('uploadScreen').style.display='flex';
+  document.getElementById('receiptAttachScreen').style.display='none';
+  document.getElementById('archiveScreen').style.display='none';
+  document.getElementById('modeSelect').style.display='flex';
+  document.getElementById('headerSub').textContent='PDFをアップロードして開始';
+  archiveSelectedIds = new Set();
+  updateArchiveBulkBar();
+}
+
+let _archiveShipFilter = null; // nullなら全件表示
+
+function extractShipName(filename){
+  // ファイル名から船名を抽出：「SHIP_NAME_Category_JPY...」形式
+  // Category候補: Embark, Disembark, Embarkation, Disembarkation など
+  const m = filename.replace(/\.pdf$/i,'').match(/^(.+?)_(Embark|Disembark|Sign|Receipt|JPY|\d)/i);
+  if(m) return m[1].replace(/_/g,' ').trim();
+  // アンダースコア区切りの先頭2〜3単語
+  const parts = filename.replace(/\.pdf$/i,'').split('_');
+  if(parts.length >= 2) return parts.slice(0, Math.min(3, parts.length-1)).join(' ');
+  return filename.replace(/\.pdf$/i,'');
+}
+
+async function renderArchive(){
+  const list = document.getElementById('archiveList');
+  list.innerHTML = '<div style="text-align:center;padding:20px;color:#94a3b8;font-size:13px;">読み込み中...</div>';
+
+  const allRecords = await getAllArchive();
+
+  if(allRecords.length === 0){
+    list.innerHTML = `
+      <div class="archive-empty">
+        <div class="archive-empty-icon">📭</div>
+        <div class="archive-empty-text">保存されたPDFはありません</div>
+        <div class="archive-empty-sub">サイン収集または領収書添付後に<br>「署名済み一覧に保存」ボタンで保存できます</div>
+      </div>`;
+    document.getElementById('archiveSelectAllRow').style.display = 'none';
+    document.getElementById('archiveShipSummary').style.display = 'none';
+    return;
+  }
+
+  // 船名サマリーを月ごとに構築
+  // 月→船名→件数 の2段マップ
+  const byMonthShip = new Map();
+  for(const r of allRecords){
+    const d = new Date(r.savedAt);
+    const monthKey = `${d.getFullYear()}年${d.getMonth()+1}月`;
+    if(!byMonthShip.has(monthKey)) byMonthShip.set(monthKey, new Map());
+    const ship = extractShipName(r.filename);
+    const m = byMonthShip.get(monthKey);
+    m.set(ship, (m.get(ship)||0) + 1);
+  }
+  const sortedMonthKeys = [...byMonthShip.keys()].sort((a,b)=>{
+    // "2026年11月" 形式から比較
+    const toNum = s => { const m=s.match(/(\d+)年(\d+)月/); return m?parseInt(m[1])*100+parseInt(m[2]):0; };
+    return toNum(b)-toNum(a);
+  });
+
+  const shipSummary = document.getElementById('archiveShipSummary');
+  const shipBody = document.getElementById('archiveShipBody');
+  shipSummary.style.display = 'block';
+  shipBody.innerHTML = sortedMonthKeys.map(monthKey => {
+    const shipMap = byMonthShip.get(monthKey);
+    const sortedShips = [...shipMap.entries()].sort((a,b)=>b[1]-a[1]);
+    const totalInMonth = [...shipMap.values()].reduce((s,v)=>s+v,0);
+    return `
+      <div class="archive-ship-month-label">${escHtml(monthKey)}（${totalInMonth}件）</div>
+      <div class="archive-ship-chips">
+        ${sortedShips.map(([ship,cnt])=>`
+          <span class="archive-ship-chip${_archiveShipFilter===ship?' active':''}"
+            onclick="filterByShip('${escHtml(ship)}')"
+            style="${_archiveShipFilter===ship?'background:#dbeafe;border-color:#2563eb;':''}">
+            🚢 ${escHtml(ship)} <span class="chip-count">${cnt}</span>
+          </span>`).join('')}
+      </div>`;
+  }).join('') + `
+    <div style="margin-top:8px;padding-top:8px;border-top:1px solid #f1f5f9;">
+      <div class="archive-ship-chips">
+        <span class="archive-ship-chip${_archiveShipFilter===null?' active':''}"
+          onclick="filterByShip(null)"
+          style="${_archiveShipFilter===null?'background:#dbeafe;border-color:#2563eb;':''}">
+          全て表示 <span class="chip-count">${allRecords.length}</span>
+        </span>
+      </div>
+    </div>`;
+
+  // フィルター適用
+  const records = _archiveShipFilter
+    ? allRecords.filter(r => extractShipName(r.filename) === _archiveShipFilter)
+    : allRecords;
+
+  // 月別グループ化
+  const byMonth = new Map();
+  for(const r of records){
+    const d = new Date(r.savedAt);
+    const key = `${d.getFullYear()}年${d.getMonth()+1}月`;
+    if(!byMonth.has(key)) byMonth.set(key, []);
+    byMonth.get(key).push(r);
+  }
+  // 新しい月順にソート
+  const sortedMonths = [...byMonth.entries()].sort((a,b) => {
+    const da = new Date(a[1][0].savedAt), db2 = new Date(b[1][0].savedAt);
+    return db2 - da;
+  });
+
+  list.innerHTML = '';
+  let openFirst = true;
+  for(const [month, items] of sortedMonths){
+    const sorted = [...items].sort((a,b) => new Date(b.savedAt) - new Date(a.savedAt));
+    const monthId = 'month_' + month.replace(/[年月]/g,'_');
+
+    const card = document.createElement('div');
+    card.className = 'archive-month-card';
+    const isOpen = openFirst;
+    openFirst = false;
+    card.innerHTML = `
+      <div class="archive-month-header" onclick="toggleMonthItems('${monthId}')">
+        <div class="archive-month-title">${escHtml(month)}</div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span class="archive-month-count">${sorted.length}件</span>
+          <span class="archive-month-arrow${isOpen?' open':''}" id="${monthId}_arrow">▼</span>
+        </div>
+      </div>
+      <div class="archive-month-items${isOpen?' open':''}" id="${monthId}">
+        ${sorted.map(r => renderArchiveItem(r)).join('')}
+      </div>`;
+    list.appendChild(card);
+  }
+
+  document.getElementById('archiveSelectAllRow').style.display = 'flex';
+  updateArchiveBulkBar();
+}
+
+async function filterByShip(ship){
+  _archiveShipFilter = ship;
+  archiveSelectedIds = new Set();
+  await renderArchive();
+  // フィルター後もサマリーを開いたままにする
+  const body = document.getElementById('archiveShipBody');
+  const arrow = document.getElementById('shipSummaryArrow');
+  if(body && !body.classList.contains('open')){
+    body.classList.add('open');
+    if(arrow) arrow.classList.add('open');
+  }
+}
+
+function toggleShipSummary(){
+  const body = document.getElementById('archiveShipBody');
+  const arrow = document.getElementById('shipSummaryArrow');
+  if(!body) return;
+  const isOpen = body.classList.contains('open');
+  body.classList.toggle('open', !isOpen);
+  if(arrow) arrow.classList.toggle('open', !isOpen);
+}
+
+function renderArchiveItem(r){
+  const d = new Date(r.savedAt);
+  let dateStr;
+  if(r.dateOnly){
+    // 日付のみ（upload時に手動設定）
+    const parts = r.savedAt.split('T')[0].split('-');
+    dateStr = `${parts[0]}/${parts[1]}/${parts[2]}`;
+  } else {
+    dateStr = `${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+  }
+  const typeLabel = r.type === 'receipt' ? '領収書添付' : r.type === 'upload' ? '直接追加' : 'サイン収集';
+  const typeClass = r.type === 'receipt' ? 'receipt' : r.type === 'upload' ? 'upload' : 'sign';
+  const checked = archiveSelectedIds.has(r.id);
+  const confirmed = r.confirmed === true;
+  return `
+    <div class="archive-item${confirmed?' confirmed':''}" id="aitem_${r.id}">
+      <div class="archive-item-check${checked?' checked':''}" onclick="toggleArchiveSelect('${r.id}')"></div>
+      <div class="archive-item-info" onclick="toggleArchiveSelect('${r.id}')">
+        <div class="archive-item-name">${escHtml(r.filename)}</div>
+        <div class="archive-item-meta">
+          <span class="archive-item-type ${typeClass}">${typeLabel}</span>
+          <span>${dateStr}</span>
+        </div>
+      </div>
+      <div class="archive-item-actions">
+        <button class="archive-item-confirm${confirmed?' confirmed':''}" onclick="toggleConfirmed('${r.id}', ${confirmed})" title="${confirmed?'確認済み':'未確認'}">✅</button>
+        <button class="archive-item-rename" onclick="startRenameArchive('${r.id}')" title="ファイル名を変更">✏️</button>
+        <button class="archive-item-preview" onclick="previewArchiveItem('${r.id}')">👁</button>
+        <button class="archive-item-del" onclick="deleteSingleArchive('${r.id}')">🗑</button>
+      </div>
+    </div>
+    <div class="archive-rename-form" id="rename_form_${r.id}" style="display:none;">
+      <input class="archive-rename-input" id="rename_input_${r.id}" type="text" value="${escHtml(r.filename.replace(/\.pdf$/i,''))}" placeholder="新しいファイル名（.pdf不要）">
+      <button class="archive-rename-save" onclick="saveRenameArchive('${r.id}')">保存</button>
+      <button class="archive-rename-cancel" onclick="cancelRenameArchive('${r.id}')">キャンセル</button>
+    </div>`;
+}
+
+function toggleMonthItems(monthId){
+  const el    = document.getElementById(monthId);
+  const arrow = document.getElementById(monthId + '_arrow');
+  if(!el) return;
+  const isOpen = el.classList.contains('open');
+  el.classList.toggle('open', !isOpen);
+  if(arrow) arrow.classList.toggle('open', !isOpen);
+}
+
+function startRenameArchive(id){
+  // 他に開いているリネームフォームを閉じる
+  document.querySelectorAll('.archive-rename-form').forEach(el => {
+    if(el.id !== 'rename_form_'+id) el.style.display = 'none';
+  });
+  const form = document.getElementById('rename_form_'+id);
+  if(!form) return;
+  const isOpen = form.style.display !== 'none';
+  form.style.display = isOpen ? 'none' : 'flex';
+  if(!isOpen){
+    const input = document.getElementById('rename_input_'+id);
+    if(input){ input.focus(); input.select(); }
+  }
+}
+
+async function saveRenameArchive(id){
+  const input = document.getElementById('rename_input_'+id);
+  if(!input) return;
+  const rawName = input.value.trim();
+  if(!rawName){ alert('ファイル名を入力してください'); return; }
+  const newFilename = rawName.replace(/\.pdf$/i,'') + '.pdf';
+  const saveBtn = input.closest('.archive-rename-form').querySelector('.archive-rename-save');
+  if(saveBtn){ saveBtn.textContent = '保存中...'; saveBtn.disabled = true; }
+  try{
+    const db = await getFirestore();
+    await db.collection('vouchers').doc(id).update({ filename: newFilename });
+    // ローカルキャッシュも更新
+    if(window._archiveCache){
+      const rec = window._archiveCache.find(r => r.id === id);
+      if(rec) rec.filename = newFilename;
+    }
+    // UI更新（フォームを閉じて表示名を更新）
+    const nameEl = document.querySelector(`#aitem_${id} .archive-item-name`);
+    if(nameEl) nameEl.textContent = newFilename;
+    document.getElementById('rename_form_'+id).style.display = 'none';
+  }catch(e){
+    alert('ファイル名の変更に失敗しました: ' + e.message);
+    if(saveBtn){ saveBtn.textContent = '保存'; saveBtn.disabled = false; }
+  }
+}
+
+function cancelRenameArchive(id){
+  const form = document.getElementById('rename_form_'+id);
+  if(form) form.style.display = 'none';
+}
+
+function toggleArchiveSelect(id){
+  if(archiveSelectedIds.has(id)){
+    archiveSelectedIds.delete(id);
+  } else {
+    archiveSelectedIds.add(id);
+  }
+  // チェックボックスのUI更新
+  const chk = document.querySelector(`#aitem_${id} .archive-item-check`);
+  if(chk) chk.className = 'archive-item-check' + (archiveSelectedIds.has(id) ? ' checked' : '');
+  updateArchiveBulkBar();
+}
+
+function updateArchiveBulkBar(){
+  const n = archiveSelectedIds.size;
+  const bulkBar  = document.getElementById('archiveBulkBar');
+  const bulkCount = document.getElementById('archiveBulkCount');
+  if(bulkBar){
+    bulkBar.style.display  = n > 0 ? 'block' : 'none';
+    if(bulkCount) bulkCount.textContent = `${n}件選択中`;
+  }
+}
+
+async function toggleSelectAll(){
+  const records = await getAllArchive();
+  if(archiveSelectedIds.size === records.length){
+    // 全解除
+    archiveSelectedIds = new Set();
+  } else {
+    // 全選択
+    archiveSelectedIds = new Set(records.map(r => r.id));
+  }
+  // UI再描画（renderArchiveで完全再描画）
+  await renderArchive();
+}
+
+async function downloadArchiveItem(id){
+  try{
+    const r = await getArchiveById(id);
+    if(!r) return;
+    const bytes = r.pdfBase64 ? base64ToUint8(r.pdfBase64) : (r.pdfBytes || new Uint8Array());
+    const blob = new Blob([bytes], {type:'application/pdf'});
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href = url;
+    a.download = r.filename.endsWith('.pdf') ? r.filename : r.filename + '.pdf';
+    a.click();
+    URL.revokeObjectURL(url);
+  }catch(e){
+    alert('ダウンロードに失敗しました: ' + e.message);
+  }
+}
+
+let _previewBlobUrl = null;
+
+async function previewArchiveItem(id){
+  try{
+    const r = await getArchiveById(id);
+    if(!r) return;
+    const bytes = r.pdfBase64 ? base64ToUint8(r.pdfBase64) : (r.pdfBytes || new Uint8Array());
+    const blob = new Blob([bytes], {type:'application/pdf'});
+
+    // 前回のBlobURLを解放
+    if(_previewBlobUrl){ URL.revokeObjectURL(_previewBlobUrl); _previewBlobUrl = null; }
+    _previewBlobUrl = URL.createObjectURL(blob);
+
+    const overlay = document.getElementById('pdfPreviewOverlay');
+    document.getElementById('pdfPreviewTitle').textContent = r.filename;
+    const body = document.getElementById('pdfPreviewBody');
+    body.innerHTML = '';
+
+    // iOSはiframeでPDFが開けないため、オブジェクトタグとフォールバックを使う
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    if(isIOS){
+      // iOS: 新しいタブで開く + プレビューエリアにメッセージ
+      body.innerHTML = `
+        <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:24px;text-align:center;">
+          <div style="font-size:48px;">📄</div>
+          <div style="color:#fff;font-size:15px;font-weight:600;">${escHtml(r.filename)}</div>
+          <button onclick="window.open('${_previewBlobUrl}','_blank')"
+            style="padding:14px 28px;border-radius:12px;border:none;background:#7c3aed;color:#fff;font-size:15px;font-weight:700;cursor:pointer;">
+            📂 PDFを開く
+          </button>
+          <div style="color:rgba(255,255,255,0.6);font-size:12px;">タップしてSafariで表示</div>
+        </div>`;
+    } else {
+      // PC・Android: iframe埋め込み
+      const iframe = document.createElement('iframe');
+      iframe.src = _previewBlobUrl;
+      iframe.style.cssText = 'flex:1;width:100%;height:100%;border:none;';
+      body.style.display = 'flex';
+      body.appendChild(iframe);
+    }
+
+    overlay.classList.add('open');
+  }catch(e){
+    alert('プレビューに失敗しました: ' + e.message);
+  }
+}
+
+function closePdfPreview(){
+  document.getElementById('pdfPreviewOverlay').classList.remove('open');
+  document.getElementById('pdfPreviewBody').innerHTML = '';
+  if(_previewBlobUrl){ URL.revokeObjectURL(_previewBlobUrl); _previewBlobUrl = null; }
+}
+
+function pdfPreviewDownload(){
+  if(!_previewBlobUrl) return;
+  const title = document.getElementById('pdfPreviewTitle').textContent;
+  const a = document.createElement('a');
+  a.href = _previewBlobUrl;
+  a.download = title.endsWith('.pdf') ? title : title + '.pdf';
+  a.click();
+}
+
+async function downloadSelectedArchive(){
+  if(archiveSelectedIds.size === 0) return;
+  const ids = [...archiveSelectedIds];
+  for(const id of ids){
+    try{
+      await downloadArchiveItem(id);
+      if(ids.length > 1) await new Promise(r => setTimeout(r, 300));
+    }catch(e){ console.warn('DL error for id', id, e); }
+  }
+}
+
+async function mergeAndDownloadSelected(){
+  if(archiveSelectedIds.size === 0) return;
+  const btn = document.querySelector('.archive-bulk-merge');
+  if(btn){ btn.textContent = '結合中...'; btn.disabled = true; }
+  try{
+    const ids = [...archiveSelectedIds];
+    const mergedDoc = await PDFLib.PDFDocument.create();
+    for(const id of ids){
+      const r = await getArchiveById(id);
+      if(!r) continue;
+      const bytes = r.pdfBase64 ? base64ToUint8(r.pdfBase64) : new Uint8Array();
+      if(!bytes.length) continue;
+      try{
+        const srcDoc = await PDFLib.PDFDocument.load(bytes, {ignoreEncryption:true});
+        const pageCount = srcDoc.getPageCount();
+        for(let i=0;i<pageCount;i++){
+          const [copied] = await mergedDoc.copyPages(srcDoc, [i]);
+          mergedDoc.addPage(copied);
+        }
+      }catch(e){ console.warn('結合スキップ:', r.filename, e); }
+    }
+    if(mergedDoc.getPageCount() === 0){
+      alert('結合できるページがありませんでした');
+      return;
+    }
+    const out = await mergedDoc.save();
+    const blob = new Blob([out], {type:'application/pdf'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    // ファイル名：選択件数＋最初のファイル名ベース
+    const firstName = (await getArchiveById(ids[0]))?.filename?.replace(/\.pdf$/i,'') || 'merged';
+    a.download = `${firstName}_他${ids.length}件_merged.pdf`;
+    a.href = url; a.click();
+    URL.revokeObjectURL(url);
+  }catch(e){
+    alert('結合に失敗しました: ' + e.message);
+  }finally{
+    if(btn){ btn.textContent = '📑 1つに結合'; btn.disabled = false; }
+  }
+}
+
+async function toggleConfirmed(id, currentState){
+  const next = !currentState;
+  // 即座にUI更新（タイムラグなし）
+  const item = document.getElementById('aitem_' + id);
+  const btn  = item ? item.querySelector('.archive-item-confirm') : null;
+  if(item && btn){
+    item.classList.toggle('confirmed', next);
+    btn.classList.toggle('confirmed', next);
+    btn.title = next ? '確認済み' : '未確認';
+    // onclick属性を更新して次回クリック時の状態を反転
+    btn.setAttribute('onclick', `toggleConfirmed('${id}', ${next})`);
+  }
+  // バックグラウンドでFirebaseに保存
+  try{
+    const db = await getFirestore();
+    db.collection('vouchers').doc(id).update({ confirmed: next });
+  }catch(e){
+    // 失敗したらUIを元に戻す
+    if(item && btn){
+      item.classList.toggle('confirmed', currentState);
+      btn.classList.toggle('confirmed', currentState);
+      btn.setAttribute('onclick', `toggleConfirmed('${id}', ${currentState})`);
+    }
+    console.error('確認状態の保存に失敗:', e);
+  }
+}
+
+// 日付ピッカー用：選択中のファイルとPromiseのresolveを保持
+let _datePickerFile = null;
+let _datePickerResolve = null;
+
+async function handleArchiveUpload(event){
+  const file = event.target.files[0];
+  if(!file) return;
+  const fileName = file.name;
+  const fileType = file.type || (fileName.toLowerCase().endsWith('.pdf') ? 'application/pdf' : '');
+  event.target.value = ''; // 同じファイルを再度選べるようにリセット
+  if(fileType !== 'application/pdf') return;
+
+  // ファイルを保存しておく
+  _datePickerFile = file;
+
+  // 今日の日付をデフォルトにセット
+  const today = new Date();
+  const todayStr = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
+  document.getElementById('datePickerInput').value = todayStr;
+  document.getElementById('datePickerFilename').textContent = fileName;
+
+  // モーダルを表示（visibility+opacityで制御、displayは常にflex）
+  const overlay = document.getElementById('datePickerOverlay');
+  overlay.style.visibility = 'visible';
+  overlay.style.opacity = '1';
+  overlay.style.pointerEvents = 'auto';
+}
+
+function datePickerConfirm(){
+  const overlay = document.getElementById('datePickerOverlay');
+  const val = document.getElementById('datePickerInput').value;
+  overlay.style.visibility = 'hidden';
+  overlay.style.opacity = '0';
+  overlay.style.pointerEvents = 'none';
+  if(_datePickerFile) _doUploadWithDate(_datePickerFile, val);
+  _datePickerFile = null;
+}
+
+function datePickerCancel(){
+  const overlay = document.getElementById('datePickerOverlay');
+  overlay.style.visibility = 'hidden';
+  overlay.style.opacity = '0';
+  overlay.style.pointerEvents = 'none';
+  _datePickerFile = null;
+}
+
+async function _doUploadWithDate(file, chosenDate){
+  const list = document.getElementById('archiveList');
+  const notice = document.createElement('div');
+  notice.style.cssText = 'text-align:center;padding:10px;color:#7c3aed;font-size:13px;font-weight:700;';
+  notice.textContent = '📤 アップロード中...';
+  list.prepend(notice);
+  try{
+    const ab = await file.arrayBuffer();
+    const bytes = new Uint8Array(ab);
+    await saveToArchive(bytes, file.name, 'upload', chosenDate);
+    await renderArchive();
+  }catch(e){
+    notice.remove();
+    alert('アップロードに失敗しました: ' + e.message);
+  }
+}
+
+async function deleteSingleArchive(id){
+  if(!confirm('この1件を削除しますか？')) return;
+  await deleteArchiveIds([id]);
+  archiveSelectedIds.delete(id);
+  updateArchiveBulkBar();
+  await renderArchive();
+}
+
+async function deleteSelectedArchive(){
+  if(archiveSelectedIds.size === 0) return;
+  const n = archiveSelectedIds.size;
+  if(!confirm(`選択中の${n}件を削除しますか？`)) return;
+  await deleteArchiveIds([...archiveSelectedIds]);
+  archiveSelectedIds = new Set();
+  await renderArchive();
+}
+
+/* ── サイン収集モードからアーカイブ保存 ── */
+let _lastSignedPdfBytes = null; // downloadPDF後に保持
+let _lastSignedFilename = null;
+
+async function saveCurrentToArchive(){
+  console.log('saveCurrentToArchive called');
+  const btn = document.getElementById('saveToArchiveBtn');
+  // すでに保存済みならスキップ
+  if(btn && btn.textContent.indexOf('✓') !== -1) return;
+
+  if(btn){ btn.textContent = '保存中...'; btn.style.opacity='0.7'; }
+  try{
+    // pdfBytesが読み込まれていない場合は終了
+    if(!pdfBytes){
+      if(btn){ btn.textContent = '📂 署名済み一覧に保存'; btn.style.opacity='1'; }
+      alert('PDFが読み込まれていません');
+      return;
+    }
+    // _lastSignedPdfBytes がない場合はPDFを生成する
+    if(!_lastSignedPdfBytes){
+      const doc = await _buildSignedDoc();
+      const out = await doc.save();
+      _lastSignedPdfBytes = new Uint8Array(out);
+      const rawName = (document.getElementById('filenameInput').value || 'signed_voucher').trim();
+      _lastSignedFilename = rawName.replace(/\.pdf$/i, '') + '.pdf';
+    }
+    await saveToArchive(_lastSignedPdfBytes, _lastSignedFilename, 'sign');
+    if(btn){
+      btn.textContent = '✓ 署名済み一覧に保存しました';
+      btn.style.opacity = '1';
+      btn.style.background = '#dcfce7';
+      btn.style.borderColor = '#16a34a';
+      btn.style.color = '#15803d';
+    }
+  }catch(e){
+    if(btn){ btn.textContent = '📂 署名済み一覧に保存'; btn.style.opacity='1'; btn.style.cssText=''; }
+    alert('保存に失敗しました: ' + e.message);
+  }
+}
+
+/* ── 領収書添付モードからアーカイブ保存 ── */
+let _lastReceiptPdfBytes = null;
+let _lastReceiptFilename = null;
+
+async function saveReceiptAttachToArchive(){
+  if(!_lastReceiptPdfBytes) return;
+  const btn = document.getElementById('raArchiveBtn');
+  btn.disabled = true;
+  btn.textContent = '保存中...';
+  try{
+    await saveToArchive(_lastReceiptPdfBytes, _lastReceiptFilename, 'receipt');
+    btn.textContent = '✓ 保存しました';
+    btn.style.background = '#dcfce7';
+    btn.style.borderColor = '#16a34a';
+    btn.style.color = '#15803d';
+  }catch(e){
+    btn.disabled = false;
+    btn.textContent = '📂 署名済み一覧に保存';
+    alert('保存に失敗しました: ' + e.message);
+  }
+}
+
 showScreen('upload');
 
 </script>
+<!-- PDFプレビューモーダル -->
+<div id="pdfPreviewOverlay">
+  <div id="pdfPreviewHeader">
+    <div id="pdfPreviewTitle"></div>
+    <button id="pdfPreviewDlBtn" onclick="pdfPreviewDownload()">⬇ DL</button>
+    <button id="pdfPreviewCloseBtn" onclick="closePdfPreview()">✕</button>
+  </div>
+  <div id="pdfPreviewBody"></div>
+</div>
+
+<!-- 日付選択モーダル: bodyの最後、全要素より前面 -->
+<div id="datePickerOverlay" style="visibility:hidden;opacity:0;pointer-events:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);z-index:2147483647;display:flex;align-items:center;justify-content:center;transition:opacity 0.15s;padding:16px;box-sizing:border-box;">
+  <div style="background:#fff;border-radius:16px;padding:24px 20px;width:100%;max-width:320px;box-shadow:0 8px 32px rgba(0,0,0,0.25);box-sizing:border-box;overflow:hidden;">
+    <div style="font-size:15px;font-weight:700;color:#1e1b4b;margin-bottom:4px;">📅 日付を設定</div>
+    <div id="datePickerFilename" style="font-size:12px;color:#6b7280;margin-bottom:16px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%;"></div>
+    <label style="font-size:13px;color:#374151;font-weight:600;display:block;margin-bottom:6px;">書類の日付</label>
+    <input type="date" id="datePickerInput"
+      style="width:100%;box-sizing:border-box;padding:10px 12px;border:1.5px solid #d1d5db;border-radius:10px;font-size:15px;color:#1e1b4b;background:#fff;outline:none;margin-bottom:20px;display:block;max-width:100%;">
+    <div style="display:flex;gap:10px;">
+      <button onclick="datePickerCancel()"
+        style="flex:1;padding:12px;border-radius:10px;border:1.5px solid #d1d5db;background:#f9fafb;color:#374151;font-size:14px;font-weight:600;">
+        キャンセル
+      </button>
+      <button onclick="datePickerConfirm()"
+        style="flex:1;padding:12px;border-radius:10px;border:none;background:#7c3aed;color:#fff;font-size:14px;font-weight:700;">
+        追加する
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ── ダウンロード選択モーダル ── -->
+<div id="dlChoiceOverlay">
+  <div class="dlc-box">
+    <div class="dlc-title">📥 ダウンロード形式を選択</div>
+    <div class="dlc-sub" id="dlChoiceSub">領収書が添付されています</div>
+    <button class="dlc-btn btn-voucher-only" onclick="dlChoiceSelect('voucher')">
+      <div class="dlc-btn-title">📄 Voucherのみ</div>
+      <div class="dlc-btn-desc">署名済みVoucherだけをダウンロード</div>
+    </button>
+    <button class="dlc-btn btn-embed" onclick="dlChoiceSelect('embed')">
+      <div class="dlc-btn-title">🧾 領収書を埋め込み</div>
+      <div class="dlc-btn-desc">VoucherのPDF内に領収書を配置（1ページ）</div>
+    </button>
+    <button class="dlc-btn btn-merge" onclick="dlChoiceSelect('merge')">
+      <div class="dlc-btn-title">📑 ページ結合</div>
+      <div class="dlc-btn-desc">Voucher＋領収書を複数ページの1PDFにまとめる</div>
+    </button>
+    <button class="dlc-cancel" onclick="dlChoiceCancel()">キャンセル</button>
+  </div>
+</div>
 </body>
 </html>
