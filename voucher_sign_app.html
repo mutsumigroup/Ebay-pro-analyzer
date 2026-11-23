@@ -540,11 +540,22 @@ button,[onclick],label,.mode-btn,.archive-btn,.crew-card,.dlc-btn,.upload-box,.r
       <div class="version-header" onclick="toggleVersion()">
         <div class="version-header-left">
           <span class="version-title">&#128221; バージョン履歴</span>
-          <span class="version-current">v4.28</span>
+          <span class="version-current">v4.29</span>
         </div>
         <span class="version-arrow" id="versionArrow">&#9660;</span>
       </div>
       <div class="version-body" id="versionBody">
+        <div class="version-item">
+          <div class="version-item-header">
+            <span class="ver-num">v4.29</span>
+            <span class="ver-date">2026/11/23</span>
+            <span class="ver-tag fix">Fix</span>
+          </div>
+          <ul class="ver-changes">
+            <li>船名サマリーの「乗船／下船 ○件」をタップした時、1件でも必ず一覧を絞り込んで表示（勝手にプレビューが開かない）</li>
+            <li>絞り込み後、一覧の位置まで自動でスクロール</li>
+          </ul>
+        </div>
         <div class="version-item">
           <div class="version-item-header">
             <span class="ver-num">v4.28</span>
@@ -3980,7 +3991,7 @@ async function filterByShip(ship){
 }
 
 // 船名サマリーの「乗船 X件」「下船 Y件」をタップした時の処理
-// 該当PDFが1件だけならそのままプレビュー表示、複数あれば一覧を絞り込んで表示
+// 1件でも複数件でも一覧を絞り込み、絞り込んだ結果が見える位置まで自動でスクロールする
 async function filterByShipCategory(ship, category){
   try{
     // 既に同じ絞り込み中なら、もう一度タップで解除（元の一覧に戻す）
@@ -3988,16 +3999,15 @@ async function filterByShipCategory(ship, category){
       await filterByShip(null);
       return;
     }
-    const allRecords = (await getAllArchive()).filter(r => r.type !== 'merged');
-    const matches = allRecords.filter(r => extractShipName(r.filename) === ship && _recCat(r) === category);
-    if(matches.length === 1){
-      await previewArchiveItem(matches[0].id);
-      return;
-    }
     _archiveShipFilter = { ship, category };
     archiveSelectedIds = new Set();
     await renderArchive();
     _keepShipSummaryOpen();
+    // 絞り込んだ一覧が見えるように、下へスクロール
+    setTimeout(()=>{
+      const list = document.getElementById('archiveList');
+      if(list) list.scrollIntoView({behavior:'smooth', block:'start'});
+    }, 60);
   }catch(e){
     alert('絞り込みに失敗しました: ' + e.message);
   }
