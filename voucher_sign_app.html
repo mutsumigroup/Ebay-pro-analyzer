@@ -540,11 +540,23 @@ button,[onclick],label,.mode-btn,.archive-btn,.crew-card,.dlc-btn,.upload-box,.r
       <div class="version-header" onclick="toggleVersion()">
         <div class="version-header-left">
           <span class="version-title">&#128221; バージョン履歴</span>
-          <span class="version-current">v4.29</span>
+          <span class="version-current">v4.30</span>
         </div>
         <span class="version-arrow" id="versionArrow">&#9660;</span>
       </div>
       <div class="version-body" id="versionBody">
+        <div class="version-item">
+          <div class="version-item-header">
+            <span class="ver-num">v4.30</span>
+            <span class="ver-date">2026/11/23</span>
+            <span class="ver-tag new">New</span>
+          </div>
+          <ul class="ver-changes">
+            <li>結合ファイル画面に「ダブりチェック（最終確認）」を追加</li>
+            <li>全結合ファイルの全ページを突き合わせ、同じ内容のページ・同じファイルを一覧表示</li>
+            <li>「開く」からそのままプレビュー／ページ編集で不要ページを削除可能</li>
+          </ul>
+        </div>
         <div class="version-item">
           <div class="version-item-header">
             <span class="ver-num">v4.29</span>
@@ -1171,6 +1183,10 @@ button,[onclick],label,.mode-btn,.archive-btn,.crew-card,.dlc-btn,.upload-box,.r
         <button class="archive-add-btn" onclick="document.getElementById('archiveUploadInput').click()">＋ PDFを追加</button>
       </div>
       <input type="file" id="archiveUploadInput" accept="application/pdf" style="display:none" onchange="handleArchiveUpload(event)">
+    </div>
+    <!-- 結合ファイル画面のみ：ダブりチェック -->
+    <div id="mergedToolsRow" style="display:none;">
+      <button class="archive-add-btn" style="width:100%;border-color:#7c3aed;background:#f5f3ff;color:#6d28d9;padding:11px;font-size:14px;" onclick="runMergedDupCheck()">🔍 ダブりチェック（最終確認）</button>
     </div>
     <!-- 一括操作バー（選択時のみ表示） -->
     <div id="archiveBulkBar" style="display:none;">
@@ -3235,6 +3251,101 @@ let archiveSelectedIds = new Set();
 
 let _archiveView = 'archive'; // 'archive'=署名済み一覧 / 'merged'=結合ファイル（ホームから開く）
 
+
+/* ── 結合ファイルのダブりチェック：全結合ファイルの全ページを突き合わせる ── */
+function _fpHash(str){ let h=5381; for(let i=0;i<str.length;i++){ h=((h<<5)+h+str.charCodeAt(i))|0; } return (h>>>0).toString(36)+'_'+str.length; }
+
+async function _pageFingerprint(page){
+  // 文字のあるページは文字で、文字がほぼ無いページ（画像のみ）は縮小画像で指紋を作る
+  let text='';
+  try{ const tc = await page.getTextContent(); text = tc.items.map(i=>i.str).join(' ').replace(/\s+/g,''); }catch(e){}
+  if(text.length >= 40) return {fp:'t:'+_fpHash(text.toLowerCase()), text: text};
+  try{
+    const vp0 = page.getViewport({scale:1});
+    const sc = 32 / Math.max(vp0.width, vp0.height);
+    const vp = page.getViewport({scale: sc});
+    const cv = document.createElement('canvas'); cv.width = Math.max(1,Math.round(vp.width)); cv.height = Math.max(1,Math.round(vp.height));
+    const ctx = cv.getContext('2d'); ctx.fillStyle='#fff'; ctx.fillRect(0,0,cv.width,cv.height);
+    await page.render({canvasContext:ctx, viewport:vp}).promise;
+    const d = ctx.getImageData(0,0,cv.width,cv.height).data; let bits='';
+    for(let i=0;i<d.length;i+=4){ const g=(d[i]+d[i+1]+d[i+2])/3; bits += g<128 ? '1':'0'; }
+    return {fp:'i:'+_fpHash(bits), text:text};
+  }catch(e){ return {fp:null, text:text}; }
+}
+
+function closeDupCheck(){ const o=document.getElementById('dupCheckOverlay'); if(o) o.remove(); }
+
+async function runMergedDupCheck(){
+  closeDupCheck();
+  const ov = document.createElement('div'); ov.id='dupCheckOverlay';
+  ov.style.cssText='position:fixed;inset:0;z-index:2147483000;background:#f0f4f8;display:flex;flex-direction:column;';
+  ov.innerHTML = `<div style="background:#1a3252;color:#fff;padding:14px 16px;display:flex;align-items:center;gap:10px;">
+      <div style="flex:1;font-size:16px;font-weight:800;">🔍 ダブりチェック（結合ファイル）</div>
+      <button onclick="closeDupCheck()" style="padding:6px 12px;border-radius:8px;border:none;background:#475569;color:#fff;font-size:14px;font-weight:700;">✕ 閉じる</button></div>
+    <div id="dupCheckBody" style="flex:1;overflow:auto;padding:16px;max-width:560px;width:100%;margin:0 auto;"></div>`;
+  document.body.appendChild(ov);
+  const body = document.getElementById('dupCheckBody');
+  const say = m => { body.innerHTML = `<div style="text-align:center;padding:40px 10px;color:#64748b;font-size:14px;font-weight:700;">${m}</div>`; };
+  try{
+    say('結合ファイルを読み込み中...');
+    const idx = await _getVoucherIndex();
+    const merged = Object.keys(idx).filter(id => idx[id].type==='merged').map(id => ({id, ...idx[id]}))
+      .sort((a,b)=> new Date(b.savedAt)-new Date(a.savedAt));
+    if(merged.length===0){ say('結合ファイルがありません'); return; }
+    const map = new Map();      // 指紋 → 出現箇所の配列
+    let totalPages = 0;
+    for(let n=0;n<merged.length;n++){
+      const m = merged[n];
+      say(`確認中... ${n+1} / ${merged.length} 件<br><span style="font-size:12px;font-weight:500;">${escHtml(m.filename)}</span>`);
+      let rec; try{ rec = await getArchiveById(m.id); }catch(e){ rec=null; }
+      if(!rec || !rec.pdfBase64) continue;
+      let doc; try{ doc = await pdfjsLib.getDocument({data: base64ToUint8(rec.pdfBase64), stopAtErrors:false}).promise; }catch(e){ continue; }
+      for(let pn=1; pn<=doc.numPages; pn++){
+        const pg = await doc.getPage(pn);
+        const {fp, text} = await _pageFingerprint(pg);
+        totalPages++;
+        if(!fp) continue;
+        const info = _parseVoucherInfo(text.replace(/([a-z])([A-Z])/g,'$1 $2'));
+        if(!map.has(fp)) map.set(fp, []);
+        map.get(fp).push({id:m.id, filename:m.filename, page:pn, savedAt:m.savedAt, label: info.voucherNo || ''});
+      }
+    }
+    const groups = [...map.values()].filter(g => g.length >= 2);
+    // ファイル単位の完全一致（同じPDFが2つ）も検出
+    const bySum = new Map();
+    merged.forEach(m => { if(m.checksum){ if(!bySum.has(m.checksum)) bySum.set(m.checksum, []); bySum.get(m.checksum).push(m); } });
+    const fileDups = [...bySum.values()].filter(g => g.length >= 2);
+
+    const head = `<div style="font-size:12px;color:#64748b;margin-bottom:10px;">結合ファイル ${merged.length}件・全 ${totalPages}ページを突き合わせました</div>`;
+    if(groups.length===0 && fileDups.length===0){
+      body.innerHTML = head + `<div style="background:#f0fdf4;border:2px solid #16a34a;border-radius:14px;padding:22px 16px;text-align:center;">
+        <div style="font-size:36px;">✅</div><div style="font-size:16px;font-weight:900;color:#15803d;margin-top:6px;">ダブりはありませんでした</div></div>`;
+      return;
+    }
+    const fmtDate = iso => { const d=new Date(iso); return isNaN(d)?'':`${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')}`; };
+    let html = head + `<div style="background:#fef2f2;border:2px solid #ef4444;border-radius:14px;padding:12px 14px;margin-bottom:12px;color:#b91c1c;font-weight:900;font-size:14px;">⚠️ ダブりの可能性が ${groups.length + fileDups.length} 件あります</div>`;
+    fileDups.forEach(g=>{
+      html += `<div style="background:#fff;border:1.5px solid #fca5a5;border-radius:12px;padding:12px;margin-bottom:10px;">
+        <div style="font-weight:900;color:#b91c1c;font-size:13px;margin-bottom:6px;">同じファイルが ${g.length} 件</div>` +
+        g.map(m=>`<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-top:1px solid #f1f5f9;">
+          <div style="flex:1;min-width:0;font-size:12px;font-weight:700;word-break:break-all;">${escHtml(m.filename)}<div style="font-weight:500;color:#64748b;">${fmtDate(m.savedAt)}</div></div>
+          <button onclick="previewArchiveItem('${m.id}')" style="padding:6px 10px;border-radius:8px;border:1.5px solid #7c3aed;background:#fff;color:#7c3aed;font-weight:800;font-size:12px;">開く</button></div>`).join('') + `</div>`;
+    });
+    groups.forEach(g=>{
+      const lbl = (g.find(x=>x.label)||{}).label;
+      html += `<div style="background:#fff;border:1.5px solid #fcd34d;border-radius:12px;padding:12px;margin-bottom:10px;">
+        <div style="font-weight:900;color:#92400e;font-size:13px;margin-bottom:6px;">同じ内容のページが ${g.length} か所${lbl?`（${escHtml(lbl)}）`:''}</div>` +
+        g.map(x=>`<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-top:1px solid #f1f5f9;">
+          <div style="flex:1;min-width:0;font-size:12px;font-weight:700;word-break:break-all;">${escHtml(x.filename)}<div style="font-weight:500;color:#64748b;">${x.page}ページ目 ・ ${fmtDate(x.savedAt)}</div></div>
+          <button onclick="previewArchiveItem('${x.id}')" style="padding:6px 10px;border-radius:8px;border:1.5px solid #7c3aed;background:#fff;color:#7c3aed;font-weight:800;font-size:12px;">開く</button></div>`).join('') + `</div>`;
+    });
+    html += `<div style="font-size:11.5px;color:#64748b;line-height:1.6;">※「開く」→「ページ編集」で、不要なページを削除できます。</div>`;
+    body.innerHTML = html;
+  }catch(e){
+    console.error(e); say('チェックに失敗しました: ' + escHtml(e.message||String(e)));
+  }
+}
+
 async function showArchive(view){
   _archiveView = (view === 'merged') ? 'merged' : 'archive';
   const isMerged = _archiveView === 'merged';
@@ -3246,6 +3357,8 @@ async function showArchive(view){
   if(lbl) lbl.textContent = isMerged ? '📁 結合ファイル' : '📂 署名済み一覧';
   const hb = document.getElementById('archiveHeaderBtns');
   if(hb) hb.style.display = isMerged ? 'none' : 'flex';
+  const mtr = document.getElementById('mergedToolsRow');
+  if(mtr) mtr.style.display = isMerged ? 'block' : 'none';
   _archiveShipFilter = null;
   archiveSelectedIds = new Set();
   await renderArchive();
