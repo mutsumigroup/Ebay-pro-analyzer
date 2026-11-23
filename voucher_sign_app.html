@@ -241,20 +241,28 @@ html,body{height:100%;background:var(--bg);font-family:-apple-system,BlinkMacSys
 .archive-month-arrow.open{transform:rotate(180deg);}
 .archive-month-items{display:none;border-top:1px solid var(--border);}
 .archive-month-items.open{display:block;}
-.archive-item{display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid #f1f5f9;-webkit-user-select:none;user-select:none;}
+.archive-item{display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid #f1f5f9;-webkit-user-select:none;user-select:none;flex-wrap:wrap;}
 .archive-item:last-child{border-bottom:none;}
 .archive-item-check{width:22px;height:22px;border:2px solid #d1dce8;border-radius:6px;flex-shrink:0;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background .15s,border-color .15s;}
 .archive-item-check.checked{background:#7c3aed;border-color:#7c3aed;}
 .archive-item-check.checked::after{content:'✓';color:#fff;font-size:13px;font-weight:900;}
-.archive-item-info{flex:1;min-width:0;cursor:pointer;}
+.archive-item-info{flex:1 1 140px;min-width:0;cursor:pointer;}
 .archive-item-name{font-size:13px;font-weight:700;color:#1e293b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.archive-item-meta{font-size:11px;color:#64748b;margin-top:2px;display:flex;align-items:center;gap:6px;}
-.archive-item-type{padding:1px 6px;border-radius:6px;font-size:10px;font-weight:700;}
+.archive-item-meta{font-size:11px;color:#64748b;margin-top:2px;display:flex;align-items:center;gap:6px;flex-wrap:nowrap;white-space:nowrap;}
+.archive-item-type{padding:1px 6px;border-radius:6px;font-size:10px;font-weight:700;white-space:nowrap;flex-shrink:0;}
 .archive-item-type.sign{background:#dbeafe;color:#1d4ed8;}
 .archive-item-type.receipt{background:#fef3c7;color:#92400e;}
 .archive-item-type.upload{background:#e0f2fe;color:#0369a1;}
+.archive-item-type.merged{background:#ede9fe;color:#6d28d9;}
 .archive-item.confirmed{background:#f0fdf4;}
-.archive-item-actions{display:flex;align-items:center;gap:6px;flex-shrink:0;}
+.archive-item-actions{display:flex;align-items:center;gap:6px;flex-shrink:0;flex-wrap:nowrap;}
+@media (max-width:480px){
+  .archive-item{gap:8px;padding:12px;}
+  .archive-item-info{flex-basis:100%;order:1;}
+  .archive-item-check{order:0;}
+  .archive-item-actions{order:2;flex-basis:100%;justify-content:flex-end;margin-top:4px;}
+  .archive-item-confirm,.archive-item-rename,.archive-item-preview,.archive-item-del{padding:6px 8px;font-size:12px;}
+}
 .archive-item-confirm{padding:6px 10px;border-radius:8px;border:1.5px solid #d1dce8;background:#fff;color:#d1dce8;font-size:14px;cursor:pointer;white-space:nowrap;transition:all .15s;}
 .archive-item-confirm.confirmed{border-color:#16a34a;background:#dcfce7;filter:none;}
 .archive-item-confirm:not(.confirmed){filter:grayscale(1);opacity:0.4;}
@@ -267,15 +275,36 @@ html,body{height:100%;background:var(--bg);font-family:-apple-system,BlinkMacSys
 #pdfPreviewHeader{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:#1e1b4b;flex-shrink:0;gap:8px;}
 #pdfPreviewTitle{color:#fff;font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;}
 #pdfPreviewDlBtn{padding:6px 14px;border-radius:8px;border:none;background:#7c3aed;color:#fff;font-size:13px;font-weight:700;cursor:pointer;flex-shrink:0;}
+#pdfPreviewEditBtn{padding:6px 12px;border-radius:8px;border:none;background:#059669;color:#fff;font-size:13px;font-weight:700;cursor:pointer;flex-shrink:0;}
 #pdfPreviewCloseBtn{padding:6px 12px;border-radius:8px;border:none;background:rgba(255,255,255,0.15);color:#fff;font-size:14px;font-weight:700;cursor:pointer;flex-shrink:0;}
 #pdfPreviewBody{flex:1;overflow:hidden;display:flex;align-items:stretch;}
+/* ページ編集モーダル */
+#pageEditorOverlay{visibility:hidden;opacity:0;pointer-events:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:2147483647;display:flex;flex-direction:column;align-items:stretch;transition:opacity 0.15s;}
+#pageEditorOverlay.open{visibility:visible;opacity:1;pointer-events:auto;}
+#pageEditorHeader{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:#1e1b4b;flex-shrink:0;gap:8px;}
+#pageEditorTitle{color:#fff;font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;}
+#pageEditorCloseBtn{padding:6px 12px;border-radius:8px;border:none;background:rgba(255,255,255,0.15);color:#fff;font-size:14px;font-weight:700;cursor:pointer;flex-shrink:0;}
+#pageEditorBody{flex:1;overflow-y:auto;background:#0f172a;padding:14px;display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:12px;align-content:start;}
+.page-editor-thumb{position:relative;background:#fff;border-radius:8px;overflow:hidden;border:3px solid transparent;cursor:pointer;-webkit-user-select:none;user-select:none;}
+.page-editor-thumb.marked{border-color:#ef4444;}
+.page-editor-thumb canvas{display:block;width:100%;height:auto;}
+.page-editor-thumb-label{position:absolute;top:4px;left:4px;background:rgba(0,0,0,0.6);color:#fff;font-size:10px;font-weight:700;padding:1px 6px;border-radius:6px;}
+.page-editor-thumb-mark{position:absolute;top:4px;right:4px;width:24px;height:24px;border-radius:50%;background:rgba(255,255,255,0.9);display:flex;align-items:center;justify-content:center;font-size:14px;}
+.page-editor-thumb.marked .page-editor-thumb-mark{background:#ef4444;color:#fff;}
+.page-editor-thumb.marked::after{content:'';position:absolute;inset:0;background:rgba(239,68,68,0.25);}
+#pageEditorFooter{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 14px;background:#1e1b4b;flex-shrink:0;}
+#pageEditorFooterText{color:#cbd5e1;font-size:12px;flex:1;}
+#pageEditorSaveBtn{padding:8px 16px;border-radius:8px;border:none;background:#ef4444;color:#fff;font-size:13px;font-weight:800;cursor:pointer;flex-shrink:0;}
+#pageEditorSaveBtn:disabled{background:#475569;cursor:default;}
 .archive-item-del{padding:6px 10px;border-radius:8px;border:1.5px solid #fca5a5;background:#fff;color:#dc2626;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;}
 .archive-item-del:active{background:#fca5a5;}
 .archive-item-rename{padding:6px 10px;border-radius:8px;border:1.5px solid #f59e0b;background:#fff;color:#d97706;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;}
 .archive-item-rename:active{background:#fef3c7;}
-.archive-rename-form{display:flex;align-items:center;gap:6px;padding:8px 12px;background:#fffbeb;border-top:1px solid #fde68a;}
-.archive-rename-input{flex:1;padding:6px 10px;border:1.5px solid #f59e0b;border-radius:8px;font-size:13px;outline:none;}
+.archive-rename-form{display:flex;align-items:center;gap:6px;padding:8px 12px;background:#fffbeb;border-top:1px solid #fde68a;flex-wrap:wrap;}
+.archive-rename-input{flex:1 1 140px;min-width:100px;padding:6px 10px;border:1.5px solid #f59e0b;border-radius:8px;font-size:13px;outline:none;}
 .archive-rename-input:focus{border-color:#d97706;box-shadow:0 0 0 2px #fde68a;}
+.archive-rename-date{flex:0 0 140px;padding:6px 8px;border:1.5px solid #f59e0b;border-radius:8px;font-size:13px;outline:none;color:#1e293b;}
+.archive-rename-date:focus{border-color:#d97706;box-shadow:0 0 0 2px #fde68a;}
 .archive-rename-save{padding:6px 14px;border-radius:8px;border:none;background:#d97706;color:#fff;font-size:13px;font-weight:700;cursor:pointer;}
 .archive-rename-save:active{opacity:.8;}
 .archive-rename-cancel{padding:6px 12px;border-radius:8px;border:1.5px solid #d1dce8;background:#fff;color:#64748b;font-size:13px;cursor:pointer;}
@@ -298,6 +327,17 @@ html,body{height:100%;background:var(--bg);font-family:-apple-system,BlinkMacSys
 .archive-ship-chip{display:inline-flex;align-items:center;gap:5px;background:#eff6ff;border:1.5px solid #bfdbfe;border-radius:20px;padding:4px 10px;font-size:12px;font-weight:700;color:#1d4ed8;cursor:pointer;transition:background .15s;}
 .archive-ship-chip:active{background:#dbeafe;}
 .archive-ship-chip .chip-count{background:#2563eb;color:#fff;border-radius:10px;padding:1px 7px;font-size:11px;font-weight:800;}
+.archive-ship-rows{display:flex;flex-direction:column;gap:6px;}
+.archive-ship-row{display:flex;align-items:center;flex-wrap:wrap;gap:6px 8px;padding:7px 10px;background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:10px;}
+.archive-ship-row-name{font-size:12.5px;font-weight:800;color:#1e293b;flex:1 1 auto;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.archive-ship-row-cats{display:flex;flex-wrap:wrap;gap:6px;}
+.archive-ship-cat{display:inline-flex;align-items:center;border-radius:14px;padding:4px 10px;font-size:11.5px;font-weight:800;cursor:pointer;white-space:nowrap;border:1.5px solid transparent;transition:filter .15s;}
+.archive-ship-cat:active{filter:brightness(.95);}
+.archive-ship-cat.embark{background:#fee2e2;color:#b91c1c;}
+.archive-ship-cat.disembark{background:#dbeafe;color:#1d4ed8;}
+.archive-ship-cat.vm{background:#fef3c7;color:#b45309;}
+.archive-ship-cat.other{background:#f1f5f9;color:#475569;}
+.archive-ship-cat.active{border-color:#2563eb;box-shadow:0 0 0 1.5px #bfdbfe;}
 .archive-empty{text-align:center;padding:40px 20px;color:#94a3b8;}
 .archive-empty-icon{font-size:40px;margin-bottom:12px;}
 .archive-empty-text{font-size:14px;font-weight:700;}
@@ -312,6 +352,82 @@ html,body{height:100%;background:var(--bg);font-family:-apple-system,BlinkMacSys
 .save-to-archive-btn{width:100%;padding:12px;border-radius:10px;border:2px solid #7c3aed;background:#faf5ff;color:#7c3aed;font-size:14px;font-weight:800;cursor:pointer;margin-top:4px;display:flex;align-items:center;justify-content:center;gap:8px;}
 .save-to-archive-btn:active{background:#7c3aed;color:#fff;}
 .save-to-archive-btn:disabled{border-color:#d1dce8;background:#f8fafc;color:#94a3b8;cursor:default;}
+
+/* ── 操作感（v4.25）：押した感触・なめらかな動き ── */
+:root{--ease-out:cubic-bezier(.22,1,.36,1);--ease-spring:cubic-bezier(.34,1.56,.64,1);}
+html{-webkit-text-size-adjust:100%;}
+button,[onclick],label,.mode-btn,.archive-btn,.crew-card,.dlc-btn,.upload-box,.receipt-box,.ra-box{touch-action:manipulation;-webkit-touch-callout:none;}
+.mode-btn,.archive-btn,.crew-card,.dlc-btn,.upload-box,.receipt-box,.ra-box,.dl-btn,.ra-dl-btn,.reset-btn,.ra-back,
+.archive-ship-chip,.archive-ship-cat,.archive-add-btn,.archive-select-all-btn,.archive-del-btn,.save-to-archive-btn,
+.archive-bulk-dl,.archive-bulk-merge,.archive-item-del,.archive-item-rename,.archive-item-preview,.archive-item-confirm,
+.archive-month-header,.s-btn,#pendingBanner{
+  transition:transform .22s var(--ease-spring),box-shadow .22s var(--ease-out),background-color .18s,border-color .18s,color .18s,opacity .18s,filter .18s !important;
+  will-change:transform;
+}
+.mode-btn,.archive-btn,.crew-card{box-shadow:0 1px 2px rgba(15,23,42,.06),0 4px 12px rgba(15,23,42,.05);}
+.mode-btn:active,.archive-btn:active,.crew-card:active,.upload-box:active,.receipt-box:active,.ra-box:active,#pendingBanner:active{
+  transform:scale(.97);opacity:1 !important;box-shadow:0 1px 2px rgba(15,23,42,.08);transition-duration:.08s !important;transition-timing-function:ease-out !important;}
+.dl-btn.ready:active,.ra-dl-btn.ready:active,.save-to-archive-btn:active,.archive-bulk-dl:active,.archive-bulk-merge:active,
+.archive-add-btn:active,.archive-select-all-btn:active,.archive-del-btn:active,.reset-btn:active,.ra-back:active,.dlc-btn:active,
+.archive-item-del:active,.archive-item-rename:active,.archive-item-preview:active,.archive-item-confirm:active,.s-btn:active{
+  transform:scale(.95);opacity:1 !important;transition-duration:.08s !important;transition-timing-function:ease-out !important;}
+.archive-ship-chip:active,.archive-ship-cat:active{transform:scale(.92);transition-duration:.08s !important;}
+.archive-month-header:active{transform:scale(.99);}
+.dl-btn.ready,.ra-dl-btn.ready{box-shadow:0 6px 16px rgba(37,99,235,.25);}
+.archive-item-check.checked{animation:chkPop .28s var(--ease-spring);}
+@keyframes chkPop{0%{transform:scale(.7);}60%{transform:scale(1.18);}100%{transform:scale(1);}}
+.archive-ship-chip,.archive-ship-cat{box-shadow:0 1px 2px rgba(15,23,42,.06);}
+#uploadScreen,#processingScreen,#appScreen,#archiveScreen,#modeSelect,#pendingListArea{animation:scrFade .28s var(--ease-out);}
+@keyframes scrFade{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}
+@media (prefers-reduced-motion:reduce){*{animation:none !important;transition-duration:.01s !important;}}
+
+/* ── 融合エフェクト（結合時の演出） ── */
+#fusionFx{position:fixed;inset:0;z-index:2147483647;display:flex;align-items:center;justify-content:center;flex-direction:column;
+  background:radial-gradient(circle at 50% 45%,#3b1670 0%,#150a33 55%,#05030f 100%);opacity:0;transition:opacity .35s ease;overflow:hidden;-webkit-user-select:none;user-select:none;}
+#fusionFx.show{opacity:1;}
+#fusionFx.shake .fx-stage{animation:fxShake .09s linear infinite;}
+@keyframes fxShake{0%{transform:translate(0,0);}25%{transform:translate(3px,-2px);}50%{transform:translate(-3px,2px);}75%{transform:translate(2px,3px);}100%{transform:translate(0,0);}}
+#fusionFx .fx-canvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;}
+#fusionFx .fx-stage{position:relative;z-index:1;width:300px;height:300px;}
+#fusionFx .fx-ring{position:absolute;left:50%;top:50%;border-radius:50%;transform:translate(-50%,-50%);}
+#fusionFx .fx-ring.r1{width:280px;height:280px;background:conic-gradient(from 0deg,transparent,rgba(168,85,247,.85),transparent 40%,rgba(56,189,248,.7),transparent 80%);
+  -webkit-mask:radial-gradient(circle,transparent 52%,#000 54%,#000 70%,transparent 72%);mask:radial-gradient(circle,transparent 52%,#000 54%,#000 70%,transparent 72%);animation:fxSpin 1.1s linear infinite;}
+#fusionFx .fx-ring.r2{width:210px;height:210px;background:conic-gradient(from 90deg,transparent,rgba(250,204,21,.8),transparent 45%,rgba(244,114,182,.7),transparent 85%);
+  -webkit-mask:radial-gradient(circle,transparent 50%,#000 53%,#000 72%,transparent 75%);mask:radial-gradient(circle,transparent 50%,#000 53%,#000 72%,transparent 75%);animation:fxSpin .8s linear infinite reverse;}
+#fusionFx .fx-core{position:absolute;left:50%;top:50%;width:90px;height:90px;border-radius:50%;transform:translate(-50%,-50%);
+  background:radial-gradient(circle,#fff 0%,rgba(216,180,254,.9) 35%,transparent 70%);animation:fxPulse .7s ease-in-out infinite alternate;filter:blur(2px);}
+@keyframes fxSpin{to{transform:translate(-50%,-50%) rotate(360deg);}}
+@keyframes fxPulse{from{opacity:.55;transform:translate(-50%,-50%) scale(.8);}to{opacity:1;transform:translate(-50%,-50%) scale(1.25);}}
+#fusionFx .fx-card{position:absolute;left:50%;top:50%;width:58px;height:80px;border-radius:7px;background:linear-gradient(160deg,#fff,#e9d5ff);
+  border:2px solid #c084fc;box-shadow:0 0 14px rgba(192,132,252,.9);display:flex;align-items:center;justify-content:center;font-size:24px;
+  animation:fxSpiral 2.3s cubic-bezier(.6,.02,.4,1) forwards;animation-delay:var(--d,0s);opacity:0;
+  transform:translate(-50%,-50%) rotate(var(--a)) translateY(calc(var(--r) * -1)) scale(1);}
+@keyframes fxSpiral{
+  0%{opacity:0;transform:translate(-50%,-50%) rotate(var(--a)) translateY(calc(var(--r) * -1)) scale(1.1);}
+  12%{opacity:1;}
+  100%{opacity:1;transform:translate(-50%,-50%) rotate(calc(var(--a) + 1080deg)) translateY(0px) scale(.3);}}
+#fusionFx .fx-label{position:relative;z-index:1;margin-top:10px;color:#e9d5ff;font-weight:900;font-size:18px;letter-spacing:.25em;text-shadow:0 0 12px #a855f7;animation:fxBlink 1s ease-in-out infinite alternate;}
+@keyframes fxBlink{from{opacity:.55;}to{opacity:1;}}
+#fusionFx .fx-flash{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none;}
+#fusionFx .fx-flash.go{animation:fxFlash .75s ease-out;}
+@keyframes fxFlash{0%{opacity:0;}25%{opacity:1;}100%{opacity:0;}}
+#fusionFx .fx-result{position:absolute;left:50%;top:50%;width:150px;height:208px;border-radius:12px;transform:translate(-50%,-50%) scale(.2);opacity:0;
+  background:linear-gradient(155deg,#fef9c3 0%,#fde68a 40%,#f59e0b 100%);border:4px solid #fbbf24;box-shadow:0 0 30px 8px rgba(251,191,36,.8),0 0 80px 20px rgba(168,85,247,.5);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:12px;text-align:center;overflow:hidden;}
+#fusionFx .fx-result.go{animation:fxReveal .7s cubic-bezier(.34,1.56,.64,1) forwards;}
+@keyframes fxReveal{from{opacity:0;transform:translate(-50%,-50%) scale(.2) rotate(-25deg);}to{opacity:1;transform:translate(-50%,-50%) scale(1) rotate(0);}}
+#fusionFx .fx-result .rs-icon{font-size:44px;}
+#fusionFx .fx-result .rs-title{font-size:13px;font-weight:900;color:#78350f;word-break:break-all;line-height:1.3;max-height:5.2em;overflow:hidden;}
+#fusionFx .fx-result .rs-meta{font-size:12px;font-weight:800;color:#92400e;background:rgba(255,255,255,.55);padding:2px 8px;border-radius:10px;}
+#fusionFx .fx-result::after{content:'';position:absolute;top:-20%;left:-60%;width:40%;height:140%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.85),transparent);transform:rotate(18deg);}
+#fusionFx .fx-result.go::after{animation:fxShine 1.2s .5s ease-in-out;}
+@keyframes fxShine{from{left:-60%;}to{left:130%;}}
+#fusionFx .fx-spark{position:absolute;left:50%;top:50%;width:8px;height:8px;border-radius:50%;background:#fde047;box-shadow:0 0 10px 3px #facc15;opacity:0;}
+#fusionFx .fx-spark.go{animation:fxSpark .9s ease-out forwards;}
+@keyframes fxSpark{0%{opacity:1;transform:translate(-50%,-50%) scale(1);}100%{opacity:0;transform:translate(calc(-50% + var(--dx)),calc(-50% + var(--dy))) scale(.2);}}
+#fusionFx .fx-title{position:absolute;top:14%;left:0;right:0;text-align:center;font-size:30px;font-weight:900;letter-spacing:.2em;color:#fde68a;opacity:0;text-shadow:0 0 18px #f59e0b,0 2px 0 #92400e;}
+#fusionFx .fx-title.go{animation:fxTitle .8s .25s cubic-bezier(.34,1.56,.64,1) forwards;}
+@keyframes fxTitle{from{opacity:0;transform:scale(2.2);}to{opacity:1;transform:scale(1);}}
 </style>
 </head>
 <body>
@@ -331,6 +447,19 @@ html,body{height:100%;background:var(--bg);font-family:-apple-system,BlinkMacSys
     <!-- モード選択 -->
     <div class="mode-select" id="modeSelect">
       <div class="mode-label">モードを選択</div>
+
+      <!-- 保留中サインバナー（保留件数がある時のみ表示） -->
+      <div id="pendingBanner" style="display:none;background:#fef3c7;border:2px solid #f59e0b;border-radius:12px;padding:12px 16px;cursor:pointer;transition:opacity .15s;" onclick="showSignUpload()">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div style="font-size:24px;">⏳</div>
+          <div style="flex:1;">
+            <div style="font-size:14px;font-weight:800;color:#92400e;">保留中のサイン <span id="pendingCount" style="background:#f59e0b;color:#fff;padding:1px 8px;border-radius:10px;font-size:13px;">0</span> 件</div>
+            <div style="font-size:11px;color:#b45309;margin-top:2px;">タップしてサインを収集する</div>
+          </div>
+          <div style="font-size:18px;color:#f59e0b;">›</div>
+        </div>
+      </div>
+
       <div class="mode-btn sign-mode" onclick="showSignUpload()">
         <div class="mode-btn-icon">✍️</div>
         <div class="mode-btn-text">
@@ -352,33 +481,388 @@ html,body{height:100%;background:var(--bg);font-family:-apple-system,BlinkMacSys
           <div class="archive-btn-sub">保存済みのPDFを月別に確認・ダウンロード</div>
         </div>
       </div>
+      <div class="archive-btn" style="border-color:#059669;" onclick="showMergedFiles()">
+        <div class="archive-btn-icon">📁</div>
+        <div class="mode-btn-text">
+          <div class="archive-btn-title">結合ファイル</div>
+          <div class="archive-btn-sub">結合して作成したPDFをまとめて確認・ダウンロード</div>
+        </div>
+      </div>
+
     </div>
 
     <!-- サインモード：PDFアップロード -->
     <div id="signUploadArea" style="display:none;flex-direction:column;gap:12px;">
+
+      <!-- 保留中サインリスト（保留あり時のみ表示） -->
+      <div id="pendingInSignArea" style="display:none;flex-direction:column;gap:8px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;">
+          <div class="sec-label" style="color:#d97706;">⏳ 保留中のサイン</div>
+          <label style="padding:5px 10px;border-radius:8px;border:1.5px solid #f59e0b;background:#fff;color:#d97706;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;">
+            ＋ PDF追加
+            <input type="file" id="pendingAddInput" accept="application/pdf" multiple style="display:none;">
+          </label>
+        </div>
+        <div id="pendingList" style="display:flex;flex-direction:column;gap:6px;"></div>
+        <div style="border-bottom:1px solid #e2e8f0;margin:4px 0;"></div>
+      </div>
+
+      <!-- 新規PDFアップロード -->
       <label for="fileInput" class="upload-box" id="uploadBox" style="cursor:pointer;display:block;">
         <div class="upload-icon">📄</div>
         <div class="upload-label">タップしてPDFを選択</div>
-        <div class="upload-sub">Voucher PDFをここにアップロード</div>
-        <input type="file" id="fileInput" accept="application/pdf">
+        <div class="upload-sub">複数のVoucher PDFを一度に選択可能</div>
+        <input type="file" id="fileInput" accept="application/pdf" multiple>
       </label>
       <div class="upload-note">
         <strong>Sign列を自動検出</strong><br>
-        PDFをスキャンして各クルーのサイン欄を自動で見つけます。
+        PDFをスキャンして各クルーのサイン欄を自動で見つけます。複数選択した場合は順番にサインできます。
       </div>
+
+      <!-- 事前登録ボタン -->
+      <label id="pendingUploadLabel" style="display:flex;align-items:center;gap:10px;padding:12px 16px;border:1.5px dashed #d1dce8;border-radius:12px;cursor:pointer;background:#f8fafc;">
+        <div style="font-size:20px;">📥</div>
+        <div>
+          <div style="font-size:13px;font-weight:700;color:#1e293b;">バウチャーをあらかじめ登録</div>
+          <div style="font-size:11px;color:#64748b;margin-top:1px;">後でサインするPDFを今すぐ保存</div>
+        </div>
+        <input type="file" id="pendingFileInput" accept="application/pdf" multiple style="display:none;">
+      </label>
+
       <button class="ra-back" onclick="backToModeSelect()">← モード選択に戻る</button>
     </div>
+
+    <!-- 保留中リスト画面（使わなくなったが互換性のため残す） -->
+    <div id="pendingListArea" style="display:none;flex-direction:column;gap:10px;"></div>
 
     <!-- Version History -->
     <div class="version-card">
       <div class="version-header" onclick="toggleVersion()">
         <div class="version-header-left">
           <span class="version-title">&#128221; バージョン履歴</span>
-          <span class="version-current">v4.0</span>
+          <span class="version-current">v4.28</span>
         </div>
         <span class="version-arrow" id="versionArrow">&#9660;</span>
       </div>
       <div class="version-body" id="versionBody">
+        <div class="version-item">
+          <div class="version-item-header">
+            <span class="ver-num">v4.28</span>
+            <span class="ver-date">2026/11/23</span>
+            <span class="ver-tag fix">Fix</span>
+          </div>
+          <ul class="ver-changes">
+            <li>結合ファイルの日付を、結合した日ではなく「結合したバウチャーの中で一番古い日付」に変更</li>
+            <li>日付はPDF内の「Date:」から読み取り、読めない場合は保存日を使用</li>
+          </ul>
+        </div>
+        <div class="version-item">
+          <div class="version-item-header">
+            <span class="ver-num">v4.27</span>
+            <span class="ver-date">2026/11/21</span>
+            <span class="ver-tag new">New</span>
+          </div>
+          <ul class="ver-changes">
+            <li>融合演出を強化：光の粒が渦を巻きながら加速して中心へ吸い込まれる演出に</li>
+            <li>最後に渦が一気に収束して画面が震え、フラッシュ→結合カード登場</li>
+          </ul>
+        </div>
+        <div class="version-item">
+          <div class="version-item-header">
+            <span class="ver-num">v4.26</span>
+            <span class="ver-date">2026/11/21</span>
+            <span class="ver-tag new">New</span>
+          </div>
+          <ul class="ver-changes">
+            <li>結合時に「融合」演出を追加（カードが渦に吸い込まれ、フラッシュとともに結合カードが登場）</li>
+            <li>演出中に画面をタップすると早送りできます</li>
+          </ul>
+        </div>
+        <div class="version-item">
+          <div class="version-item-header">
+            <span class="ver-num">v4.25</span>
+            <span class="ver-date">2026/11/21</span>
+            <span class="ver-tag new">New</span>
+          </div>
+          <ul class="ver-changes">
+            <li>ボタン・タブ・一覧のタップ感を改善（押すと沈み、離すとふわっと戻る動き）</li>
+            <li>画面切り替えをなめらかなアニメーションに</li>
+            <li>チェック時のポンと弾む動き、ボタンの影で立体感を追加</li>
+            <li>Android等ではタップ時に軽い振動（iPhoneは非対応）</li>
+          </ul>
+        </div>
+        <div class="version-item">
+          <div class="version-item-header">
+            <span class="ver-num">v4.24</span>
+            <span class="ver-date">2026/11/21</span>
+            <span class="ver-tag fix">Fix</span>
+          </div>
+          <ul class="ver-changes">
+            <li>サイン完了後も「保留中」が残る問題を修正（どの保存方法でも確実に削除）</li>
+            <li>すでに残っている完了済みの保留は自動で整理されます</li>
+          </ul>
+        </div>
+        <div class="version-item">
+          <div class="version-item-header">
+            <span class="ver-num">v4.23</span>
+            <span class="ver-date">2026/11/21</span>
+            <span class="ver-tag fix">Fix</span>
+          </div>
+          <ul class="ver-changes">
+            <li>結合でページが欠ける不具合の対策：各PDFの正しいページ数を数え、結合結果と照合しながら結合（合わない場合は修復読み込み→最終手段としてページを画像化して取り込み）</li>
+            <li>結合結果のページ数が合計と一致しない場合は、保存も元PDF削除もせず中止して警告</li>
+            <li>結合後の元PDFの削除を確認し、残っていれば再削除。保存されなかった場合は元PDFを残すことを明示</li>
+          </ul>
+        </div>
+        <div class="version-item">
+          <div class="version-item-header">
+            <span class="ver-num">v4.22</span>
+            <span class="ver-date">2026/11/21</span>
+            <span class="ver-tag new">New</span>
+          </div>
+          <ul class="ver-changes">
+            <li>船名別件数の色を変更：乗船＝赤、下船＝青</li>
+            <li>新機能：PDF内に「VM」の記載があるものを「VM」枠として分類（タップで絞り込み／もう一度タップで解除）。VMのPDFは乗船・下船ではなくVMとして数えます</li>
+            <li>既存のPDFは初回表示時に自動でVM判定（件数が多い間は少し時間がかかります）</li>
+          </ul>
+        </div>
+        <div class="version-item">
+          <div class="version-item-header">
+            <span class="ver-num">v4.21</span>
+            <span class="ver-date">2026/11/21</span>
+            <span class="ver-tag new">New</span>
+          </div>
+          <ul class="ver-changes">
+            <li>結合したPDFの置き場所を、署名済み一覧の中ではなくホーム画面の専用ボタン「📁 結合ファイル」に変更（結合すると自動でここに入り、署名済み一覧には残らない）</li>
+          </ul>
+        </div>
+        <div class="version-item">
+          <div class="version-item-header">
+            <span class="ver-num">v4.20</span>
+            <span class="ver-date">2026/11/21</span>
+            <span class="ver-tag new">New</span>
+          </div>
+          <ul class="ver-changes">
+            <li>船名別件数の「乗船」「下船」「他」で絞り込み中に、同じボタンをもう一度タップすると絞り込みを解除して元の一覧に戻るように変更</li>
+          </ul>
+        </div>
+        <div class="version-item">
+          <div class="version-item-header">
+            <span class="ver-num">v4.19</span>
+            <span class="ver-date">2026/11/21</span>
+            <span class="ver-tag new">New</span>
+          </div>
+          <ul class="ver-changes">
+            <li>結合したPDFは専用の「📁 結合ファイル」フォルダに自動で移動して表示（通常の月別一覧には残らない）</li>
+            <li>結合後は元のPDFを確実に削除（スマホでもPCでも、保存→削除→一覧更新→ダウンロードの順に処理）</li>
+            <li>約1MBを超える大きな結合PDFも保存できるよう分割保存に対応（これまで保存失敗で元PDFが残る原因）</li>
+            <li>一覧に残ってしまう削除済みの「幽霊」項目を自動で掃除</li>
+          </ul>
+        </div>
+        <div class="version-item">
+          <div class="version-item-header">
+            <span class="ver-num">v4.18</span>
+            <span class="ver-date">2026/11/20</span>
+            <span class="ver-tag new">New</span>
+          </div>
+          <ul class="ver-changes">
+            <li>「1つに結合」で、選択した順番に関わらず voucher（領収書以外）が先頭、領収書添付が最後になるよう自動で並べ替えてから結合するように変更</li>
+            <li>新機能：署名済み一覧のプレビュー画面に「🗑 ページ編集」ボタンを追加 — 複数ページのPDFからページを選んで個別に削除できるように</li>
+            <li>結合してみて不要なページが混ざっていた場合も、結合をやり直さずそのページだけ削除できます</li>
+          </ul>
+        </div>
+        <div class="version-item">
+          <div class="version-item-header">
+            <span class="ver-num">v4.17</span>
+            <span class="ver-date">2026/11/20</span>
+            <span class="ver-tag fix">Fix</span>
+          </div>
+          <ul class="ver-changes">
+            <li>バグ修正：「1つに結合」で、一部のPDFが読み込みに失敗すると無言でスキップされ、選択した枚数より少ないページ数で結合されてしまう問題を修正</li>
+            <li>読み込みに失敗したPDFは、XRef修復処理を試した上で、それでも失敗した場合ははっきり警告を表示するように変更（どのファイルが結合できなかったか分かる）</li>
+            <li>結合できなかったPDFは誤って削除されないよう、一覧に残すように変更（実際に結合できた分だけを削除）</li>
+          </ul>
+        </div>
+        <div class="version-item">
+          <div class="version-item-header">
+            <span class="ver-num">v4.16</span>
+            <span class="ver-date">2026/11/19</span>
+            <span class="ver-tag fix">Fix</span>
+          </div>
+          <ul class="ver-changes">
+            <li>バグ修正：絞り込み（乗船/下船など）した状態で「全て選択」すると、表示されていない全件まで選択されてしまい結合時にエラーになる問題を修正。絞り込み中は表示されている分だけが選択されるように変更</li>
+            <li>結合したPDFが大きすぎて保存できない場合に、原因不明のエラーではなく「PDFのサイズが大きすぎるため保存できません」とわかりやすく表示するように改善（この場合、ダウンロードは行われますが一覧への自動保存と結合元の削除は行われません）</li>
+          </ul>
+        </div>
+        <div class="version-item">
+          <div class="version-item-header">
+            <span class="ver-num">v4.15</span>
+            <span class="ver-date">2026/11/19</span>
+            <span class="ver-tag new">New</span>
+          </div>
+          <ul class="ver-changes">
+            <li>「船名別 件数」の表示を改善 — 月ごとに船名＋「乗船 X件」「下船 Y件」の内訳で表示</li>
+            <li>「乗船」「下船」の文字をタップすると、該当PDFが1件ならそのままプレビュー表示、複数あれば一覧を絞り込んで表示</li>
+          </ul>
+        </div>
+        <div class="version-item">
+          <div class="version-item-header">
+            <span class="ver-num">v4.14</span>
+            <span class="ver-date">2026/11/19</span>
+            <span class="ver-tag new">New</span>
+          </div>
+          <ul class="ver-changes">
+            <li>署名済み一覧の✏️（鉛筆）ボタンで、ファイル名に加えて日付も編集できるように変更</li>
+            <li>日付を変更すると該当の月グループに自動で移動します</li>
+          </ul>
+        </div>
+        <div class="version-item">
+          <div class="version-item-header">
+            <span class="ver-num">v4.13</span>
+            <span class="ver-date">2026/11/19</span>
+            <span class="ver-tag fix">Fix</span>
+          </div>
+          <ul class="ver-changes">
+            <li>「1つに結合」で保存される結合PDFの保存日を、結合を実行した日（今日の日付）にするよう変更</li>
+          </ul>
+        </div>
+        <div class="version-item">
+          <div class="version-item-header">
+            <span class="ver-num">v4.12</span>
+            <span class="ver-date">2026/11/19</span>
+            <span class="ver-tag new">New</span>
+          </div>
+          <ul class="ver-changes">
+            <li>「1つに結合」した結果のPDFを自動で署名済み一覧に保存するように変更（再アップロード不要）</li>
+            <li>結合に使った元の複数PDFは結合後、署名済み一覧から自動的に削除され重複が残らないように</li>
+            <li>結合したPDFは一覧で「結合」種別として表示</li>
+          </ul>
+        </div>
+        <div class="version-item">
+          <div class="version-item-header">
+            <span class="ver-num">v4.11</span>
+            <span class="ver-date">2026/11/19</span>
+            <span class="ver-tag fix">Fix</span>
+          </div>
+          <ul class="ver-changes">
+            <li>高速化：「署名済み一覧」の読み込みが遅い問題を改善 — これまで一覧表示のたびに全件のPDF本体データまで読み込んでいたのを、ファイル名・日付・種別などの軽量情報だけを読む方式に変更</li>
+            <li>件数が多くなるほど効果が大きく、PDF本体は「プレビュー」「ダウンロード」「Voucherチェック」など実際に必要な時だけ読み込む</li>
+            <li>保存時の重複チェックも軽量化（PDF本体を読まずに判定）</li>
+            <li>初回表示時のみ一度だけ全件を読み込んでインデックスを作成（以降は高速）</li>
+          </ul>
+        </div>
+        <div class="version-item">
+          <div class="version-item-header">
+            <span class="ver-num">v4.10</span>
+            <span class="ver-date">2026/11/19</span>
+            <span class="ver-tag fix">Fix</span>
+          </div>
+          <ul class="ver-changes">
+            <li>バグ修正：保留中のPDFをサインしてダウンロードしても「保留中」が消えない問題を修正（ダウンロード完了時にも保留解除されるよう変更）</li>
+            <li>バグ修正：スマホ画面で署名済み一覧の表示が崩れる問題を修正（種別バッジの縦折り返し・ボタンの詰まりを解消）</li>
+            <li>480px以下の画面ではアクションボタン群がファイル名の下に折り返されるレイアウトに変更</li>
+          </ul>
+        </div>
+        <div class="version-item">
+          <div class="version-item-header">
+            <span class="ver-num">v4.9</span>
+            <span class="ver-date">2026/11/19</span>
+            <span class="ver-tag new">New</span>
+          </div>
+          <ul class="ver-changes">
+            <li>署名済み一覧の各アイテムに🧾ボタンを追加 — タップで「領収書添付モード」のSTEP1が自動入力される</li>
+            <li>PDFを選び直す必要がなくなり、そのままSTEP2（領収書）だけ選択すればOK</li>
+            <li>保存後、元の（領収書添付前の）PDFを削除するか確認するダイアログを表示</li>
+          </ul>
+        </div>
+        <div class="version-item">
+          <div class="version-item-header">
+            <span class="ver-num">v4.8</span>
+            <span class="ver-date">2026/11/19</span>
+            <span class="ver-tag new">New</span>
+          </div>
+          <ul class="ver-changes">
+            <li>「署名済み一覧」に📋 Voucherチェック機能を追加</li>
+            <li>確認用PDF（受け取った原本）を複数アップロードし、PDF内のテキスト（伝票番号・船名・区分・金額）を自動抽出</li>
+            <li>サインアプリ保存済みPDFと伝票番号で突き合わせ、「未登録（不足）」「余分」を自動検出</li>
+            <li>伝票番号が一致しても内容（船名・区分・金額・日付）が違う場合は「内容相違」として警告表示</li>
+            <li>各結果アイテムをタップするとPDFプレビューで中身を確認できる</li>
+          </ul>
+        </div>
+        <div class="version-item">
+          <div class="version-item-header">
+            <span class="ver-num">v4.7</span>
+            <span class="ver-date">2026/11/19</span>
+            <span class="ver-tag fix">Fix</span>
+          </div>
+          <ul class="ver-changes">
+            <li>バグ修正：モード選択画面の「保留中のサイン」バナーをタップすると空白画面になる問題を修正</li>
+            <li>バナーのタップ先を正しく「サイン収集」画面（保留リストが表示される場所）に変更</li>
+          </ul>
+        </div>
+        <div class="version-item">
+          <div class="version-item-header">
+            <span class="ver-num">v4.6</span>
+            <span class="ver-date">2026/11/19</span>
+            <span class="ver-tag fix">Fix</span>
+          </div>
+          <ul class="ver-changes">
+            <li>バグ修正：バウチャーを事前登録しても「保留中のサイン」欄が表示されない問題を修正</li>
+            <li>原因：Firestoreのwhere+orderBy複合クエリが未設定の複合インデックスを要求しエラーになっていた</li>
+            <li>orderByを外しJS側でソートする方式に変更</li>
+          </ul>
+        </div>
+        <div class="version-item">
+          <div class="version-item-header">
+            <span class="ver-num">v4.5</span>
+            <span class="ver-date">2026/11/19</span>
+            <span class="ver-tag fix">Fix</span>
+          </div>
+          <ul class="ver-changes">
+            <li>バグ修正：事前登録（保留中）したPDFが署名済み一覧に誤って表示される問題を修正</li>
+            <li>署名済み一覧は type:'pending' のレコードを除外するよう修正</li>
+          </ul>
+        </div>
+        <div class="version-item">
+          <div class="version-item-header">
+            <span class="ver-num">v4.4</span>
+            <span class="ver-date">2026/11/18</span>
+            <span class="ver-tag new">New</span>
+          </div>
+          <ul class="ver-changes">
+            <li>保留中PDFをサイン収集画面内に直接表示（別画面遷移なし）</li>
+            <li>「サイン収集」をタップするとその場で未サインPDFが一覧表示される</li>
+            <li>「📥 バウチャーをあらかじめ登録」ボタンもサイン収集画面内に統合</li>
+            <li>バウチャー事前登録機能：サイン前にPDFをFirebaseに保存しておける</li>
+            <li>モード選択画面に「⏳ 保留中のサイン X件」バナー追加</li>
+            <li>サイン完了・保存後に保留レコードを自動削除</li>
+          </ul>
+        </div>
+        <div class="version-item">
+          <div class="version-item-header">
+            <span class="ver-num">v4.2</span>
+            <span class="ver-date">2026/11/18</span>
+            <span class="ver-tag new">New</span>
+          </div>
+          <ul class="ver-changes">
+            <li>重複保存検知機能を追加：同じPDFを2回保存しようとすると警告ダイアログを表示</li>
+            <li>署名済み一覧で重複アイテムに「⚠️ 重複」バッジを表示（黄色背景でハイライト）</li>
+          </ul>
+        </div>
+        <div class="version-item">
+          <div class="version-item-header">
+            <span class="ver-num">v4.1</span>
+            <span class="ver-date">2026/11/18</span>
+            <span class="ver-tag new">New</span>
+          </div>
+          <ul class="ver-changes">
+            <li>複数PDFを一度に選択して連続サイン対応（PDF 1枚ずつ順番にサイン）</li>
+            <li>PDFナビゲーターバー追加（現在のPDF番号・進捗ドット表示）</li>
+            <li>「次のPDFへ」ボタンで自動保存してから次のPDFへ移動</li>
+            <li>全PDF完了後に署名済み一覧へ自動移動</li>
+            <li>PDF名変更機能の修正（正しいコレクション名 vouchers を使用）</li>
+          </ul>
+        </div>
         <div class="version-item">
           <div class="version-item-header">
             <span class="ver-num">v4.0</span>
@@ -623,6 +1107,12 @@ html,body{height:100%;background:var(--bg);font-family:-apple-system,BlinkMacSys
   </div>
 
   <div class="app-screen" id="appScreen">
+    <!-- 複数PDFナビゲーター（複数選択時のみ表示） -->
+    <div id="multiPdfNav" style="display:none;background:#1a3252;color:#fff;border-radius:12px;padding:10px 14px;display:none;align-items:center;justify-content:space-between;gap:8px;">
+      <div style="font-size:12px;color:#94a3b8;font-weight:700;">📄 PDF</div>
+      <div id="multiPdfIndicator" style="display:flex;gap:6px;align-items:center;"></div>
+      <div id="multiPdfProgress" style="font-size:13px;font-weight:800;color:#fff;"></div>
+    </div>
     <div class="info-strip" id="infoStrip"></div>
     <div class="sec-label">クルー一覧 — タップしてサイン</div>
     <div id="crewList"></div>
@@ -655,14 +1145,20 @@ html,body{height:100%;background:var(--bg);font-family:-apple-system,BlinkMacSys
     </div>
 
     <button class="save-to-archive-btn" id="saveToArchiveBtn" onclick="saveCurrentToArchive()">📂 署名済み一覧に保存</button>
+    <!-- 複数PDFモード：次へボタン（複数選択時のみ表示） -->
+    <button id="nextPdfBtn" style="display:none;padding:14px;border-radius:12px;border:none;background:#2563eb;color:#fff;font-size:15px;font-weight:800;cursor:pointer;width:100%;" onclick="goNextPdf()">次のPDF へ →</button>
+    <button id="allDonePdfBtn" style="display:none;padding:14px;border-radius:12px;border:none;background:#16a34a;color:#fff;font-size:15px;font-weight:800;cursor:pointer;width:100%;" onclick="finishAllPdfs()">✅ 全PDF完了 — 署名済み一覧へ</button>
     <button class="reset-btn" onclick="resetApp()">&#8635; 別のPDFを読み込む</button>
   </div>
 
   <!-- 署名済み一覧スクリーン -->
   <div class="archive-screen" id="archiveScreen">
-    <div style="display:flex;align-items:center;justify-content:space-between;">
-      <div class="sec-label">📂 署名済み一覧</div>
-      <button class="archive-add-btn" onclick="document.getElementById('archiveUploadInput').click()">＋ PDFを追加</button>
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:6px;">
+      <div class="sec-label" id="archiveSecLabel">📂 署名済み一覧</div>
+      <div style="display:flex;gap:6px;" id="archiveHeaderBtns">
+        <button class="archive-add-btn" style="border-color:#16a34a;background:#f0fdf4;color:#16a34a;" onclick="showVoucherCheck()">📋 Voucherチェック</button>
+        <button class="archive-add-btn" onclick="document.getElementById('archiveUploadInput').click()">＋ PDFを追加</button>
+      </div>
       <input type="file" id="archiveUploadInput" accept="application/pdf" style="display:none" onchange="handleArchiveUpload(event)">
     </div>
     <!-- 一括操作バー（選択時のみ表示） -->
@@ -690,6 +1186,81 @@ html,body{height:100%;background:var(--bg);font-family:-apple-system,BlinkMacSys
     </div>
     <div id="archiveList"></div>
     <button class="ra-back" onclick="backToModeSelect()">← モード選択に戻る</button>
+  </div>
+
+  <!-- Voucherチェック画面（整合性確認） -->
+  <div class="archive-screen" id="voucherCheckScreen" style="display:none;">
+    <div class="sec-label">📋 Voucherチェック（整合性確認）</div>
+    <div style="background:#fff;border:1px solid #d1dce8;border-radius:10px;padding:12px 14px;font-size:12px;color:#64748b;line-height:1.7;">
+      確認したいVoucher PDF（受け取った原本）を複数選択してください。<br>
+      <strong style="color:#1e293b;">サインアプリに保存済みのPDF</strong>と内容（伝票番号・船名・区分など）を突き合わせて、
+      <strong style="color:#d97706;">不足</strong>や<strong style="color:#d97706;">余分</strong>がないか確認します。
+    </div>
+    <label id="vcheckUploadLabel" style="display:flex;align-items:center;justify-content:center;gap:10px;padding:20px 16px;border:2px dashed #16a34a;border-radius:14px;cursor:pointer;background:#f0fdf4;">
+      <div style="font-size:28px;">📥</div>
+      <div>
+        <div style="font-size:14px;font-weight:800;color:#15803d;">確認用PDFを選択（複数可）</div>
+        <div style="font-size:11px;color:#64748b;margin-top:2px;">タップしてVoucher PDFをまとめて選択</div>
+      </div>
+      <input type="file" id="vcheckFileInput" accept="application/pdf" multiple style="display:none;">
+    </label>
+
+    <div id="vcheckProgress" style="display:none;text-align:center;padding:20px;color:#64748b;font-size:13px;">
+      <div class="spinner" style="margin:0 auto 10px;"></div>
+      <div id="vcheckProgressText">PDFを解析中...</div>
+    </div>
+
+    <div id="vcheckResults" style="display:none;flex-direction:column;gap:12px;">
+      <!-- サマリー -->
+      <div style="display:flex;gap:8px;">
+        <div style="flex:1;background:#f0fdf4;border:1.5px solid #16a34a;border-radius:10px;padding:10px;text-align:center;">
+          <div style="font-size:20px;font-weight:900;color:#16a34a;" id="vcheckMatchCount">0</div>
+          <div style="font-size:11px;color:#15803d;font-weight:700;">一致</div>
+        </div>
+        <div style="flex:1;background:#fef3c7;border:1.5px solid #f59e0b;border-radius:10px;padding:10px;text-align:center;">
+          <div style="font-size:20px;font-weight:900;color:#d97706;" id="vcheckMissingCount">0</div>
+          <div style="font-size:11px;color:#b45309;font-weight:700;">未登録（不足）</div>
+        </div>
+        <div style="flex:1;background:#fee2e2;border:1.5px solid #ef4444;border-radius:10px;padding:10px;text-align:center;">
+          <div style="font-size:20px;font-weight:900;color:#dc2626;" id="vcheckExtraCount">0</div>
+          <div style="font-size:11px;color:#b91c1c;font-weight:700;">余分</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <div style="flex:1;background:#fff7ed;border:1.5px solid #fb923c;border-radius:10px;padding:10px;text-align:center;">
+          <div style="font-size:20px;font-weight:900;color:#ea580c;" id="vcheckMismatchCount">0</div>
+          <div style="font-size:11px;color:#c2410c;font-weight:700;">内容相違あり</div>
+        </div>
+      </div>
+
+      <!-- 未登録（アップロードしたがアプリに無い） -->
+      <div id="vcheckMissingSection" style="display:none;">
+        <div class="sec-label" style="color:#d97706;">⚠️ 未登録（サインアプリに見当たりません）</div>
+        <div id="vcheckMissingList" style="display:flex;flex-direction:column;gap:6px;"></div>
+      </div>
+
+      <!-- 余分（アプリにあるがアップロードしていない） -->
+      <div id="vcheckExtraSection" style="display:none;">
+        <div class="sec-label" style="color:#dc2626;">⚠️ 余分（アップロードリストに見当たりません）</div>
+        <div id="vcheckExtraList" style="display:flex;flex-direction:column;gap:6px;"></div>
+      </div>
+
+      <!-- 内容相違 -->
+      <div id="vcheckMismatchSection" style="display:none;">
+        <div class="sec-label" style="color:#ea580c;">⚠️ 内容相違（伝票は一致、内容に差異あり）</div>
+        <div id="vcheckMismatchList" style="display:flex;flex-direction:column;gap:6px;"></div>
+      </div>
+
+      <!-- 一致（折りたたみ） -->
+      <div>
+        <div class="sec-label" style="cursor:pointer;color:#16a34a;" onclick="toggleVcheckMatched()">✅ 一致したVoucher（タップで表示） <span id="vcheckMatchedArrow">▼</span></div>
+        <div id="vcheckMatchedList" style="display:none;flex-direction:column;gap:6px;"></div>
+      </div>
+
+      <button style="padding:10px;border-radius:10px;border:1.5px solid #d1dce8;background:#fff;color:#64748b;font-size:13px;font-weight:700;cursor:pointer;" onclick="resetVoucherCheck()">🔄 別のPDFで再チェック</button>
+    </div>
+
+    <button class="ra-back" onclick="backToArchiveFromCheck()">← 署名済み一覧に戻る</button>
   </div>
 </div>
 
@@ -744,19 +1315,104 @@ let strokePoints=[];   // 一筆分の点 [{x,y}]
 let allStrokes=[];     // 完了したストローク全て（再描画用）
 let pdfPageW=0, pdfPageH=0; // PDF実際のポイントサイズ
 
+/* ── 複数PDFキュー管理 ── */
+let _pdfQueue = [];        // 選択された複数PDFのFile配列
+let _pdfQueueIndex = 0;    // 現在処理中のインデックス
+let _pdfQueueSaved = [];   // 各PDFの保存状態 {saved: bool}
+
 /* ── UPLOAD ── */
 // fileInputはlabel内にあるため、document委任で確実に拾う
 document.addEventListener('change', e=>{
-  if(e.target.id==='fileInput' && e.target.files[0]) loadPDF(e.target.files[0]);
+  if(e.target.id==='fileInput' && e.target.files.length > 0){
+    const files = Array.from(e.target.files).filter(f=>f.type==='application/pdf');
+    if(files.length === 0) return;
+    if(files.length === 1){
+      _pdfQueue = []; _pdfQueueIndex = 0; _pdfQueueSaved = [];
+      loadPDF(files[0]);
+    } else {
+      startPdfQueue(files);
+    }
+  }
 });
 const uploadBox=document.getElementById('uploadBox');
 uploadBox.addEventListener('dragover', e=>{ e.preventDefault(); uploadBox.classList.add('drag'); });
 uploadBox.addEventListener('dragleave', ()=>uploadBox.classList.remove('drag'));
 uploadBox.addEventListener('drop', e=>{
   e.preventDefault(); uploadBox.classList.remove('drag');
-  const f=e.dataTransfer.files[0];
-  if(f && f.type==='application/pdf') loadPDF(f);
+  const files = Array.from(e.dataTransfer.files).filter(f=>f.type==='application/pdf');
+  if(files.length === 0) return;
+  if(files.length === 1){
+    _pdfQueue = []; _pdfQueueIndex = 0; _pdfQueueSaved = [];
+    loadPDF(files[0]);
+  } else {
+    startPdfQueue(files);
+  }
 });
+
+/* ── 複数PDFキュー処理 ── */
+function startPdfQueue(files){
+  _pdfQueue = files;
+  _pdfQueueIndex = 0;
+  _pdfQueueSaved = files.map(()=>({saved:false}));
+  loadPDF(files[0]);
+}
+
+function updateMultiPdfNav(){
+  const nav = document.getElementById('multiPdfNav');
+  const indicator = document.getElementById('multiPdfIndicator');
+  const progress = document.getElementById('multiPdfProgress');
+  if(_pdfQueue.length <= 1){
+    nav.style.display = 'none';
+    document.getElementById('nextPdfBtn').style.display = 'none';
+    document.getElementById('allDonePdfBtn').style.display = 'none';
+    return;
+  }
+  nav.style.display = 'flex';
+  // ドット表示
+  indicator.innerHTML = _pdfQueue.map((f,i)=>{
+    const isCurrent = i === _pdfQueueIndex;
+    const isSaved = _pdfQueueSaved[i] && _pdfQueueSaved[i].saved;
+    const color = isSaved ? '#16a34a' : (isCurrent ? '#2563eb' : '#94a3b8');
+    const size = isCurrent ? '12px' : '8px';
+    return `<div title="${f.name}" style="width:${size};height:${size};border-radius:50%;background:${color};transition:all .2s;"></div>`;
+  }).join('');
+  progress.textContent = `${_pdfQueueIndex+1} / ${_pdfQueue.length}`;
+
+  // 次へ / 全完了ボタン
+  const isLast = _pdfQueueIndex >= _pdfQueue.length - 1;
+  document.getElementById('nextPdfBtn').style.display = isLast ? 'none' : 'block';
+  document.getElementById('allDonePdfBtn').style.display = isLast ? 'block' : 'none';
+  // 次のPDF名をボタンに表示
+  if(!isLast){
+    const nextFile = _pdfQueue[_pdfQueueIndex+1];
+    document.getElementById('nextPdfBtn').textContent = `次のPDFへ → (${nextFile.name})`;
+  }
+}
+
+async function goNextPdf(){
+  // 現在のPDFを自動保存
+  await _autoSaveCurrentInQueue();
+  _pdfQueueIndex++;
+  if(_pdfQueueIndex < _pdfQueue.length){
+    loadPDF(_pdfQueue[_pdfQueueIndex]);
+  }
+}
+
+async function finishAllPdfs(){
+  // 現在のPDFを自動保存してアーカイブへ
+  await _autoSaveCurrentInQueue();
+  _pdfQueue = []; _pdfQueueIndex = 0; _pdfQueueSaved = [];
+  showArchive();
+}
+
+async function _autoSaveCurrentInQueue(){
+  const btn = document.getElementById('saveToArchiveBtn');
+  // まだ保存されていなければ保存
+  if(btn && btn.textContent.indexOf('✓') === -1){
+    await saveCurrentToArchive();
+  }
+  if(_pdfQueueSaved[_pdfQueueIndex]) _pdfQueueSaved[_pdfQueueIndex].saved = true;
+}
 
 async function loadPDF(file){
   showScreen('processing');
@@ -1075,8 +1731,12 @@ async function loadPDF(file){
     // ファイル名入力欄にセット
     document.getElementById('filenameInput').value = defaultFilename;
     document.getElementById('filenameEditor').classList.remove('visible');
+    // 保存ボタンをリセット（次のPDFに進む際）
+    const archBtn=document.getElementById('saveToArchiveBtn');
+    if(archBtn){archBtn.textContent='📂 署名済み一覧に保存';archBtn.style.cssText='';}
     renderList();
     showScreen('app');
+    updateMultiPdfNav();
 
   }catch(err){
     alert('PDFの読み込みに失敗しました。\n\n'+err.message);
@@ -1108,23 +1768,79 @@ function resetApp(){
   if(!confirm('別のPDFを読み込みますか？\n現在のサインはすべてリセットされます。'))return;
   pdfBytes=null; pageImg=null; crewData=[]; sigs={}; receiptData=null;
   _lastSignedPdfBytes=null; _lastSignedFilename=null;
+  _pdfQueue=[]; _pdfQueueIndex=0; _pdfQueueSaved=[];
+  _currentPendingId = null;
   document.getElementById('receiptBox').innerHTML=`<div class='receipt-icon'>🧾</div><div class='receipt-label'>領収書を追加</div><div class='receipt-sub'>JPG / PNG / PDF 対応</div><label style='display:inline-block;margin-top:10px;padding:10px 24px;background:#f59e0b;color:#fff;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;position:relative;overflow:hidden;'>📂 ファイルを選択<input type='file' id='receiptInput' accept='image/*,application/pdf' style='position:absolute;top:0;left:0;width:100%;height:100%;opacity:0;cursor:pointer;font-size:0;'></label>`;
   document.getElementById('fileInput').value='';
   const archBtn=document.getElementById('saveToArchiveBtn');
   if(archBtn){archBtn.textContent='📂 署名済み一覧に保存';archBtn.style.cssText='';}
+  document.getElementById('nextPdfBtn').style.display='none';
+  document.getElementById('allDonePdfBtn').style.display='none';
+  document.getElementById('multiPdfNav').style.display='none';
   showScreen('upload');
   backToModeSelect();
 }
 
 /* ── モード切替 ── */
-function showSignUpload(){
+async function showSignUpload(){
   document.getElementById('modeSelect').style.display='none';
   document.getElementById('signUploadArea').style.display='flex';
+  document.getElementById('headerSub').textContent='サイン収集';
+  // 保留中PDFを読み込んでリストに表示
+  await refreshPendingInSignArea();
 }
 function showReceiptAttach(){
   document.getElementById('uploadScreen').style.display='none';
   document.getElementById('receiptAttachScreen').style.display='flex';
   document.getElementById('headerSub').textContent='領収書添付モード';
+}
+
+/* ── 署名済み一覧から直接「領収書添付」を開始 ── */
+let _raSourceArchiveId = null; // 元になった署名済み一覧のID（保存後の削除確認に使用）
+
+async function attachReceiptFromArchive(id){
+  try{
+    const r = await getArchiveById(id);
+    if(!r){ alert('PDFが見つかりません'); return; }
+    const bytes = r.pdfBase64 ? base64ToUint8(r.pdfBase64) : (r.pdfBytes || new Uint8Array());
+
+    // 領収書添付モードの状態をリセット
+    raVoucherBytes = await cleanPdfBytes(bytes);
+    raReceiptDataURL = null; raReceiptBytes = null; raReceiptMime = null;
+    _lastReceiptPdfBytes = null; _lastReceiptFilename = null;
+    _raSourceArchiveId = id;
+
+    // 画面を領収書添付モードへ切り替え
+    document.getElementById('modeSelect').style.display='none';
+    document.getElementById('archiveScreen').style.display='none';
+    document.getElementById('uploadScreen').style.display='none';
+    document.getElementById('receiptAttachScreen').style.display='flex';
+    document.getElementById('headerSub').textContent='領収書添付モード';
+
+    // STEP1（Voucher PDF）を選択済み状態にする
+    const box = document.getElementById('raVoucherBox');
+    box.classList.add('has-file');
+    const nm = document.getElementById('raVoucherName');
+    nm.textContent = '✓ ' + r.filename;
+    nm.style.display = 'block';
+
+    // STEP2（領収書）の表示をリセット
+    document.getElementById('raReceiptBox').classList.remove('has-file');
+    document.getElementById('raReceiptIcon').textContent = '🧾';
+    const prev = document.getElementById('raReceiptPreview');
+    prev.style.display = 'none'; prev.src='';
+    const rnm = document.getElementById('raReceiptName');
+    rnm.style.display = 'none'; rnm.textContent='';
+    document.getElementById('raReceiptInput').value = '';
+
+    // 保存ボタンもリセット
+    const raArchBtn = document.getElementById('raArchiveBtn');
+    if(raArchBtn){ raArchBtn.disabled = true; raArchBtn.textContent = '📂 署名済み一覧に保存'; raArchBtn.style.cssText=''; }
+
+    updateRaBtn();
+  }catch(e){
+    alert('読み込みに失敗しました: ' + e.message);
+  }
 }
 /* ── Receipt Attach Mode ── */
 let raVoucherBytes=null, raReceiptDataURL=null, raReceiptBytes=null, raReceiptMime=null;
@@ -1867,6 +2583,8 @@ function _dlFinish(out, dlName){
   _lastSignedFilename = dlName;
   const archBtn = document.getElementById('saveToArchiveBtn');
   if(archBtn){ archBtn.disabled=false; archBtn.textContent='📂 署名済み一覧に保存'; archBtn.style.cssText=''; }
+  // サインが完了しダウンロードされた時点で「保留中」は解消したとみなし保留レコードを削除
+  _finishPending();
   const txt=document.getElementById('dlBtnText');
   const btn=document.getElementById('dlBtn');
   txt.textContent='ダウンロード完了 ✓';
@@ -2190,12 +2908,214 @@ function base64ToUint8(b64){
   return u8;
 }
 
+/* ── PDF簡易チェックサム（先頭+末尾+サイズで重複検知） ── */
+function _pdfChecksum(bytes){
+  const u8 = bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes);
+  const size = u8.length;
+  // 先頭64バイト + 末尾64バイト + サイズを連結してハッシュ代わりに使用
+  let head = '', tail = '';
+  for(let i=0;i<Math.min(64,size);i++) head += u8[i].toString(16).padStart(2,'0');
+  for(let i=Math.max(0,size-64);i<size;i++) tail += u8[i].toString(16).padStart(2,'0');
+  return `${size}:${head}:${tail}`;
+}
+
+/* ══════════════════════════════════════════
+   軽量インデックス（署名済み一覧の高速読込用）
+   サインアプリのPDFはFirestoreに base64 でそのまま保存しているため、
+   件数が増えると一覧表示のたびに全PDFデータを読み込んでしまい重くなる。
+   そこで filename/type/savedAt など「一覧表示に必要な軽量情報だけ」を
+   1つの小さなドキュメントにまとめてキャッシュし、一覧表示はそこから読む。
+   PDF本体（pdfBase64）が必要な操作（プレビュー・ダウンロード・Voucherチェック等）は
+   従来通り個別に取得する。
+══════════════════════════════════════════ */
+const VOUCHER_INDEX_COL = 'app_meta';
+const VOUCHER_INDEX_DOC = 'vouchers_index';
+
+function _voucherIndexMeta(data){
+  return {
+    filename: data.filename || '',
+    type: data.type || 'sign',
+    savedAt: data.savedAt || new Date().toISOString(),
+    dateOnly: !!data.dateOnly,
+    checksum: data.checksum || null,
+    confirmed: !!data.confirmed,
+    chunks: data.pdfChunkCount || 0,   // 大きなPDFを分割保存している場合の分割数
+    isVM: (data.isVM === undefined || data.isVM === null) ? null : !!data.isVM  // PDF内に「VM」の記載があるか（null=未判定）
+  };
+}
+
+/* ── 大きなPDF（約1MB超）の分割保存 ──
+   Firestoreは1ドキュメント約1MBまでのため、超える場合は本体を
+   vouchers_chunks コレクションに分割して保存し、親レコードには分割数だけ持たせる */
+const CHUNK_CHARS = 800000;
+const INLINE_LIMIT = 900000;
+
+async function _writeChunks(db, parentId, b64){
+  const n = Math.ceil(b64.length / CHUNK_CHARS);
+  for(let i=0;i<n;i++){
+    await db.collection('vouchers_chunks').doc(`${parentId}_${i}`).set({
+      parentId, idx: i, data: b64.substr(i*CHUNK_CHARS, CHUNK_CHARS)
+    });
+  }
+  return n;
+}
+
+async function _deleteChunks(db, parentId, count){
+  for(let i=0;i<count;i++){
+    try{ await db.collection('vouchers_chunks').doc(`${parentId}_${i}`).delete(); }catch(e){ console.warn('chunk delete', e); }
+  }
+}
+
+// 分割保存されているレコードのPDF本体を結合して pdfBase64 に戻す
+async function _hydrateRecord(db, rec){
+  if(rec && !rec.pdfBase64 && rec.pdfChunkCount > 0){
+    const parts = [];
+    for(let i=0;i<rec.pdfChunkCount;i++){
+      const d = await db.collection('vouchers_chunks').doc(`${rec.id}_${i}`).get();
+      if(!d.exists) throw new Error('PDFの分割データが見つかりません');
+      parts.push(d.data().data);
+    }
+    rec.pdfBase64 = parts.join('');
+  }
+  return rec;
+}
+
+async function _getVoucherIndexRef(){
+  const db = await getFirestore();
+  return db.collection(VOUCHER_INDEX_COL).doc(VOUCHER_INDEX_DOC);
+}
+
+// インデックスを取得。存在しない場合は一度だけ全件スキャンして構築する
+async function _getVoucherIndex(){
+  try{
+    const ref = await _getVoucherIndexRef();
+    const snap = await ref.get();
+    if(snap.exists && snap.data() && snap.data().items){
+      return snap.data().items;
+    }
+    // ── 初回のみ：全件スキャンしてインデックスを構築（以降は高速化される） ──
+    const db = await getFirestore();
+    const all = await db.collection('vouchers').orderBy('savedAt','desc').get();
+    const items = {};
+    all.docs.forEach(d=>{
+      const data = d.data();
+      if(data.type === 'pending') return; // 保留中は一覧に含めない
+      items[d.id] = _voucherIndexMeta(data);
+    });
+    try{ await ref.set({ items, rebuiltAt: new Date().toISOString() }); }
+    catch(saveErr){ console.warn('インデックス構築の保存に失敗（無視）:', saveErr); }
+    return items;
+  }catch(e){
+    console.error('_getVoucherIndex error:', e);
+    return {};
+  }
+}
+
+// インデックスに1件を追加・更新
+async function _updateVoucherIndexEntry(id, meta){
+  try{
+    const ref = await _getVoucherIndexRef();
+    try{
+      await ref.update({ [`items.${id}`]: meta });
+    }catch(updateErr){
+      // ドキュメントがまだ存在しない場合は新規作成
+      await ref.set({ items: { [id]: meta } }, { merge: true });
+    }
+  }catch(e){ console.warn('インデックス更新に失敗（無視）:', e); }
+}
+
+// インデックスから複数件を削除
+async function _removeVoucherIndexEntries(ids){
+  if(!ids || ids.length === 0) return;
+  const ref = await _getVoucherIndexRef();
+  try{
+    const updates = {};
+    for(const id of ids){
+      updates[`items.${id}`] = firebase.firestore.FieldValue.delete();
+    }
+    await ref.update(updates);
+  }catch(e){
+    // 予備手段：インデックス全体を読み込み、該当項目を除いて書き直す
+    console.warn('インデックス削除に失敗。書き直しで再試行:', e);
+    const snap = await ref.get();
+    const items = (snap.exists && snap.data().items) ? { ...snap.data().items } : {};
+    ids.forEach(id => { delete items[id]; });
+    await ref.set({ items, updatedAt: new Date().toISOString() });
+  }
+}
+
+// インデックスの1項目だけ書き換え（ファイル名変更・確認状態トグルなど）
+async function _patchVoucherIndexField(id, field, value){
+  try{
+    const ref = await _getVoucherIndexRef();
+    await ref.update({ [`items.${id}.${field}`]: value });
+  }catch(e){ console.warn('インデックス部分更新に失敗（無視）:', e); }
+}
+
+// インデックスの複数項目をまとめて書き換え
+async function _patchVoucherIndexFields(id, fieldsObj){
+  try{
+    const ref = await _getVoucherIndexRef();
+    const updates = {};
+    for(const key of Object.keys(fieldsObj)){
+      updates[`items.${id}.${key}`] = fieldsObj[key];
+    }
+    await ref.update(updates);
+  }catch(e){ console.warn('インデックス部分更新に失敗（無視）:', e); }
+}
+
+// PDF本文に「VM」の記載があるか判定（全ページのテキストを調べる）
+async function _detectVM(bytes){
+  try{
+    const u8 = bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes);
+    const doc = await pdfjsLib.getDocument({data:u8.slice(), stopAtErrors:false}).promise;
+    const n = Math.min(doc.numPages, 20);
+    for(let i=1;i<=n;i++){
+      const page = await doc.getPage(i);
+      const content = await page.getTextContent();
+      const text = content.items.map(it=>it.str).join(' ');
+      if(/\bVM\b/.test(text)) return true;
+    }
+    return false;
+  }catch(e){
+    console.warn('VM判定失敗:', e);
+    return null;
+  }
+}
+
+// 一覧用の区分：PDFにVM記載があれば 'vm'、なければファイル名から 乗船/下船/他
+function _recCat(r){
+  return r.isVM ? 'vm' : extractCategory(r.filename);
+}
+
 async function saveToArchive(pdfBytes, filename, type, customDate){
   // type: 'sign' | 'receipt' | 'upload'
   // customDate: 'YYYY-MM-DD' string (optional, for upload type)
   try{
     const db = await getFirestore();
     const bytes = pdfBytes instanceof Uint8Array ? pdfBytes : new Uint8Array(pdfBytes);
+
+    // ── 重複チェック（同じPDFが既に保存されていないか確認） ──
+    // ※ 軽量インデックスのみを見るため、PDF本体を読み込まず高速に判定できる
+    const checksum = _pdfChecksum(bytes);
+    try{
+      const idx = await _getVoucherIndex();
+      const dupEntry = Object.values(idx).find(it => it.checksum === checksum);
+      if(dupEntry){
+        const dupDate = dupEntry.savedAt ? new Date(dupEntry.savedAt).toLocaleDateString('ja-JP') : '不明';
+        const dupName = dupEntry.filename || '不明';
+        const proceed = confirm(
+          `⚠️ このPDFは既に保存されている可能性があります。\n\n` +
+          `既存ファイル名: ${dupName}\n保存日: ${dupDate}\n\n` +
+          `重複している可能性があります。続けて保存しますか？`
+        );
+        if(!proceed) return null; // キャンセル
+      }
+    }catch(dupErr){
+      // 重複チェック失敗は無視して保存続行
+      console.warn('duplicate check failed:', dupErr);
+    }
+
     let savedAt;
     if(customDate){
       // 日付のみ: YYYY-MM-DD → その日の正午ISOとして保存（タイムゾーン問題を避ける）
@@ -2203,28 +3123,59 @@ async function saveToArchive(pdfBytes, filename, type, customDate){
     } else {
       savedAt = new Date().toISOString();
     }
+    const pdfBase64 = uint8ToBase64(bytes);
+
     const record = {
       filename,
       type,
       savedAt,
-      dateOnly: !!customDate,  // 日付のみフラグ
-      pdfBase64: uint8ToBase64(bytes)
+      checksum,  // 重複検知用チェックサム
+      dateOnly: !!customDate  // 日付のみフラグ
     };
-    const ref = await db.collection('vouchers').add(record);
-    return ref.id;
+    const vmFlag = await _detectVM(bytes);
+    if(vmFlag !== null) record.isVM = vmFlag;
+    const docRef = db.collection('vouchers').doc();
+    if(pdfBase64.length + filename.length + 300 > INLINE_LIMIT){
+      // 大きいPDFは分割保存（先に分割データを書き、最後に親レコードを作る）
+      record.pdfChunkCount = await _writeChunks(db, docRef.id, pdfBase64);
+    } else {
+      record.pdfBase64 = pdfBase64;
+    }
+    await docRef.set(record);
+    // 軽量インデックスにも反映（一覧表示の高速化用）
+    await _updateVoucherIndexEntry(docRef.id, _voucherIndexMeta(record));
+    if(type==='sign' || type==='receipt'){ try{ await _finishPending(); }catch(e){} }
+    return docRef.id;
   }catch(e){
     console.error('saveToArchive error:', e);
     throw e;
   }
 }
 
+// 署名済み一覧の表示用（高速・軽量）：PDF本体は含まない
 async function getAllArchive(){
+  try{
+    const items = await _getVoucherIndex();
+    const list = Object.keys(items).map(id => ({ id, ...items[id] }));
+    list.sort((a,b)=> new Date(b.savedAt) - new Date(a.savedAt));
+    return list;
+  }catch(e){
+    console.error('getAllArchive error:', e);
+    return [];
+  }
+}
+
+// Voucherチェックなど「PDF本体の内容」が必要な処理専用：全件フル取得（重い）
+async function getAllArchiveFull(){
   try{
     const db = await getFirestore();
     const snap = await db.collection('vouchers').orderBy('savedAt','desc').get();
-    return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    // 「保留中（pending）」のレコードは署名済み一覧には表示しない
+    const recs = snap.docs.map(d => ({ id: d.id, ...d.data() })).filter(r => r.type !== 'pending');
+    for(const r of recs){ await _hydrateRecord(db, r); }
+    return recs;
   }catch(e){
-    console.error('getAllArchive error:', e);
+    console.error('getAllArchiveFull error:', e);
     return [];
   }
 }
@@ -2233,8 +3184,12 @@ async function getArchiveById(id){
   try{
     const db = await getFirestore();
     const doc = await db.collection('vouchers').doc(id).get();
-    if(!doc.exists) return null;
-    return { id: doc.id, ...doc.data() };
+    if(!doc.exists){
+      // 本体が既に無いのに一覧（インデックス）に残っている「幽霊」項目は掃除する
+      _removeVoucherIndexEntries([id]).catch(()=>{});
+      return null;
+    }
+    return await _hydrateRecord(db, { id: doc.id, ...doc.data() });
   }catch(e){
     console.error('getArchiveById error:', e);
     return null;
@@ -2244,11 +3199,20 @@ async function getArchiveById(id){
 async function deleteArchiveIds(ids){
   try{
     const db = await getFirestore();
+    // 分割保存されているPDFの分割データも一緒に削除するため、分割数をインデックスから取得
+    let idx = {};
+    try{ idx = await _getVoucherIndex(); }catch(e){}
     const batch = db.batch();
     for(const id of ids){
       batch.delete(db.collection('vouchers').doc(id));
     }
     await batch.commit();
+    for(const id of ids){
+      const n = idx[id] && idx[id].chunks;
+      if(n) await _deleteChunks(db, id, n);
+    }
+    // 軽量インデックスからも削除（失敗した場合は必ず呼び出し元に伝える）
+    await _removeVoucherIndexEntries(ids);
   }catch(e){
     console.error('deleteArchiveIds error:', e);
     throw e;
@@ -2258,14 +3222,24 @@ async function deleteArchiveIds(ids){
 /* ── アーカイブ画面 ── */
 let archiveSelectedIds = new Set();
 
-async function showArchive(){
+let _archiveView = 'archive'; // 'archive'=署名済み一覧 / 'merged'=結合ファイル（ホームから開く）
+
+async function showArchive(view){
+  _archiveView = (view === 'merged') ? 'merged' : 'archive';
+  const isMerged = _archiveView === 'merged';
   document.getElementById('modeSelect').style.display='none';
   document.getElementById('uploadScreen').style.display='flex';
   document.getElementById('archiveScreen').style.display='flex';
-  document.getElementById('headerSub').textContent='署名済み一覧';
+  document.getElementById('headerSub').textContent = isMerged ? '結合ファイル' : '署名済み一覧';
+  const lbl = document.getElementById('archiveSecLabel');
+  if(lbl) lbl.textContent = isMerged ? '📁 結合ファイル' : '📂 署名済み一覧';
+  const hb = document.getElementById('archiveHeaderBtns');
+  if(hb) hb.style.display = isMerged ? 'none' : 'flex';
+  _archiveShipFilter = null;
   archiveSelectedIds = new Set();
   await renderArchive();
 }
+function showMergedFiles(){ return showArchive('merged'); }
 
 function backToModeSelect(){
   // すべてのサブ画面を隠してモード選択に戻る
@@ -2273,13 +3247,259 @@ function backToModeSelect(){
   document.getElementById('uploadScreen').style.display='flex';
   document.getElementById('receiptAttachScreen').style.display='none';
   document.getElementById('archiveScreen').style.display='none';
+  document.getElementById('pendingListArea').style.display='none';
+  const vcs = document.getElementById('voucherCheckScreen');
+  if(vcs) vcs.style.display='none';
   document.getElementById('modeSelect').style.display='flex';
   document.getElementById('headerSub').textContent='PDFをアップロードして開始';
+  _archiveView = 'archive';
   archiveSelectedIds = new Set();
   updateArchiveBulkBar();
+  refreshPendingBanner();
+  _raSourceArchiveId = null;
 }
 
-let _archiveShipFilter = null; // nullなら全件表示
+/* ══════════════════════════════════════════
+   保留中サイン機能（Pending PDFs）
+══════════════════════════════════════════ */
+
+// 保留中PDFのFirestore操作
+async function savePendingPdf(file){
+  try{
+    const db = await getFirestore();
+    const ab = await file.arrayBuffer();
+    const bytes = new Uint8Array(ab);
+    const record = {
+      filename: file.name,
+      type: 'pending',
+      savedAt: new Date().toISOString(),
+      pdfBase64: uint8ToBase64(bytes)
+    };
+    const ref = await db.collection('vouchers').add(record);
+    return ref.id;
+  }catch(e){
+    console.error('savePendingPdf error:', e);
+    throw e;
+  }
+}
+
+async function getPendingPdfs(){
+  try{
+    const db = await getFirestore();
+    // where + orderBy の複合クエリはFirestoreの複合インデックスが必要でエラーになるため、
+    // whereのみ取得してJS側でソートする
+    const snap = await db.collection('vouchers')
+      .where('type','==','pending')
+      .get();
+    const list = snap.docs.map(d=>({id:d.id,...d.data()}));
+    list.sort((a,b)=> new Date(b.savedAt) - new Date(a.savedAt));
+    return list;
+  }catch(e){
+    console.error('getPendingPdfs error:', e);
+    return [];
+  }
+}
+
+async function deletePendingPdf(id){
+  try{
+    const db = await getFirestore();
+    await db.collection('vouchers').doc(id).delete();
+    return true;
+  }catch(e){
+    console.error('deletePendingPdf error:', e);
+    return false;
+  }
+}
+
+// 署名完了時：処理中の保留レコードを確実に削除し、バナー/リストを更新
+async function _finishPending(){
+  let pid = _currentPendingId;
+  try{ if(!pid) pid = localStorage.getItem('voucher_pending_id'); }catch(e){}
+  if(!pid) return;
+  let ok = await deletePendingPdf(pid);
+  if(!ok) ok = await deletePendingPdf(pid); // 1回だけ再試行
+  if(ok){
+    _currentPendingId = null;
+    try{ localStorage.removeItem('voucher_pending_id'); }catch(e){}
+  }
+  try{ await refreshPendingBanner(); }catch(e){}
+  try{ await refreshPendingInSignArea(); }catch(e){}
+}
+
+// 保留バナーを更新
+async function refreshPendingBanner(){
+  try{
+    let list = await getPendingPdfs();
+    // 取りこぼし対策：同名の署名済みPDFが保留登録より後に保存されていれば、完了済みとして保留を自動削除
+    if(list.length > 0 && !_currentPendingId){
+      try{
+        const arch = await getAllArchive();
+        const base = n => String(n||'').replace(/\.pdf$/i,'').trim().toLowerCase();
+        const stale = list.filter(p => arch.some(a => a.type!=='pending' && a.type!=='merged' &&
+          base(a.filename)===base(p.filename) && new Date(a.savedAt) > new Date(p.savedAt)));
+        for(const p of stale) await deletePendingPdf(p.id);
+        if(stale.length) list = list.filter(p => !stale.some(x=>x.id===p.id));
+      }catch(e){ console.warn('保留の自動整理エラー（無視）:', e); }
+    }
+    const banner = document.getElementById('pendingBanner');
+    const countEl = document.getElementById('pendingCount');
+    if(list.length > 0){
+      banner.style.display = 'block';
+      countEl.textContent = list.length;
+    } else {
+      banner.style.display = 'none';
+    }
+  }catch(e){ /* 無視 */ }
+}
+
+// サイン収集画面内の保留リストを更新
+async function refreshPendingInSignArea(){
+  const area = document.getElementById('pendingInSignArea');
+  const listEl = document.getElementById('pendingList');
+  if(!area || !listEl) return;
+  try{
+    const records = await getPendingPdfs();
+    if(records.length === 0){
+      area.style.display = 'none';
+      return;
+    }
+    area.style.display = 'flex';
+    listEl.innerHTML = records.map(r => {
+      const d = new Date(r.savedAt);
+      const dateStr = `${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+      return `
+        <div style="background:#fffbeb;border:1.5px solid #f59e0b;border-radius:10px;padding:10px 12px;display:flex;align-items:center;gap:8px;" id="pending_item_${r.id}">
+          <div style="font-size:18px;">⏳</div>
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:12px;font-weight:700;color:#1e293b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escHtml(r.filename)}</div>
+            <div style="font-size:10px;color:#92400e;margin-top:1px;">登録: ${dateStr}</div>
+          </div>
+          <button style="padding:7px 12px;border-radius:8px;border:none;background:#2563eb;color:#fff;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;" onclick="loadPendingPdf('${r.id}')">✍️ サイン</button>
+          <button style="padding:7px 9px;border-radius:8px;border:1.5px solid #fca5a5;background:#fff;color:#ef4444;font-size:12px;cursor:pointer;" onclick="removePendingItem('${r.id}')">🗑</button>
+        </div>`;
+    }).join('');
+  }catch(e){ area.style.display='none'; }
+}
+
+// 保留中リスト画面を表示
+async function showPendingList(){
+  document.getElementById('modeSelect').style.display='none';
+  document.getElementById('pendingListArea').style.display='flex';
+  document.getElementById('headerSub').textContent='保留中のサイン';
+  await renderPendingList();
+}
+
+async function renderPendingList(){
+  const listEl = document.getElementById('pendingList');
+  listEl.innerHTML = '<div style="text-align:center;padding:16px;color:#94a3b8;font-size:13px;">読み込み中...</div>';
+  const records = await getPendingPdfs();
+  if(records.length === 0){
+    listEl.innerHTML = `<div style="text-align:center;padding:24px;color:#94a3b8;font-size:13px;">
+      <div style="font-size:32px;margin-bottom:8px;">📭</div>
+      <div>保留中のPDFはありません</div>
+      <div style="font-size:11px;margin-top:4px;">下の「＋ 追加」でPDFを事前登録できます</div>
+    </div>`;
+    return;
+  }
+  listEl.innerHTML = records.map(r => {
+    const d = new Date(r.savedAt);
+    const dateStr = `${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+    return `
+      <div style="background:#fff;border:1.5px solid #f59e0b;border-radius:12px;padding:12px 14px;display:flex;align-items:center;gap:10px;" id="pending_item_${r.id}">
+        <div style="font-size:22px;">⏳</div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:13px;font-weight:700;color:#1e293b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escHtml(r.filename)}</div>
+          <div style="font-size:11px;color:#64748b;margin-top:2px;">登録日: ${dateStr}</div>
+        </div>
+        <button style="padding:8px 12px;border-radius:8px;border:none;background:#2563eb;color:#fff;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;" onclick="loadPendingPdf('${r.id}')">✍️ サイン</button>
+        <button style="padding:8px 10px;border-radius:8px;border:1.5px solid #fca5a5;background:#fff;color:#ef4444;font-size:12px;cursor:pointer;" onclick="removePendingItem('${r.id}')">🗑</button>
+      </div>`;
+  }).join('');
+}
+
+async function loadPendingPdf(id){
+  try{
+    const db = await getFirestore();
+    const doc = await db.collection('vouchers').doc(id).get();
+    if(!doc.exists){ alert('PDFが見つかりません'); return; }
+    const data = doc.data();
+    // base64 → Uint8Array → File
+    const bytes = b64ToU8(data.pdfBase64);
+    const blob = new Blob([bytes], {type:'application/pdf'});
+    const file = new File([blob], data.filename, {type:'application/pdf'});
+    // 保留IDを記憶しておく（サイン完了後に削除するため）
+    _currentPendingId = id;
+    try{ localStorage.setItem('voucher_pending_id', id); }catch(e){}
+    // 保留リスト画面を閉じてサイン収集画面へ
+    document.getElementById('pendingListArea').style.display='none';
+    document.getElementById('modeSelect').style.display='none';
+    _pdfQueue=[]; _pdfQueueIndex=0; _pdfQueueSaved=[];
+    loadPDF(file);
+  }catch(e){
+    alert('PDFの読み込みに失敗しました: ' + e.message);
+  }
+}
+
+async function removePendingItem(id){
+  if(!confirm('この保留中PDFを削除しますか？')) return;
+  await deletePendingPdf(id);
+  refreshPendingBanner();
+  // サイン収集画面内のリストを更新
+  await refreshPendingInSignArea();
+}
+
+// サイン収集完了後、保留PDFを削除
+let _currentPendingId = null;
+
+// 保留ファイル入力ハンドラ
+document.addEventListener('change', e=>{
+  if(e.target.id==='pendingFileInput' || e.target.id==='pendingAddInput'){
+    const files = Array.from(e.target.files).filter(f=>f.type==='application/pdf');
+    if(files.length===0) return;
+    _registerPendingFiles(files, e.target.id);
+  }
+});
+
+async function _registerPendingFiles(files, sourceId){
+  const label = document.getElementById('pendingUploadLabel');
+  if(label && sourceId==='pendingFileInput'){
+    label.style.opacity='0.6';
+  }
+  let saved = 0;
+  for(const f of files){
+    try{
+      await savePendingPdf(f);
+      saved++;
+    }catch(e){ console.error('pending save error:', e); }
+  }
+  if(label && sourceId==='pendingFileInput') label.style.opacity='1';
+  document.getElementById('pendingFileInput') && (document.getElementById('pendingFileInput').value='');
+  document.getElementById('pendingAddInput') && (document.getElementById('pendingAddInput').value='');
+
+  if(saved > 0){
+    await refreshPendingBanner();
+    // サイン収集画面が開いている場合はリストを更新
+    const signArea = document.getElementById('signUploadArea');
+    if(signArea && signArea.style.display==='flex'){
+      await refreshPendingInSignArea();
+    }
+    alert(`${saved}件のPDFを保留に登録しました`);
+  }
+}
+
+// アプリ起動時に保留バナーを更新
+document.addEventListener('DOMContentLoaded', ()=>{ refreshPendingBanner(); });
+
+let _archiveShipFilter = null; // null なら全件表示。それ以外は {ship, category} （categoryは 'embark'|'disembark'|'other'|null）
+
+// 現在のフィルター（船名別件数の絞り込み）を records に適用する共通処理
+// ※ 一覧表示だけでなく「全て選択」にも必ずこれを使い、表示されていない件まで選択しないようにする
+function _applyShipFilter(records){
+  return _archiveShipFilter
+    ? records.filter(r => extractShipName(r.filename) === _archiveShipFilter.ship
+        && (_archiveShipFilter.category == null || _recCat(r) === _archiveShipFilter.category))
+    : records;
+}
 
 function extractShipName(filename){
   // ファイル名から船名を抽出：「SHIP_NAME_Category_JPY...」形式
@@ -2292,18 +3512,303 @@ function extractShipName(filename){
   return filename.replace(/\.pdf$/i,'');
 }
 
+// ファイル名から「乗船（Embark）」「下船（Disembark）」を判定（どちらでもなければ 'other'）
+function extractCategory(filename){
+  const name = filename.replace(/\.pdf$/i,'');
+  if(/Disembark/i.test(name)) return 'disembark';
+  if(/Embark/i.test(name)) return 'embark';
+  return 'other';
+}
+
+/* ══════════════════════════════════════════
+   Voucherチェック（整合性確認）機能
+   PDF内のテキストから伝票番号・船名・区分等を抽出し、
+   アップロードした原本とサインアプリ保存済みPDFを突き合わせる
+══════════════════════════════════════════ */
+
+// PDF（1ページ目）の全文テキストを抽出
+async function _extractPdfFullText(bytes){
+  try{
+    const doc = await pdfjsLib.getDocument({data:bytes.slice(), stopAtErrors:false}).promise;
+    const page = await doc.getPage(1);
+    const content = await page.getTextContent();
+    return content.items.map(it=>it.str).join(' ').replace(/\s+/g,' ').trim();
+  }catch(e){
+    console.warn('PDFテキスト抽出失敗:', e);
+    return '';
+  }
+}
+
+// 全文テキストから Voucher情報を抽出
+function _parseVoucherInfo(text){
+  // 伝票番号: "2026-A0031" のようなパターン（年-英字+数字）
+  const noMatch = text.match(/\b(\d{4}-[A-Z]\d{3,6})\b/);
+  // 船名: "Name of Vessel: XXX" の直後
+  const shipMatch = text.match(/Name of Vessel:?\s*([A-Z0-9][A-Z0-9 .\-]*?)(?:\s+Port at:|\s+Port:|$)/i);
+  // 区分: "Category: XXX"
+  const catMatch = text.match(/Category:?\s*([A-Za-z]+)/i);
+  // 日付: "Date: 2026/Nov/17" 形式
+  const dateMatch = text.match(/Date:?\s*([0-9]{4}\/[A-Za-z]{3}\/[0-9]{1,2})/i);
+  // 合計金額: "Total JPY 1,000"
+  const totalMatch = text.match(/Total\s*JPY\s*([\d,]+)/i);
+  return {
+    voucherNo: noMatch ? noMatch[1].toUpperCase() : null,
+    ship: shipMatch ? shipMatch[1].trim() : null,
+    category: catMatch ? catMatch[1].trim() : null,
+    date: dateMatch ? dateMatch[1].trim() : null,
+    total: totalMatch ? totalMatch[1].replace(/,/g,'') : null,
+    rawText: text
+  };
+}
+
+async function extractVoucherInfo(bytes){
+  const text = await _extractPdfFullText(bytes);
+  const info = _parseVoucherInfo(text);
+  return info;
+}
+
+// 2つのVoucher情報を比較して内容相違があるか判定
+function _voucherInfoDiffers(a, b){
+  const diffs = [];
+  if(a.ship && b.ship && a.ship !== b.ship) diffs.push(`船名: ${a.ship} ≠ ${b.ship}`);
+  if(a.category && b.category && a.category.toLowerCase() !== b.category.toLowerCase()) diffs.push(`区分: ${a.category} ≠ ${b.category}`);
+  if(a.total && b.total && a.total !== b.total) diffs.push(`金額: ${a.total} ≠ ${b.total}`);
+  if(a.date && b.date && a.date !== b.date) diffs.push(`日付: ${a.date} ≠ ${b.date}`);
+  return diffs;
+}
+
+/* ── Voucherチェック画面の制御 ── */
+let _vcheckUploadedFiles = []; // {file, bytes, info}
+let _vcheckResult = null;
+
+function showVoucherCheck(){
+  document.getElementById('archiveScreen').style.display='none';
+  document.getElementById('voucherCheckScreen').style.display='flex';
+  document.getElementById('headerSub').textContent='Voucherチェック';
+  resetVoucherCheck();
+}
+
+function backToArchiveFromCheck(){
+  document.getElementById('voucherCheckScreen').style.display='none';
+  document.getElementById('archiveScreen').style.display='flex';
+  document.getElementById('headerSub').textContent='署名済み一覧';
+}
+
+function resetVoucherCheck(){
+  _vcheckUploadedFiles = [];
+  _vcheckResult = null;
+  document.getElementById('vcheckFileInput').value = '';
+  document.getElementById('vcheckResults').style.display = 'none';
+  document.getElementById('vcheckProgress').style.display = 'none';
+  document.getElementById('vcheckUploadLabel').style.display = 'flex';
+}
+
+document.addEventListener('change', e=>{
+  if(e.target.id==='vcheckFileInput'){
+    const files = Array.from(e.target.files).filter(f=>f.type==='application/pdf');
+    if(files.length===0) return;
+    runVoucherCheck(files);
+  }
+});
+
+async function runVoucherCheck(files){
+  document.getElementById('vcheckUploadLabel').style.display = 'none';
+  document.getElementById('vcheckResults').style.display = 'none';
+  const progress = document.getElementById('vcheckProgress');
+  const progressText = document.getElementById('vcheckProgressText');
+  progress.style.display = 'block';
+
+  try{
+    // ① アップロードされたPDFを解析
+    _vcheckUploadedFiles = [];
+    for(let i=0;i<files.length;i++){
+      progressText.textContent = `アップロードPDFを解析中... (${i+1}/${files.length})`;
+      const f = files[i];
+      const ab = await f.arrayBuffer();
+      const bytes = new Uint8Array(ab);
+      const info = await extractVoucherInfo(bytes);
+      _vcheckUploadedFiles.push({file:f, filename:f.name, bytes, info});
+    }
+
+    // ② サインアプリ保存済みPDF（pending以外）を取得・解析
+    // ※ PDF本体の内容比較が必要なため、ここだけはフル取得を使う
+    const archiveRecords = await getAllArchiveFull();
+    const archiveParsed = [];
+    for(let i=0;i<archiveRecords.length;i++){
+      progressText.textContent = `保存済みPDFと照合中... (${i+1}/${archiveRecords.length})`;
+      const r = archiveRecords[i];
+      try{
+        const bytes = base64ToUint8(r.pdfBase64);
+        const info = await extractVoucherInfo(bytes);
+        archiveParsed.push({record:r, info});
+      }catch(e){ /* スキップ */ }
+    }
+
+    // ③ 伝票番号で突き合わせ
+    progressText.textContent = '結果をまとめています...';
+    const matched = [];     // {uploaded, archived}
+    const missing = [];     // uploadedのみ（アプリに無い）
+    const extra = [];       // archivedのみ（アップロードしていない）
+    const mismatched = [];  // 伝票一致だが内容相違
+
+    const archiveUsed = new Set();
+    for(const up of _vcheckUploadedFiles){
+      if(!up.info.voucherNo){
+        // 伝票番号が読み取れない場合は不明として「未登録」扱い（要目視確認）
+        missing.push({uploaded: up, reason:'伝票番号を読み取れませんでした'});
+        continue;
+      }
+      const foundIdx = archiveParsed.findIndex((a,idx)=> !archiveUsed.has(idx) && a.info.voucherNo === up.info.voucherNo);
+      if(foundIdx === -1){
+        missing.push({uploaded: up, reason:'サインアプリに同じ伝票番号が見つかりません'});
+      } else {
+        archiveUsed.add(foundIdx);
+        const arch = archiveParsed[foundIdx];
+        const diffs = _voucherInfoDiffers(up.info, arch.info);
+        if(diffs.length > 0){
+          mismatched.push({uploaded: up, archived: arch, diffs});
+        } else {
+          matched.push({uploaded: up, archived: arch});
+        }
+      }
+    }
+    archiveParsed.forEach((a, idx)=>{
+      if(!archiveUsed.has(idx)) extra.push({archived: a});
+    });
+
+    _vcheckResult = {matched, missing, extra, mismatched};
+    renderVoucherCheckResult();
+
+  }catch(e){
+    alert('チェック中にエラーが発生しました: ' + e.message);
+    resetVoucherCheck();
+  } finally {
+    progress.style.display = 'none';
+  }
+}
+
+function renderVoucherCheckResult(){
+  const r = _vcheckResult;
+  if(!r) return;
+  document.getElementById('vcheckResults').style.display = 'flex';
+
+  document.getElementById('vcheckMatchCount').textContent = r.matched.length;
+  document.getElementById('vcheckMissingCount').textContent = r.missing.length;
+  document.getElementById('vcheckExtraCount').textContent = r.extra.length;
+  document.getElementById('vcheckMismatchCount').textContent = r.mismatched.length;
+
+  // 未登録
+  const missingSec = document.getElementById('vcheckMissingSection');
+  const missingList = document.getElementById('vcheckMissingList');
+  if(r.missing.length > 0){
+    missingSec.style.display = 'block';
+    missingList.innerHTML = r.missing.map((m,i)=>{
+      const no = m.uploaded.info.voucherNo || '(伝票番号不明)';
+      const ship = m.uploaded.info.ship || '';
+      return `
+        <div style="background:#fffbeb;border:1.5px solid #f59e0b;border-radius:10px;padding:10px 12px;display:flex;align-items:center;gap:10px;cursor:pointer;" onclick="previewVcheckUploaded(${i})">
+          <div style="font-size:18px;">⚠️</div>
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:12px;font-weight:700;color:#1e293b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escHtml(m.uploaded.filename)}</div>
+            <div style="font-size:10px;color:#92400e;margin-top:1px;">伝票No: ${escHtml(no)} ${ship?'／'+escHtml(ship):''} — ${escHtml(m.reason)}</div>
+          </div>
+          <div style="font-size:16px;color:#f59e0b;">👁</div>
+        </div>`;
+    }).join('');
+  } else { missingSec.style.display = 'none'; }
+
+  // 余分
+  const extraSec = document.getElementById('vcheckExtraSection');
+  const extraList = document.getElementById('vcheckExtraList');
+  if(r.extra.length > 0){
+    extraSec.style.display = 'block';
+    extraList.innerHTML = r.extra.map((m,i)=>{
+      const no = m.archived.info.voucherNo || '(伝票番号不明)';
+      const ship = m.archived.info.ship || '';
+      return `
+        <div style="background:#fef2f2;border:1.5px solid #ef4444;border-radius:10px;padding:10px 12px;display:flex;align-items:center;gap:10px;cursor:pointer;" onclick="previewVcheckArchived('${m.archived.record.id}')">
+          <div style="font-size:18px;">⚠️</div>
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:12px;font-weight:700;color:#1e293b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escHtml(m.archived.record.filename)}</div>
+            <div style="font-size:10px;color:#b91c1c;margin-top:1px;">伝票No: ${escHtml(no)} ${ship?'／'+escHtml(ship):''} — アップロードリストに見当たりません</div>
+          </div>
+          <div style="font-size:16px;color:#ef4444;">👁</div>
+        </div>`;
+    }).join('');
+  } else { extraSec.style.display = 'none'; }
+
+  // 内容相違
+  const mismatchSec = document.getElementById('vcheckMismatchSection');
+  const mismatchList = document.getElementById('vcheckMismatchList');
+  if(r.mismatched.length > 0){
+    mismatchSec.style.display = 'block';
+    mismatchList.innerHTML = r.mismatched.map((m,i)=>{
+      return `
+        <div style="background:#fff7ed;border:1.5px solid #fb923c;border-radius:10px;padding:10px 12px;">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div style="font-size:18px;">⚠️</div>
+            <div style="flex:1;min-width:0;">
+              <div style="font-size:12px;font-weight:700;color:#1e293b;">${escHtml(m.uploaded.info.voucherNo||'')}</div>
+              <div style="font-size:10px;color:#c2410c;margin-top:1px;">${m.diffs.map(escHtml).join(' ／ ')}</div>
+            </div>
+          </div>
+          <div style="display:flex;gap:6px;margin-top:8px;">
+            <button style="flex:1;padding:6px;border-radius:8px;border:1.5px solid #fb923c;background:#fff;color:#ea580c;font-size:11px;font-weight:700;cursor:pointer;" onclick="previewVcheckUploaded(${_vcheckUploadedFiles.indexOf(m.uploaded)})">👁 アップロード原本</button>
+            <button style="flex:1;padding:6px;border-radius:8px;border:1.5px solid #fb923c;background:#fff;color:#ea580c;font-size:11px;font-weight:700;cursor:pointer;" onclick="previewVcheckArchived('${m.archived.record.id}')">👁 保存済みPDF</button>
+          </div>
+        </div>`;
+    }).join('');
+  } else { mismatchSec.style.display = 'none'; }
+
+  // 一致（折りたたみ・初期は閉じる）
+  const matchedList = document.getElementById('vcheckMatchedList');
+  matchedList.innerHTML = r.matched.map(m=>{
+    const no = m.uploaded.info.voucherNo || '';
+    const ship = m.uploaded.info.ship || '';
+    return `
+      <div style="background:#f0fdf4;border:1px solid #86efac;border-radius:10px;padding:8px 12px;display:flex;align-items:center;gap:8px;cursor:pointer;" onclick="previewVcheckArchived('${m.archived.record.id}')">
+        <div style="font-size:14px;">✅</div>
+        <div style="flex:1;min-width:0;font-size:12px;color:#1e293b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escHtml(no)} ${ship?'— '+escHtml(ship):''}</div>
+      </div>`;
+  }).join('');
+}
+
+function toggleVcheckMatched(){
+  const list = document.getElementById('vcheckMatchedList');
+  const arrow = document.getElementById('vcheckMatchedArrow');
+  const isOpen = list.style.display === 'flex';
+  list.style.display = isOpen ? 'none' : 'flex';
+  arrow.textContent = isOpen ? '▼' : '▲';
+}
+
+// アップロード原本PDFをプレビュー
+async function previewVcheckUploaded(idx){
+  const item = _vcheckUploadedFiles[idx];
+  if(!item) return;
+  _previewArchiveId = null; // サインアプリ保存済みではないため「ページ編集」は出さない
+  _openPdfPreviewFromBytes(item.bytes, item.filename);
+}
+
+// アーカイブ済みPDFをプレビュー（既存のpreviewArchiveItemを流用）
+async function previewVcheckArchived(id){
+  await previewArchiveItem(id);
+}
+
 async function renderArchive(){
   const list = document.getElementById('archiveList');
   list.innerHTML = '<div style="text-align:center;padding:20px;color:#94a3b8;font-size:13px;">読み込み中...</div>';
 
-  const allRecords = await getAllArchive();
+  // 結合ファイル（type==='merged'）はホームの「結合ファイル」画面に置き、署名済み一覧には出さない
+  const everyRecord = await getAllArchive();
+  const allRecords = everyRecord.filter(r => (_archiveView === 'merged') ? r.type === 'merged' : r.type !== 'merged');
 
   if(allRecords.length === 0){
+    const isM = _archiveView === 'merged';
     list.innerHTML = `
       <div class="archive-empty">
         <div class="archive-empty-icon">📭</div>
-        <div class="archive-empty-text">保存されたPDFはありません</div>
-        <div class="archive-empty-sub">サイン収集または領収書添付後に<br>「署名済み一覧に保存」ボタンで保存できます</div>
+        <div class="archive-empty-text">${isM ? '結合ファイルはまだありません' : '保存されたPDFはありません'}</div>
+        <div class="archive-empty-sub">${isM ? '署名済み一覧で複数選択して「1つに結合」すると<br>ここに自動で保存されます' : 'サイン収集または領収書添付後に<br>「署名済み一覧に保存」ボタンで保存できます'}</div>
       </div>`;
     document.getElementById('archiveSelectAllRow').style.display = 'none';
     document.getElementById('archiveShipSummary').style.display = 'none';
@@ -2311,15 +3816,17 @@ async function renderArchive(){
   }
 
   // 船名サマリーを月ごとに構築
-  // 月→船名→件数 の2段マップ
+  // 月→船名→{embark, disembark, other} の2段マップ
   const byMonthShip = new Map();
   for(const r of allRecords){
     const d = new Date(r.savedAt);
     const monthKey = `${d.getFullYear()}年${d.getMonth()+1}月`;
     if(!byMonthShip.has(monthKey)) byMonthShip.set(monthKey, new Map());
     const ship = extractShipName(r.filename);
+    const cat = _recCat(r);
     const m = byMonthShip.get(monthKey);
-    m.set(ship, (m.get(ship)||0) + 1);
+    if(!m.has(ship)) m.set(ship, {embark:0, disembark:0, other:0, vm:0});
+    m.get(ship)[cat]++;
   }
   const sortedMonthKeys = [...byMonthShip.keys()].sort((a,b)=>{
     // "2026年11月" 形式から比較
@@ -2329,20 +3836,32 @@ async function renderArchive(){
 
   const shipSummary = document.getElementById('archiveShipSummary');
   const shipBody = document.getElementById('archiveShipBody');
-  shipSummary.style.display = 'block';
+  shipSummary.style.display = (_archiveView === 'merged') ? 'none' : 'block';
   shipBody.innerHTML = sortedMonthKeys.map(monthKey => {
     const shipMap = byMonthShip.get(monthKey);
-    const sortedShips = [...shipMap.entries()].sort((a,b)=>b[1]-a[1]);
-    const totalInMonth = [...shipMap.values()].reduce((s,v)=>s+v,0);
+    const sortedShips = [...shipMap.entries()].sort((a,b)=>{
+      const ta = a[1].embark + a[1].disembark + a[1].other + a[1].vm;
+      const tb = b[1].embark + b[1].disembark + b[1].other + b[1].vm;
+      return tb - ta;
+    });
+    const totalInMonth = sortedShips.reduce((s,[,c])=>s + c.embark + c.disembark + c.other + c.vm, 0);
     return `
       <div class="archive-ship-month-label">${escHtml(monthKey)}（${totalInMonth}件）</div>
-      <div class="archive-ship-chips">
-        ${sortedShips.map(([ship,cnt])=>`
-          <span class="archive-ship-chip${_archiveShipFilter===ship?' active':''}"
-            onclick="filterByShip('${escHtml(ship)}')"
-            style="${_archiveShipFilter===ship?'background:#dbeafe;border-color:#2563eb;':''}">
-            🚢 ${escHtml(ship)} <span class="chip-count">${cnt}</span>
-          </span>`).join('')}
+      <div class="archive-ship-rows">
+        ${sortedShips.map(([ship,c])=>{
+          const isActiveShip = _archiveShipFilter && _archiveShipFilter.ship === ship;
+          const isActive = cat => isActiveShip && _archiveShipFilter.category === cat;
+          const tags = [];
+          if(c.embark>0) tags.push(`<span class="archive-ship-cat embark${isActive('embark')?' active':''}" onclick="filterByShipCategory('${escHtml(ship)}','embark')">乗船 ${c.embark}件</span>`);
+          if(c.disembark>0) tags.push(`<span class="archive-ship-cat disembark${isActive('disembark')?' active':''}" onclick="filterByShipCategory('${escHtml(ship)}','disembark')">下船 ${c.disembark}件</span>`);
+          if(c.vm>0) tags.push(`<span class="archive-ship-cat vm${isActive('vm')?' active':''}" onclick="filterByShipCategory('${escHtml(ship)}','vm')">VM ${c.vm}件</span>`);
+          if(c.other>0) tags.push(`<span class="archive-ship-cat other${isActive('other')?' active':''}" onclick="filterByShipCategory('${escHtml(ship)}','other')">他 ${c.other}件</span>`);
+          return `
+          <div class="archive-ship-row">
+            <span class="archive-ship-row-name">🚢 ${escHtml(ship)}</span>
+            <span class="archive-ship-row-cats">${tags.join('')}</span>
+          </div>`;
+        }).join('')}
       </div>`;
   }).join('') + `
     <div style="margin-top:8px;padding-top:8px;border-top:1px solid #f1f5f9;">
@@ -2355,14 +3874,26 @@ async function renderArchive(){
       </div>
     </div>`;
 
-  // フィルター適用
-  const records = _archiveShipFilter
-    ? allRecords.filter(r => extractShipName(r.filename) === _archiveShipFilter)
-    : allRecords;
+  // ── 重複チェックサムを検出 ──
+  const checksumCounts = new Map();
+  for(const r of allRecords){
+    if(r.checksum){
+      checksumCounts.set(r.checksum, (checksumCounts.get(r.checksum)||0)+1);
+    }
+  }
+  // 重複しているIDセット
+  const duplicateChecksums = new Set([...checksumCounts.entries()].filter(([,v])=>v>1).map(([k])=>k));
+  // 各レコードに重複フラグを付与
+  allRecords.forEach(r => { r._isDuplicate = r.checksum && duplicateChecksums.has(r.checksum); });
+
+  // フィルター適用（船名＋乗船/下船/他 のカテゴリ）
+  const records = _applyShipFilter(allRecords);
+
+  const mainRecords = records;
 
   // 月別グループ化
   const byMonth = new Map();
-  for(const r of records){
+  for(const r of mainRecords){
     const d = new Date(r.savedAt);
     const key = `${d.getFullYear()}年${d.getMonth()+1}月`;
     if(!byMonth.has(key)) byMonth.set(key, []);
@@ -2400,12 +3931,79 @@ async function renderArchive(){
 
   document.getElementById('archiveSelectAllRow').style.display = 'flex';
   updateArchiveBulkBar();
+  _backfillVMFlags(everyRecord);
+}
+
+let _vmBackfillRunning = false;
+// VM判定が未実施の既存PDFを順番に判定してインデックスに記録（初回のみ時間がかかる）
+async function _backfillVMFlags(records){
+  if(_vmBackfillRunning) return;
+  const todo = records.filter(r => r.isVM === null || r.isVM === undefined);
+  if(todo.length === 0) return;
+  _vmBackfillRunning = true;
+  const label = document.getElementById('archiveSecLabel');
+  const baseText = label ? label.textContent : '';
+  let changed = 0;
+  try{
+    const db = await getFirestore();
+    for(let i=0;i<todo.length;i++){
+      if(label) label.textContent = `${baseText}（VM判定中 ${i+1}/${todo.length}）`;
+      const r = await getArchiveById(todo[i].id);
+      if(!r || !r.pdfBase64) continue;
+      const flag = await _detectVM(base64ToUint8(r.pdfBase64));
+      if(flag === null) continue;
+      await db.collection('vouchers').doc(r.id).update({ isVM: flag });
+      await _patchVoucherIndexFields(r.id, { isVM: flag });
+      if(flag) changed++;
+    }
+  }catch(e){ console.warn('VM判定の一括処理に失敗:', e); }
+  _vmBackfillRunning = false;
+  if(label) label.textContent = baseText;
+  if(document.getElementById('archiveScreen').style.display !== 'none') await renderArchive();
+}
+
+let _mergedFolderOpen = true; // 結合ファイルフォルダの開閉状態
+function toggleMergedFolder(){
+  _mergedFolderOpen = !_mergedFolderOpen;
+  const el = document.getElementById('mergedFolder');
+  const arrow = document.getElementById('mergedFolder_arrow');
+  if(el) el.classList.toggle('open', _mergedFolderOpen);
+  if(arrow) arrow.classList.toggle('open', _mergedFolderOpen);
 }
 
 async function filterByShip(ship){
-  _archiveShipFilter = ship;
+  // null を渡すと「全て表示」（フィルター解除）
+  _archiveShipFilter = ship ? { ship, category: null } : null;
   archiveSelectedIds = new Set();
   await renderArchive();
+  _keepShipSummaryOpen();
+}
+
+// 船名サマリーの「乗船 X件」「下船 Y件」をタップした時の処理
+// 該当PDFが1件だけならそのままプレビュー表示、複数あれば一覧を絞り込んで表示
+async function filterByShipCategory(ship, category){
+  try{
+    // 既に同じ絞り込み中なら、もう一度タップで解除（元の一覧に戻す）
+    if(_archiveShipFilter && _archiveShipFilter.ship === ship && _archiveShipFilter.category === category){
+      await filterByShip(null);
+      return;
+    }
+    const allRecords = (await getAllArchive()).filter(r => r.type !== 'merged');
+    const matches = allRecords.filter(r => extractShipName(r.filename) === ship && _recCat(r) === category);
+    if(matches.length === 1){
+      await previewArchiveItem(matches[0].id);
+      return;
+    }
+    _archiveShipFilter = { ship, category };
+    archiveSelectedIds = new Set();
+    await renderArchive();
+    _keepShipSummaryOpen();
+  }catch(e){
+    alert('絞り込みに失敗しました: ' + e.message);
+  }
+}
+
+function _keepShipSummaryOpen(){
   // フィルター後もサマリーを開いたままにする
   const body = document.getElementById('archiveShipBody');
   const arrow = document.getElementById('shipSummaryArrow');
@@ -2434,29 +4032,35 @@ function renderArchiveItem(r){
   } else {
     dateStr = `${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
   }
-  const typeLabel = r.type === 'receipt' ? '領収書添付' : r.type === 'upload' ? '直接追加' : 'サイン収集';
-  const typeClass = r.type === 'receipt' ? 'receipt' : r.type === 'upload' ? 'upload' : 'sign';
+  const typeLabel = r.type === 'receipt' ? '領収書添付' : r.type === 'upload' ? '直接追加' : r.type === 'merged' ? '結合' : 'サイン収集';
+  const typeClass = r.type === 'receipt' ? 'receipt' : r.type === 'upload' ? 'upload' : r.type === 'merged' ? 'merged' : 'sign';
   const checked = archiveSelectedIds.has(r.id);
   const confirmed = r.confirmed === true;
+  const dupBadge = r._isDuplicate
+    ? `<span style="background:#fef3c7;color:#92400e;padding:1px 6px;border-radius:6px;font-size:10px;font-weight:700;border:1px solid #fcd34d;" title="同じPDFが複数回保存されています">⚠️ 重複</span>`
+    : '';
   return `
-    <div class="archive-item${confirmed?' confirmed':''}" id="aitem_${r.id}">
+    <div class="archive-item${confirmed?' confirmed':''}${r._isDuplicate?' dup-item':''}" id="aitem_${r.id}" ${r._isDuplicate?'style="background:#fffbeb;"':''}>
       <div class="archive-item-check${checked?' checked':''}" onclick="toggleArchiveSelect('${r.id}')"></div>
       <div class="archive-item-info" onclick="toggleArchiveSelect('${r.id}')">
         <div class="archive-item-name">${escHtml(r.filename)}</div>
         <div class="archive-item-meta">
           <span class="archive-item-type ${typeClass}">${typeLabel}</span>
+          ${dupBadge}
           <span>${dateStr}</span>
         </div>
       </div>
       <div class="archive-item-actions">
         <button class="archive-item-confirm${confirmed?' confirmed':''}" onclick="toggleConfirmed('${r.id}', ${confirmed})" title="${confirmed?'確認済み':'未確認'}">✅</button>
-        <button class="archive-item-rename" onclick="startRenameArchive('${r.id}')" title="ファイル名を変更">✏️</button>
+        <button class="archive-item-rename" onclick="startRenameArchive('${r.id}')" title="ファイル名・日付を変更">✏️</button>
+        <button class="archive-item-rename" style="border-color:#f59e0b;color:#d97706;" onclick="attachReceiptFromArchive('${r.id}')" title="領収書を添付">🧾</button>
         <button class="archive-item-preview" onclick="previewArchiveItem('${r.id}')">👁</button>
         <button class="archive-item-del" onclick="deleteSingleArchive('${r.id}')">🗑</button>
       </div>
     </div>
     <div class="archive-rename-form" id="rename_form_${r.id}" style="display:none;">
       <input class="archive-rename-input" id="rename_input_${r.id}" type="text" value="${escHtml(r.filename.replace(/\.pdf$/i,''))}" placeholder="新しいファイル名（.pdf不要）">
+      <input class="archive-rename-date" id="rename_date_${r.id}" type="date" value="${(r.savedAt||'').split('T')[0]||''}">
       <button class="archive-rename-save" onclick="saveRenameArchive('${r.id}')">保存</button>
       <button class="archive-rename-cancel" onclick="cancelRenameArchive('${r.id}')">キャンセル</button>
     </div>`;
@@ -2488,26 +4092,33 @@ function startRenameArchive(id){
 
 async function saveRenameArchive(id){
   const input = document.getElementById('rename_input_'+id);
+  const dateInput = document.getElementById('rename_date_'+id);
   if(!input) return;
   const rawName = input.value.trim();
   if(!rawName){ alert('ファイル名を入力してください'); return; }
   const newFilename = rawName.replace(/\.pdf$/i,'') + '.pdf';
+  const newDateVal = dateInput ? dateInput.value : '';
+  if(dateInput && !newDateVal){ alert('日付を入力してください'); return; }
   const saveBtn = input.closest('.archive-rename-form').querySelector('.archive-rename-save');
   if(saveBtn){ saveBtn.textContent = '保存中...'; saveBtn.disabled = true; }
   try{
     const db = await getFirestore();
-    await db.collection('vouchers').doc(id).update({ filename: newFilename });
-    // ローカルキャッシュも更新
-    if(window._archiveCache){
-      const rec = window._archiveCache.find(r => r.id === id);
-      if(rec) rec.filename = newFilename;
+    const updates = { filename: newFilename };
+    const idxFields = { filename: newFilename };
+    if(newDateVal){
+      // 日付編集：時刻情報は持たせず「日付のみ」として保存する
+      updates.savedAt = newDateVal + 'T00:00:00.000Z';
+      updates.dateOnly = true;
+      idxFields.savedAt = updates.savedAt;
+      idxFields.dateOnly = true;
     }
-    // UI更新（フォームを閉じて表示名を更新）
-    const nameEl = document.querySelector(`#aitem_${id} .archive-item-name`);
-    if(nameEl) nameEl.textContent = newFilename;
+    await db.collection('vouchers').doc(id).update(updates);
+    _patchVoucherIndexFields(id, idxFields); // インデックスも更新（高速一覧用）
+    // フォームを閉じて一覧を再描画（日付変更で月のグループが変わる場合があるため）
     document.getElementById('rename_form_'+id).style.display = 'none';
+    await renderArchive();
   }catch(e){
-    alert('ファイル名の変更に失敗しました: ' + e.message);
+    alert('変更の保存に失敗しました: ' + e.message);
     if(saveBtn){ saveBtn.textContent = '保存'; saveBtn.disabled = false; }
   }
 }
@@ -2540,7 +4151,8 @@ function updateArchiveBulkBar(){
 }
 
 async function toggleSelectAll(){
-  const records = await getAllArchive();
+  // フィルターで絞り込んでいる場合は、表示中の件だけを対象に全選択する
+  const records = _applyShipFilter((await getAllArchive()).filter(r => (_archiveView === 'merged') ? r.type === 'merged' : r.type !== 'merged'));
   if(archiveSelectedIds.size === records.length){
     // 全解除
     archiveSelectedIds = new Set();
@@ -2570,12 +4182,23 @@ async function downloadArchiveItem(id){
 }
 
 let _previewBlobUrl = null;
+let _previewArchiveId = null; // プレビュー中のレコードID（署名済み一覧のものなら「ページ編集」を使えるようにする）
 
 async function previewArchiveItem(id){
   try{
     const r = await getArchiveById(id);
     if(!r) return;
     const bytes = r.pdfBase64 ? base64ToUint8(r.pdfBase64) : (r.pdfBytes || new Uint8Array());
+    _previewArchiveId = id;
+    _openPdfPreviewFromBytes(bytes, r.filename);
+  }catch(e){
+    alert('プレビューに失敗しました: ' + e.message);
+  }
+}
+
+// 汎用：任意のバイト列＋ファイル名でPDFプレビューを開く
+function _openPdfPreviewFromBytes(bytes, filename){
+  try{
     const blob = new Blob([bytes], {type:'application/pdf'});
 
     // 前回のBlobURLを解放
@@ -2583,7 +4206,9 @@ async function previewArchiveItem(id){
     _previewBlobUrl = URL.createObjectURL(blob);
 
     const overlay = document.getElementById('pdfPreviewOverlay');
-    document.getElementById('pdfPreviewTitle').textContent = r.filename;
+    document.getElementById('pdfPreviewTitle').textContent = filename;
+    const editBtn = document.getElementById('pdfPreviewEditBtn');
+    if(editBtn) editBtn.style.display = _previewArchiveId ? 'inline-block' : 'none';
     const body = document.getElementById('pdfPreviewBody');
     body.innerHTML = '';
 
@@ -2594,7 +4219,7 @@ async function previewArchiveItem(id){
       body.innerHTML = `
         <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:24px;text-align:center;">
           <div style="font-size:48px;">📄</div>
-          <div style="color:#fff;font-size:15px;font-weight:600;">${escHtml(r.filename)}</div>
+          <div style="color:#fff;font-size:15px;font-weight:600;">${escHtml(filename)}</div>
           <button onclick="window.open('${_previewBlobUrl}','_blank')"
             style="padding:14px 28px;border-radius:12px;border:none;background:#7c3aed;color:#fff;font-size:15px;font-weight:700;cursor:pointer;">
             📂 PDFを開く
@@ -2620,6 +4245,7 @@ function closePdfPreview(){
   document.getElementById('pdfPreviewOverlay').classList.remove('open');
   document.getElementById('pdfPreviewBody').innerHTML = '';
   if(_previewBlobUrl){ URL.revokeObjectURL(_previewBlobUrl); _previewBlobUrl = null; }
+  _previewArchiveId = null;
 }
 
 function pdfPreviewDownload(){
@@ -2629,6 +4255,171 @@ function pdfPreviewDownload(){
   a.href = _previewBlobUrl;
   a.download = title.endsWith('.pdf') ? title : title + '.pdf';
   a.click();
+}
+
+/* ══════════════════════════════════════════
+   ページ編集機能（結合などで複数ページになったPDFから
+   不要なページだけを選んで削除する）
+══════════════════════════════════════════ */
+let _pageEditor = null; // { id, filename, bytes, pageCount, markedPages:Set }
+
+async function openPagesEditor(){
+  if(!_previewArchiveId) return;
+  const id = _previewArchiveId;
+  const body = document.getElementById('pageEditorBody');
+  const saveBtn = document.getElementById('pageEditorSaveBtn');
+  const footerText = document.getElementById('pageEditorFooterText');
+  const overlay = document.getElementById('pageEditorOverlay');
+  const titleEl = document.getElementById('pageEditorTitle');
+
+  try{
+    const r = await getArchiveById(id);
+    if(!r){ alert('データが見つかりませんでした'); return; }
+    const bytes = r.pdfBase64 ? base64ToUint8(r.pdfBase64) : new Uint8Array();
+    if(!bytes.length){ alert('PDFデータが見つかりませんでした'); return; }
+
+    titleEl.textContent = 'ページを選んで削除：' + r.filename;
+    body.innerHTML = '<div style="color:#94a3b8;font-size:13px;padding:20px;grid-column:1/-1;text-align:center;">読み込み中...</div>';
+    saveBtn.disabled = true;
+    footerText.textContent = '削除したいページをタップして選択してください';
+    overlay.classList.add('open');
+
+    const pdfjsDoc = await pdfjsLib.getDocument({data: bytes.slice(), stopAtErrors:false}).promise;
+    const pageCount = pdfjsDoc.numPages;
+
+    _pageEditor = { id, filename: r.filename, bytes, pageCount, markedPages: new Set() };
+
+    if(pageCount <= 1){
+      body.innerHTML = '<div style="color:#fca5a5;font-size:13px;padding:20px;grid-column:1/-1;text-align:center;">このPDFは1ページのみのため、ページ削除はできません。</div>';
+      return;
+    }
+
+    body.innerHTML = '';
+    for(let i=1;i<=pageCount;i++){
+      const page = await pdfjsDoc.getPage(i);
+      const vp1 = page.getViewport({scale:1});
+      const scale = 220 / vp1.width;
+      const vp = page.getViewport({scale});
+      const canvas = document.createElement('canvas');
+      canvas.width = vp.width;
+      canvas.height = vp.height;
+      await page.render({canvasContext: canvas.getContext('2d'), viewport: vp}).promise;
+
+      const thumb = document.createElement('div');
+      thumb.className = 'page-editor-thumb';
+      thumb.id = 'pgthumb_' + i;
+      thumb.onclick = () => togglePageMark(i);
+      thumb.appendChild(canvas);
+      const label = document.createElement('div');
+      label.className = 'page-editor-thumb-label';
+      label.textContent = `${i} / ${pageCount}`;
+      thumb.appendChild(label);
+      const mark = document.createElement('div');
+      mark.className = 'page-editor-thumb-mark';
+      mark.textContent = '🗑';
+      thumb.appendChild(mark);
+      body.appendChild(thumb);
+    }
+  }catch(e){
+    console.error('ページ編集の読み込みに失敗:', e);
+    body.innerHTML = `<div style="color:#fca5a5;font-size:13px;padding:20px;grid-column:1/-1;text-align:center;">読み込みに失敗しました: ${escHtml(e.message)}</div>`;
+  }
+}
+
+function togglePageMark(pageNum){
+  if(!_pageEditor) return;
+  const { markedPages, pageCount } = _pageEditor;
+  if(markedPages.has(pageNum)) markedPages.delete(pageNum);
+  else markedPages.add(pageNum);
+
+  const thumb = document.getElementById('pgthumb_' + pageNum);
+  if(thumb) thumb.classList.toggle('marked', markedPages.has(pageNum));
+
+  const saveBtn = document.getElementById('pageEditorSaveBtn');
+  const footerText = document.getElementById('pageEditorFooterText');
+  const n = markedPages.size;
+  if(n === 0){
+    saveBtn.disabled = true;
+    footerText.textContent = '削除したいページをタップして選択してください';
+  } else if(n >= pageCount){
+    // 全ページ削除は不可（PDFが空になってしまうため）
+    saveBtn.disabled = true;
+    footerText.textContent = '⚠️ 全ページは削除できません（最低1ページは残してください）';
+  } else {
+    saveBtn.disabled = false;
+    footerText.textContent = `${n}ページを削除します（残り${pageCount - n}ページ）`;
+  }
+}
+
+async function savePagesEditor(){
+  if(!_pageEditor || _pageEditor.markedPages.size === 0) return;
+  const { id, filename, bytes, pageCount, markedPages } = _pageEditor;
+  if(markedPages.size >= pageCount){
+    alert('全ページは削除できません');
+    return;
+  }
+  if(!confirm(`${markedPages.size}ページを削除します。元に戻せません。よろしいですか？`)) return;
+
+  const saveBtn = document.getElementById('pageEditorSaveBtn');
+  saveBtn.disabled = true;
+  saveBtn.textContent = '削除中...';
+
+  try{
+    const srcDoc = await PDFLib.PDFDocument.load(bytes, {ignoreEncryption:true, throwOnInvalidObject:false});
+    // 残すページ番号（1始まり）を決定し、新しいPDFを作成
+    const keepIndexes = [];
+    for(let i=0;i<pageCount;i++){
+      if(!markedPages.has(i+1)) keepIndexes.push(i);
+    }
+    const newDoc = await PDFLib.PDFDocument.create();
+    const copiedPages = await newDoc.copyPages(srcDoc, keepIndexes);
+    copiedPages.forEach(p => newDoc.addPage(p));
+    const out = await newDoc.save();
+    const outBytes = new Uint8Array(out);
+
+    // Firestore上の該当レコードを上書き保存（チェックサム・インデックスも更新）
+    const newChecksum = _pdfChecksum(outBytes);
+    const newPdfBase64 = uint8ToBase64(outBytes);
+    const db = await getFirestore();
+    const FV = firebase.firestore.FieldValue;
+    let oldChunks = 0;
+    try{ const ix = await _getVoucherIndex(); oldChunks = (ix[id] && ix[id].chunks) || 0; }catch(e){}
+    let fields, newChunks = 0;
+    if(newPdfBase64.length + 600 > INLINE_LIMIT){
+      newChunks = await _writeChunks(db, id, newPdfBase64);
+      fields = { pdfChunkCount: newChunks, pdfBase64: FV.delete(), checksum: newChecksum };
+    } else {
+      fields = { pdfBase64: newPdfBase64, pdfChunkCount: FV.delete(), checksum: newChecksum };
+    }
+    await db.collection('vouchers').doc(id).update(fields);
+    // 以前の分割データが不要になった分を削除
+    if(oldChunks > newChunks){
+      for(let i=newChunks;i<oldChunks;i++){
+        try{ await db.collection('vouchers_chunks').doc(`${id}_${i}`).delete(); }catch(e){}
+      }
+    }
+    const newVM = await _detectVM(outBytes);
+    if(newVM !== null){ await db.collection('vouchers').doc(id).update({ isVM: newVM }); }
+    await _patchVoucherIndexFields(id, { checksum: newChecksum, chunks: newChunks, isVM: newVM });
+
+    alert(`${markedPages.size}ページを削除しました（残り${pageCount - markedPages.size}ページ）`);
+    closePagesEditor();
+    closePdfPreview();
+    await renderArchive();
+  }catch(e){
+    console.error('ページ削除に失敗:', e);
+    alert('ページの削除に失敗しました: ' + e.message);
+    saveBtn.disabled = false;
+    saveBtn.textContent = '選択したページを削除';
+  }
+}
+
+function closePagesEditor(){
+  document.getElementById('pageEditorOverlay').classList.remove('open');
+  document.getElementById('pageEditorBody').innerHTML = '';
+  document.getElementById('pageEditorSaveBtn').disabled = true;
+  document.getElementById('pageEditorSaveBtn').textContent = '選択したページを削除';
+  _pageEditor = null;
 }
 
 async function downloadSelectedArchive(){
@@ -2642,43 +4433,193 @@ async function downloadSelectedArchive(){
   }
 }
 
+async function _countPdfPages(bytes){
+  try{
+    const doc = await pdfjsLib.getDocument({data: bytes.slice(), stopAtErrors:false}).promise;
+    return doc.numPages;
+  }catch(e){ return null; }
+}
+
+async function _rasterizeInto(mergedDoc, bytes){
+  const doc = await pdfjsLib.getDocument({data: bytes.slice(), stopAtErrors:false}).promise;
+  let n = 0;
+  for(let i=1;i<=doc.numPages;i++){
+    const page = await doc.getPage(i);
+    const vp1 = page.getViewport({scale:1});
+    const vp = page.getViewport({scale:2});
+    const canvas = document.createElement('canvas');
+    canvas.width = vp.width; canvas.height = vp.height;
+    await page.render({canvasContext: canvas.getContext('2d'), viewport: vp}).promise;
+    const img = await mergedDoc.embedJpg(canvas.toDataURL('image/jpeg', 0.92));
+    const pg = mergedDoc.addPage([vp1.width, vp1.height]);
+    pg.drawImage(img, {x:0, y:0, width:vp1.width, height:vp1.height});
+    n++;
+  }
+  return n;
+}
+
+// 結合用：PDF内の「Date: 2026/Nov/17」を YYYY-MM-DD にする（読めなければ保存日を使う）
+async function _voucherDateForMerge(bytes, rec){
+  const MON={jan:1,feb:2,mar:3,apr:4,may:5,jun:6,jul:7,aug:8,sep:9,oct:10,nov:11,dec:12};
+  const pad = n => String(n).padStart(2,'0');
+  try{
+    const info = await extractVoucherInfo(bytes);
+    const m = info && info.date && info.date.match(/^(\d{4})\/([A-Za-z]{3})\/(\d{1,2})$/);
+    if(m && MON[m[2].toLowerCase()]) return `${m[1]}-${pad(MON[m[2].toLowerCase()])}-${pad(+m[3])}`;
+  }catch(e){ console.warn('日付の読み取りに失敗:', e); }
+  if(rec && rec.savedAt){
+    const d = new Date(rec.savedAt);
+    if(!isNaN(d)) return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+  }
+  return null;
+}
+
 async function mergeAndDownloadSelected(){
   if(archiveSelectedIds.size === 0) return;
   const btn = document.querySelector('.archive-bulk-merge');
   if(btn){ btn.textContent = '結合中...'; btn.disabled = true; }
+  let fx = {finish:async()=>{}, abort:()=>{}};
+  const _fxAlert = (m)=>{ fx.abort(); alert(m); };
   try{
     const ids = [...archiveSelectedIds];
+    let _fxLabels = ids;
+    try{ const _ix = await _getVoucherIndex(); _fxLabels = ids.map(i=>(_ix[i]&&_ix[i].filename)||i); }catch(_){}
+    fx = FusionFX.start(_fxLabels);
     const mergedDoc = await PDFLib.PDFDocument.create();
+    let firstRecord = null;
+    const _mergeDates = [];  // 結合できた各PDFの日付（最も古いものを結合ファイルの日付にする）
+    const mergedIds = [];    // 実際にページを結合できたレコードのID（削除してよいもの）
+    const failedNames = [];  // 読み込み・結合に失敗したファイル名（一覧から残す）
+    let expectedTotal = 0;   // 結合できた各PDFのページ数の合計（結合結果と照合する）
+
+    // ── 結合順を決定：領収書添付（type==='receipt'）は常に最後、それ以外（voucher等）が先 ──
+    const recordsToMerge = [];
     for(const id of ids){
       const r = await getArchiveById(id);
-      if(!r) continue;
-      const bytes = r.pdfBase64 ? base64ToUint8(r.pdfBase64) : new Uint8Array();
-      if(!bytes.length) continue;
-      try{
-        const srcDoc = await PDFLib.PDFDocument.load(bytes, {ignoreEncryption:true});
-        const pageCount = srcDoc.getPageCount();
-        for(let i=0;i<pageCount;i++){
-          const [copied] = await mergedDoc.copyPages(srcDoc, [i]);
-          mergedDoc.addPage(copied);
-        }
-      }catch(e){ console.warn('結合スキップ:', r.filename, e); }
+      if(r) recordsToMerge.push(r);
     }
+    recordsToMerge.sort((a,b) => (a.type==='receipt'?1:0) - (b.type==='receipt'?1:0));
+
+    for(const r of recordsToMerge){
+      const id = r.id;
+      if(!firstRecord) firstRecord = r;
+      const bytes = r.pdfBase64 ? base64ToUint8(r.pdfBase64) : new Uint8Array();
+      if(!bytes.length){ failedNames.push(r.filename); continue; }
+
+      // ── ページ数の正解を pdf.js で数え、pdf-lib で結合したページ数と一致するか検証しながら結合 ──
+      const expected = await _countPdfPages(bytes);
+      let added = 0, ok = false;
+      for(const variant of ['raw','clean']){
+        try{
+          const useBytes = variant === 'raw' ? bytes : await cleanPdfBytes(bytes);
+          const srcDoc = await PDFLib.PDFDocument.load(useBytes, {ignoreEncryption:true, throwOnInvalidObject:false});
+          const cnt = srcDoc.getPageCount();
+          if(expected && cnt !== expected){
+            console.warn(`ページ数不一致(${variant}):`, r.filename, 'pdf-lib=', cnt, 'pdf.js=', expected);
+            continue;
+          }
+          const pages = await mergedDoc.copyPages(srcDoc, srcDoc.getPageIndices());
+          pages.forEach(pg => mergedDoc.addPage(pg));
+          added = cnt; ok = true; break;
+        }catch(e1){
+          console.warn(`結合の読み込みに失敗(${variant}):`, r.filename, e1);
+        }
+      }
+      if(!ok){
+        // 最終手段：各ページを画像化して取り込む（見た目は同じ、文字選択は不可）
+        try{
+          added = await _rasterizeInto(mergedDoc, bytes);
+          ok = added > 0 && (!expected || added === expected);
+        }catch(e2){ console.warn('画像化での結合にも失敗:', r.filename, e2); }
+      }
+      if(ok){
+        expectedTotal += added;
+        mergedIds.push(id);
+        const _d = await _voucherDateForMerge(bytes, r); if(_d) _mergeDates.push(_d);
+      } else {
+        failedNames.push(r.filename);
+      }
+    }
+
     if(mergedDoc.getPageCount() === 0){
-      alert('結合できるページがありませんでした');
+      _fxAlert('結合できるページがありませんでした' + (failedNames.length ? `\n\n失敗したファイル:\n${failedNames.join('\n')}` : ''));
       return;
     }
+
+    // ── 一部のPDFが結合できなかった場合は、保存・ダウンロードの前に必ず知らせる ──
+    if(failedNames.length > 0){
+      _fxAlert(`⚠️ 以下のPDFは読み込みに失敗したため、結合結果に含まれていません：\n\n${failedNames.join('\n')}\n\nこれらは一覧に残したままにします。`);
+    }
+
+    // ── 検証：結合結果のページ数が、各PDFのページ数の合計と一致しなければ中止（元PDFは一切消さない） ──
+    if(mergedDoc.getPageCount() !== expectedTotal){
+      _fxAlert(`⚠️ 結合結果のページ数が合いません（期待${expectedTotal}ページ／実際${mergedDoc.getPageCount()}ページ）。\n安全のため、保存と元PDFの削除は行いませんでした。`);
+      return;
+    }
+
     const out = await mergedDoc.save();
+
+    // ファイル名：実際に結合できた件数＋最初のファイル名ベース
+    const firstName = (firstRecord ? firstRecord.filename : 'merged').replace(/\.pdf$/i,'');
+    const mergedFilename = `${firstName}_他${mergedIds.length}件_merged.pdf`;
+
+    // ── 結合したPDFを自動で「署名済み一覧」に保存（再アップロード不要にする） ──
+    // 保存日は「結合したバウチャーの中で最も古い日付」を使う（時刻は付けず日付のみ）
+    const now = new Date();
+    const todayStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+    const mergedDateStr = _mergeDates.length ? [..._mergeDates].sort()[0] : todayStr;
+    let newId = null;
+    try{
+      newId = await saveToArchive(out, mergedFilename, 'merged', mergedDateStr);
+    }catch(saveErr){
+      console.error('結合PDFの保存に失敗:', saveErr);
+      _fxAlert('結合PDFの一覧への保存に失敗しました。ダウンロードのみ行います。\n' + saveErr.message);
+    }
+
+    if(!newId){
+      _fxAlert('結合ファイルが一覧に保存されなかったため、元のPDFは削除せずに残しました。');
+    }
+
+    // ── 保存に成功した場合のみ、実際に結合できたPDFだけを一覧から削除する ──
+    // （読み込みに失敗して結合に含まれなかったPDFは、誤って消さないよう一覧に残す）
+    // ※ スマホではダウンロード開始で処理が中断されることがあるため、削除はダウンロードより先に行う
+    if(newId && mergedIds.length > 0){
+      try{ await deleteArchiveIds(mergedIds); }
+      catch(delErr){
+        console.error('結合元PDFの削除に失敗:', delErr);
+        _fxAlert('⚠️ 結合ファイルは保存できましたが、元のPDFの削除に失敗しました。\n一覧から手動で削除してください。\n' + delErr.message);
+      }
+    }
+
+    // ── 削除の確認：まだ一覧に残っていれば直接削除をやり直す ──
+    if(newId && mergedIds.length > 0){
+      try{
+        const db = await getFirestore();
+        const stillIdx = await _getVoucherIndex();
+        const leftover = mergedIds.filter(i => stillIdx[i]);
+        if(leftover.length > 0){
+          for(const i of leftover){ try{ await db.collection('vouchers').doc(i).delete(); }catch(x){} }
+          await _removeVoucherIndexEntries(leftover);
+        }
+      }catch(chkErr){ console.warn('削除の再確認に失敗:', chkErr); }
+    }
+
+    archiveSelectedIds = new Set();
+    updateArchiveBulkBar();
+    await renderArchive();
+    await fx.finish(mergedFilename, mergedDoc.getPageCount());
+
+    // 手元にも残せるようダウンロード（最後に実行）
     const blob = new Blob([out], {type:'application/pdf'});
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
-    // ファイル名：選択件数＋最初のファイル名ベース
-    const firstName = (await getArchiveById(ids[0]))?.filename?.replace(/\.pdf$/i,'') || 'merged';
-    a.download = `${firstName}_他${ids.length}件_merged.pdf`;
+    a.download = mergedFilename;
     a.href = url; a.click();
-    URL.revokeObjectURL(url);
+    setTimeout(()=>URL.revokeObjectURL(url), 10000);
   }catch(e){
-    alert('結合に失敗しました: ' + e.message);
+    _fxAlert('結合に失敗しました: ' + e.message);
   }finally{
+    fx.abort();
     if(btn){ btn.textContent = '📑 1つに結合'; btn.disabled = false; }
   }
 }
@@ -2699,6 +4640,7 @@ async function toggleConfirmed(id, currentState){
   try{
     const db = await getFirestore();
     db.collection('vouchers').doc(id).update({ confirmed: next });
+    _patchVoucherIndexField(id, 'confirmed', next); // インデックスも更新（高速一覧用）
   }catch(e){
     // 失敗したらUIを元に戻す
     if(item && btn){
@@ -2817,6 +4759,8 @@ async function saveCurrentToArchive(){
       _lastSignedFilename = rawName.replace(/\.pdf$/i, '') + '.pdf';
     }
     await saveToArchive(_lastSignedPdfBytes, _lastSignedFilename, 'sign');
+    // 保留中PDFからサインした場合、保留レコードを削除
+    await _finishPending();
     if(btn){
       btn.textContent = '✓ 署名済み一覧に保存しました';
       btn.style.opacity = '1';
@@ -2840,11 +4784,22 @@ async function saveReceiptAttachToArchive(){
   btn.disabled = true;
   btn.textContent = '保存中...';
   try{
-    await saveToArchive(_lastReceiptPdfBytes, _lastReceiptFilename, 'receipt');
+    const newId = await saveToArchive(_lastReceiptPdfBytes, _lastReceiptFilename, 'receipt');
     btn.textContent = '✓ 保存しました';
     btn.style.background = '#dcfce7';
     btn.style.borderColor = '#16a34a';
     btn.style.color = '#15803d';
+
+    // 署名済み一覧から直接開始した場合、元のPDF（領収書添付前）を削除するか確認
+    if(newId && _raSourceArchiveId){
+      const srcId = _raSourceArchiveId;
+      _raSourceArchiveId = null;
+      if(confirm('元の署名済みPDF（領収書添付前）は不要であれば削除できます。\n\n削除しますか？\n（「キャンセル」を選ぶと両方残ります）')){
+        try{
+          await deleteArchiveIds([srcId]);
+        }catch(delErr){ console.warn('元PDF削除エラー:', delErr); }
+      }
+    }
   }catch(e){
     btn.disabled = false;
     btn.textContent = '📂 署名済み一覧に保存';
@@ -2853,16 +4808,32 @@ async function saveReceiptAttachToArchive(){
 }
 
 showScreen('upload');
+// 起動時に保留バナーを更新
+refreshPendingBanner();
 
 </script>
 <!-- PDFプレビューモーダル -->
 <div id="pdfPreviewOverlay">
   <div id="pdfPreviewHeader">
     <div id="pdfPreviewTitle"></div>
+    <button id="pdfPreviewEditBtn" onclick="openPagesEditor()" style="display:none;">🗑 ページ編集</button>
     <button id="pdfPreviewDlBtn" onclick="pdfPreviewDownload()">⬇ DL</button>
     <button id="pdfPreviewCloseBtn" onclick="closePdfPreview()">✕</button>
   </div>
   <div id="pdfPreviewBody"></div>
+</div>
+
+<!-- ページ編集モーダル（複数ページのPDFから不要なページだけを削除） -->
+<div id="pageEditorOverlay">
+  <div id="pageEditorHeader">
+    <div id="pageEditorTitle">ページを選んで削除</div>
+    <button id="pageEditorCloseBtn" onclick="closePagesEditor()">✕</button>
+  </div>
+  <div id="pageEditorBody"></div>
+  <div id="pageEditorFooter">
+    <div id="pageEditorFooterText">削除したいページをタップして選択してください</div>
+    <button id="pageEditorSaveBtn" onclick="savePagesEditor()" disabled>選択したページを削除</button>
+  </div>
 </div>
 
 <!-- 日付選択モーダル: bodyの最後、全要素より前面 -->
@@ -2906,5 +4877,138 @@ showScreen('upload');
     <button class="dlc-cancel" onclick="dlChoiceCancel()">キャンセル</button>
   </div>
 </div>
+<script>
+/* 操作感：タップ時の軽い振動（対応端末のみ。iPhoneは非対応のため無視されます） */
+(function(){
+  var SEL='button,.mode-btn,.archive-btn,.crew-card,.dlc-btn,.archive-ship-chip,.archive-ship-cat,.archive-item-check,.archive-month-header,.archive-item-del,.archive-item-rename,.archive-item-preview,.archive-item-confirm,.upload-box,.receipt-box,.ra-box,#pendingBanner';
+  document.addEventListener('pointerdown',function(e){
+    try{
+      if(e.pointerType==='mouse') return;
+      var t=e.target&&e.target.closest&&e.target.closest(SEL);
+      if(!t||t.disabled) return;
+      if(navigator.vibrate) navigator.vibrate(8);
+    }catch(_){}
+  },{passive:true});
+})();
+</script>
+<script>
+/* 融合エフェクト：渦巻く粒子＋カード吸い込み → 収束 → フラッシュ → 結果カード */
+const FusionFX = (function(){
+  let el=null, t0=0, active=false, raf=0, st=null;
+  const reduce = ()=> window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const sleep = ms => new Promise(r=>setTimeout(r,ms));
+  function vib(p){ try{ navigator.vibrate && navigator.vibrate(p); }catch(_){} }
+
+  function runCanvas(cv){
+    const dpr = Math.min(2, window.devicePixelRatio||1);
+    const W = cv.width = Math.round(cv.clientWidth*dpr), H = cv.height = Math.round(cv.clientHeight*dpr);
+    const ctx = cv.getContext('2d'); const cx=W/2, cy=H*0.46;
+    const maxR = Math.hypot(W,H)*0.55;
+    st = {collapse:0, boost:1};
+    const N = 260, ps=[];
+    const hues=[275,290,200,45,320];
+    function spawn(p, init){
+      p.r = maxR*(init ? (0.08+Math.random()*0.95) : (0.75+Math.random()*0.3));
+      p.th = Math.random()*Math.PI*2;
+      p.hue = hues[(Math.random()*hues.length)|0];
+      p.w = 0.6+Math.random()*1.8; p.sp = 0.6+Math.random()*0.8; p.px=null; p.py=null;
+      return p;
+    }
+    for(let i=0;i<N;i++) ps.push(spawn({},true));
+    let last=performance.now(), tm=0;
+    function frame(now){
+      if(!el) return;
+      const dt = Math.min(0.05,(now-last)/1000); last=now; tm+=dt;
+      // 時間とともに加速（渦がどんどん速くなる）
+      const ramp = 1 + Math.min(tm,2.4)*1.1 + st.collapse*7;
+      ctx.globalCompositeOperation='destination-out';
+      ctx.fillStyle='rgba(0,0,0,'+(0.16+st.collapse*0.1)+')'; ctx.fillRect(0,0,W,H);
+      ctx.globalCompositeOperation='lighter'; ctx.lineCap='round';
+      for(const p of ps){
+        const nr = Math.max(0.04, p.r/maxR);
+        // 中心に近いほど角速度が大きい（渦の形）
+        const om = (0.55/(nr+0.12)) * ramp * 0.55 * p.sp;
+        p.th += om*dt;
+        p.r -= maxR*(0.16+0.1*p.sp)*ramp*dt*(0.35+nr);
+        const x = cx + Math.cos(p.th)*p.r*1.0, y = cy + Math.sin(p.th)*p.r*0.62*1.0 + Math.sin(p.th)*p.r*0.0;
+        if(p.px!==null){
+          const a = Math.min(1,0.25+(1-nr)*1.1);
+          ctx.strokeStyle='hsla('+p.hue+',95%,'+(60+ (1-nr)*30)+'%,'+a+')';
+          ctx.lineWidth = (p.w*dpr)*(0.6+(1-nr)*1.6);
+          ctx.beginPath(); ctx.moveTo(p.px,p.py); ctx.lineTo(x,y); ctx.stroke();
+        }
+        p.px=x; p.py=y;
+        if(p.r < maxR*0.025){ if(st.collapse<0.5){ spawn(p,false); } else { p.r=maxR*0.02; } }
+      }
+      // 中心の輝き
+      const g = ctx.createRadialGradient(cx,cy,0,cx,cy,90*dpr*(1+st.collapse*1.8));
+      g.addColorStop(0,'rgba(255,255,255,'+(0.5+st.collapse*0.5)+')'); g.addColorStop(1,'rgba(168,85,247,0)');
+      ctx.fillStyle=g; ctx.beginPath(); ctx.arc(cx,cy,90*dpr*(1+st.collapse*1.8),0,7); ctx.fill();
+      raf = requestAnimationFrame(frame);
+    }
+    raf = requestAnimationFrame(frame);
+  }
+
+  function start(labels){
+    if(active || reduce()) return {finish:async()=>{}, abort:()=>{}};
+    active = true; t0 = Date.now();
+    el = document.createElement('div'); el.id='fusionFx';
+    const n = Math.max(2, Math.min(6, (labels||[]).length || 2));
+    let cards='';
+    for(let k=0;k<n;k++){
+      cards += `<div class="fx-card" style="--a:${Math.round(360/n*k)}deg;--r:${135+(k%2)*20}px;--d:${(k*0.12).toFixed(2)}s">📄</div>`;
+    }
+    let sparks='';
+    for(let k=0;k<26;k++){
+      const ang = Math.random()*Math.PI*2, dist = 110+Math.random()*150;
+      sparks += `<div class="fx-spark" style="--dx:${Math.round(Math.cos(ang)*dist)}px;--dy:${Math.round(Math.sin(ang)*dist)}px"></div>`;
+    }
+    el.innerHTML = `<canvas class="fx-canvas"></canvas><div class="fx-title">融　合</div>
+      <div class="fx-stage"><div class="fx-ring r1"></div><div class="fx-ring r2"></div><div class="fx-core"></div>${cards}
+      <div class="fx-result"><div class="rs-icon">📑</div><div class="rs-title"></div><div class="rs-meta"></div></div>${sparks}</div>
+      <div class="fx-label">融合中…</div><div class="fx-flash"></div>`;
+    document.body.appendChild(el);
+    requestAnimationFrame(()=>{ el.classList.add('show'); try{ runCanvas(el.querySelector('.fx-canvas')); }catch(_){} });
+    vib([20,40,20]);
+    let skip=false; el.addEventListener('click',()=>{ skip=true; });
+    return {
+      async finish(name, pages){
+        if(!el) return;
+        const wait = 2300 - (Date.now()-t0);
+        if(wait>0) await sleep(wait);
+        // 収束フェーズ：渦が一気に中心へ吸い込まれ、画面が震える
+        if(st) st.collapse = 1;
+        el.classList.add('shake'); vib([15,20,25,20,40]);
+        await sleep(550);
+        const flash = el.querySelector('.fx-flash');
+        flash.classList.add('go'); vib([30,30,60]);
+        await sleep(260);
+        el.classList.remove('shake');
+        cancelAnimationFrame(raf);
+        const cv = el.querySelector('.fx-canvas'); if(cv) cv.style.display='none';
+        el.querySelectorAll('.fx-card,.fx-ring,.fx-core').forEach(x=>x.style.display='none');
+        el.querySelector('.fx-label').style.display='none';
+        const rs = el.querySelector('.fx-result');
+        rs.querySelector('.rs-title').textContent = String(name||'').replace(/\.pdf$/i,'');
+        rs.querySelector('.rs-meta').textContent = pages ? pages+'ページ' : '';
+        rs.classList.add('go');
+        el.querySelector('.fx-title').classList.add('go');
+        el.querySelectorAll('.fx-spark').forEach(x=>x.classList.add('go'));
+        for(let w=0; w<18 && !skip; w++) await sleep(100);
+        close();
+      },
+      abort(){ close(); }
+    };
+  }
+  function close(){
+    cancelAnimationFrame(raf);
+    if(!el) return;
+    const e=el; el=null; active=false;
+    e.classList.remove('show');
+    setTimeout(()=>{ try{e.remove();}catch(_){} },400);
+  }
+  return {start};
+})();
+</script>
 </body>
 </html>
