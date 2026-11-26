@@ -247,7 +247,7 @@ html,body{height:100%;background:var(--bg);font-family:-apple-system,BlinkMacSys
 .archive-item-check.checked{background:#7c3aed;border-color:#7c3aed;}
 .archive-item-check.checked::after{content:'✓';color:#fff;font-size:13px;font-weight:900;}
 .archive-item-info{flex:1 1 140px;min-width:0;cursor:pointer;}
-.archive-item-name{font-size:13px;font-weight:700;color:#1e293b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.archive-item-name{font-size:13px;font-weight:700;color:#1e293b;white-space:normal;word-break:break-all;overflow:visible;line-height:1.35;}
 .archive-item-meta{font-size:11px;color:#64748b;margin-top:2px;display:flex;align-items:center;gap:6px;flex-wrap:nowrap;white-space:nowrap;}
 .archive-item-type{padding:1px 6px;border-radius:6px;font-size:10px;font-weight:700;white-space:nowrap;flex-shrink:0;}
 .archive-item-type.sign{background:#dbeafe;color:#1d4ed8;}
@@ -263,6 +263,19 @@ html,body{height:100%;background:var(--bg);font-family:-apple-system,BlinkMacSys
   .archive-item-actions{order:2;flex-basis:100%;justify-content:flex-end;margin-top:4px;}
   .archive-item-confirm,.archive-item-rename,.archive-item-preview,.archive-item-del{padding:6px 8px;font-size:12px;}
 }
+.archive-item-more{display:none;padding:6px 12px;border-radius:8px;border:1.5px solid #cbd5e1;background:#fff;color:#475569;font-size:15px;font-weight:900;line-height:1;cursor:pointer;white-space:nowrap;}
+.archive-item-more:active,.archive-item.more-open .archive-item-more{background:#e2e8f0;}
+/* スマホ：一覧の1件を低くする（✅と👁だけ表示し、✏️🧾📁🗑は「⋯」を押したときだけ出す） */
+@media (max-width:999px){
+  .archive-item{flex-wrap:wrap;gap:8px;padding:10px 12px;}
+  .archive-item-check{order:0;}
+  .archive-item-info{flex:1 1 0;flex-basis:0;min-width:0;order:1;}
+  .archive-item-actions{order:2;flex-basis:auto;margin-top:0;justify-content:flex-end;}
+  .archive-item .act-x{display:none;}
+  .archive-item-more{display:inline-flex;align-items:center;}
+  .archive-item.more-open .archive-item-actions{order:3;flex-basis:100%;flex-wrap:wrap;}
+  .archive-item.more-open .act-x{display:inline-block;}
+}
 .archive-item-confirm{padding:6px 10px;border-radius:8px;border:1.5px solid #d1dce8;background:#fff;color:#d1dce8;font-size:14px;cursor:pointer;white-space:nowrap;transition:all .15s;}
 .archive-item-confirm.confirmed{border-color:#16a34a;background:#dcfce7;filter:none;}
 .archive-item-confirm:not(.confirmed){filter:grayscale(1);opacity:0.4;}
@@ -275,6 +288,14 @@ html,body{height:100%;background:var(--bg);font-family:-apple-system,BlinkMacSys
 #pdfPreviewHeader{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:#1e1b4b;flex-shrink:0;gap:8px;}
 #pdfPreviewTitle{color:#fff;font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;}
 #pdfPreviewDlBtn{padding:6px 14px;border-radius:8px;border:none;background:#7c3aed;color:#fff;font-size:13px;font-weight:700;cursor:pointer;flex-shrink:0;}
+#pdfPreviewHeader button{white-space:nowrap;}
+/* スマホ：ボタンが多くて右端（✕）が画面外に出ないよう、1段目＝ファイル名＋✕、2段目＝操作ボタン（入りきらなければ折り返し） */
+@media (max-width:999px){
+  #pdfPreviewHeader{flex-wrap:wrap;row-gap:8px;}
+  #pdfPreviewTitle{order:0;flex:1 0 calc(100% - 62px);min-width:0;}
+  #pdfPreviewCloseBtn{order:1;}
+  #pdfPreviewHeader > button:not(#pdfPreviewCloseBtn){order:2;padding:6px 10px !important;font-size:12px !important;}
+}
 #pdfPreviewEditBtn{padding:6px 12px;border-radius:8px;border:none;background:#059669;color:#fff;font-size:13px;font-weight:700;cursor:pointer;flex-shrink:0;}
 #pdfPreviewCloseBtn{padding:6px 12px;border-radius:8px;border:none;background:rgba(255,255,255,0.15);color:#fff;font-size:14px;font-weight:700;cursor:pointer;flex-shrink:0;}
 #pdfPreviewBody{flex:1;overflow:hidden;display:flex;align-items:stretch;}
@@ -292,9 +313,15 @@ html,body{height:100%;background:var(--bg);font-family:-apple-system,BlinkMacSys
 .page-editor-thumb-mark{position:absolute;top:4px;right:4px;width:24px;height:24px;border-radius:50%;background:rgba(255,255,255,0.9);display:flex;align-items:center;justify-content:center;font-size:14px;}
 .page-editor-thumb.marked .page-editor-thumb-mark{background:#ef4444;color:#fff;}
 .page-editor-thumb.marked::after{content:'';position:absolute;inset:0;background:rgba(239,68,68,0.25);}
+#pageEditorAddBtn{padding:6px 12px;border-radius:8px;border:none;background:#2563eb;color:#fff;font-size:13px;font-weight:800;cursor:pointer;flex-shrink:0;white-space:nowrap;}
+.page-editor-thumb.added{border-color:#38bdf8;}
+.page-editor-thumb.dragover{border-color:#facc15;}
+.page-editor-mv{position:absolute;bottom:4px;width:32px;height:30px;border-radius:8px;border:none;background:rgba(15,23,42,.82);color:#fff;font-size:14px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.page-editor-mv.l{left:4px;} .page-editor-mv.r{right:4px;}
+.page-editor-mv:disabled{opacity:.3;cursor:default;}
 #pageEditorFooter{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 14px;background:#1e1b4b;flex-shrink:0;}
 #pageEditorFooterText{color:#cbd5e1;font-size:12px;flex:1;}
-#pageEditorSaveBtn{padding:8px 16px;border-radius:8px;border:none;background:#ef4444;color:#fff;font-size:13px;font-weight:800;cursor:pointer;flex-shrink:0;}
+#pageEditorSaveBtn{padding:8px 16px;border-radius:8px;border:none;background:#16a34a;color:#fff;font-size:13px;font-weight:800;cursor:pointer;flex-shrink:0;}
 #pageEditorSaveBtn:disabled{background:#475569;cursor:default;}
 .archive-item-del{padding:6px 10px;border-radius:8px;border:1.5px solid #fca5a5;background:#fff;color:#dc2626;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;}
 .archive-item-del:active{background:#fca5a5;}
@@ -336,6 +363,11 @@ html,body{height:100%;background:var(--bg);font-family:-apple-system,BlinkMacSys
 .archive-ship-cat.embark{background:#fee2e2;color:#b91c1c;}
 .archive-ship-cat.disembark{background:#dbeafe;color:#1d4ed8;}
 .archive-ship-cat.vm{background:#fef3c7;color:#b45309;}
+.archive-ship-cat.vm_embark{background:#ffedd5;color:#c2410c;border-color:#fdba74;}
+.archive-ship-cat.vm_disembark{background:#e0f2fe;color:#0369a1;border-color:#7dd3fc;}
+.archive-ship-cat.rk{background:#ccfbf1;color:#0f766e;border-color:#5eead4;}
+.archive-ship-cat.rk_embark{background:#ccfbf1;color:#0f766e;border-color:#5eead4;}
+.archive-ship-cat.rk_disembark{background:#ede9fe;color:#6d28d9;border-color:#c4b5fd;}
 .archive-ship-cat.other{background:#f1f5f9;color:#475569;}
 .archive-ship-cat.active{border-color:#2563eb;box-shadow:0 0 0 1.5px #bfdbfe;}
 .archive-empty{text-align:center;padding:40px 20px;color:#94a3b8;}
@@ -428,6 +460,28 @@ button,[onclick],label,.mode-btn,.archive-btn,.crew-card,.dlc-btn,.upload-box,.r
 #fusionFx .fx-title{position:absolute;top:14%;left:0;right:0;text-align:center;font-size:30px;font-weight:900;letter-spacing:.2em;color:#fde68a;opacity:0;text-shadow:0 0 18px #f59e0b,0 2px 0 #92400e;}
 #fusionFx .fx-title.go{animation:fxTitle .8s .25s cubic-bezier(.34,1.56,.64,1) forwards;}
 @keyframes fxTitle{from{opacity:0;transform:scale(2.2);}to{opacity:1;transform:scale(1);}}
+
+/* ── PC表示：PDFを開いている間だけ、左に一覧・右にPDFプレビュー（境界はドラッグで調整可） ── */
+:root{--list-w:560px;--solo-w:880px;}
+@media (min-width:1000px){
+  body.arch-preview .body{max-width:none;margin:0;width:var(--list-w);}
+  body.arch-preview #pdfPreviewOverlay{
+    top:var(--hdr,64px);left:var(--list-w);width:calc(100% - var(--list-w));height:calc(100% - var(--hdr,64px));
+    background:#1e1b4b;z-index:50;border-left:1px solid #cbd5e1;}
+  body.arch-preview #splitHandle{display:flex;}
+  body.arch-solo .body{max-width:none;width:var(--solo-w);}
+  body.arch-solo #splitHandle{display:flex;left:calc(50% + var(--solo-w)/2 - 9px);}
+  body.arch-solo.split-dragging{cursor:col-resize;-webkit-user-select:none;user-select:none;}
+  body.arch-preview.split-dragging #pdfPreviewBody iframe{pointer-events:none;}
+  body.arch-preview.split-dragging{cursor:col-resize;-webkit-user-select:none;user-select:none;}
+}
+#splitHandle{display:none;position:fixed;top:var(--hdr,64px);bottom:0;left:calc(var(--list-w) - 9px);width:18px;z-index:60;cursor:col-resize;align-items:center;justify-content:center;touch-action:none;}
+#splitHandle::before{content:'';width:4px;height:56px;border-radius:3px;background:#94a3b8;transition:background .15s,height .15s;}
+#splitHandle:hover::before,body.split-dragging #splitHandle::before{background:#2563eb;height:80px;}
+
+/* 👁で表示中の行をわかりやすく（水色） */
+.archive-item.previewing{background:#e0f2fe !important;box-shadow:inset 5px 0 0 #2563eb;}
+.archive-item.previewing .archive-item-preview{background:#2563eb;color:#fff;border-color:#2563eb;}
 </style>
 </head>
 <body>
@@ -488,6 +542,13 @@ button,[onclick],label,.mode-btn,.archive-btn,.crew-card,.dlc-btn,.upload-box,.r
           <div class="archive-btn-sub">結合して作成したPDFをまとめて確認・ダウンロード</div>
         </div>
       </div>
+      <div class="archive-btn" style="border-color:#64748b;" onclick="showTrash()">
+        <div class="archive-btn-icon">🗑</div>
+        <div class="mode-btn-text">
+          <div class="archive-btn-title">ゴミ箱</div>
+          <div class="archive-btn-sub">削除したPDFを確認・元に戻す</div>
+        </div>
+      </div>
 
     </div>
 
@@ -540,11 +601,302 @@ button,[onclick],label,.mode-btn,.archive-btn,.crew-card,.dlc-btn,.upload-box,.r
       <div class="version-header" onclick="toggleVersion()">
         <div class="version-header-left">
           <span class="version-title">&#128221; バージョン履歴</span>
-          <span class="version-current">v4.30</span>
+          <span class="version-current">v4.57</span>
         </div>
         <span class="version-arrow" id="versionArrow">&#9660;</span>
       </div>
       <div class="version-body" id="versionBody">
+        <div class="version-item">
+          <div class="version-item-header">
+            <span class="ver-num">v4.57</span>
+            <span class="ver-date">2026/11/26</span>
+            <span class="ver-tag new">New</span>
+          </div>
+          <ul class="ver-changes">
+            <li>署名済み一覧から領収書を添付して保存したとき、元の（領収書添付前の）PDFを確認なしで自動的にゴミ箱へ移動するように（貼り付け・ページ結合どちらも。ダブり防止）</li>
+          </ul>
+        </div>
+        <div class="version-item">
+          <div class="version-item-header">
+            <span class="ver-num">v4.56</span>
+            <span class="ver-date">2026/11/25</span>
+            <span class="ver-tag new">New</span>
+          </div>
+          <ul class="ver-changes">
+            <li>プレビューの「📅 日付を入力」で、Voucher右上の「Date:」の日付を入力・編集できるように（空欄なら入力、すでに入っていれば書き換え、「日付を消す」も可。結合ファイルは対象のバウチャーを選択）。署名済み一覧・結合ファイル共通</li>
+          </ul>
+        </div>
+        <div class="version-item">
+          <div class="version-item-header">
+            <span class="ver-num">v4.55</span>
+            <span class="ver-date">2026/11/25</span>
+            <span class="ver-tag fix">Fix</span>
+          </div>
+          <ul class="ver-changes">
+            <li>修正：スマホでPDFプレビュー上部のボタンが増えて、右端の✕（閉じる）が画面外に消えていた不具合を修正（1段目＝ファイル名と✕、2段目＝操作ボタンに分けて表示）</li>
+          </ul>
+        </div>
+        <div class="version-item">
+          <div class="version-item-header">
+            <span class="ver-num">v4.54</span>
+            <span class="ver-date">2026/11/23</span>
+            <span class="ver-tag new">New</span>
+          </div>
+          <ul class="ver-changes">
+            <li>ページ編集：すべてのページを削除対象にした場合も保存できるように（その場合は「ファイルごと削除」となり、ファイル全体がゴミ箱へ移動します。ゴミ箱から元に戻せます）。複数ページの同時削除は、これまでどおりページを何枚でもタップして選べます</li>
+          </ul>
+        </div>
+        <div class="version-item">
+          <div class="version-item-header">
+            <span class="ver-num">v4.53</span>
+            <span class="ver-date">2026/11/23</span>
+            <span class="ver-tag new">New</span>
+          </div>
+          <ul class="ver-changes">
+            <li>結合ファイル：添付した領収書を剥がして元に戻せる「🧾 領収書を剥がす」を追加（貼り付けは元のページに、ページ結合は追加ページを削除）。これから添付する分が対象です</li>
+            <li>ページ編集を保存すると、ページの位置が変わるため、それ以前の領収書の取り外し記録は破棄されます</li>
+          </ul>
+        </div>
+        <div class="version-item">
+          <div class="version-item-header">
+            <span class="ver-num">v4.52</span>
+            <span class="ver-date">2026/11/23</span>
+            <span class="ver-tag new">New</span>
+          </div>
+          <ul class="ver-changes">
+            <li>結合ファイルの領収書添付：貼り付け先のバウチャーを選んだあと、署名済み一覧と同じように「バウチャーに貼り付け」か「ページ結合（次に別ページとして追加）」を選べるように</li>
+          </ul>
+        </div>
+        <div class="version-item">
+          <div class="version-item-header">
+            <span class="ver-num">v4.51</span>
+            <span class="ver-date">2026/11/23</span>
+            <span class="ver-tag new">New</span>
+          </div>
+          <ul class="ver-changes">
+            <li>結合ファイル：プレビューの「🧾 領収書を添付」（一覧の🧾も同じ）で、領収書（PDF・JPG・PNG）を選び、貼り付け先のバウチャーをタップすると、そのページの空きスペースに領収書を貼って、同じ結合ファイルに上書き保存。空きがない場合は、そのページの次に1ページ追加します。保存後もプレビュー・選択行・スクロール位置はそのまま</li>
+          </ul>
+        </div>
+        <div class="version-item">
+          <div class="version-item-header">
+            <span class="ver-num">v4.50</span>
+            <span class="ver-date">2026/11/23</span>
+            <span class="ver-tag new">New</span>
+          </div>
+          <ul class="ver-changes">
+            <li>ページ編集で保存した後も、プレビュー・選択中の行（水色）・一覧のスクロール位置がそのまま残り、更新後のPDFが表示されるように（以前はプレビューが閉じて一覧の位置が戻っていました）</li>
+            <li>署名済み一覧・結合ファイル、PC・スマホ共通</li>
+          </ul>
+        </div>
+        <div class="version-item">
+          <div class="version-item-header">
+            <span class="ver-num">v4.49</span>
+            <span class="ver-date">2026/11/23</span>
+            <span class="ver-tag new">New</span>
+          </div>
+          <ul class="ver-changes">
+            <li>ページ編集：削除だけでなく「＋ ページを追加」（PDF／画像JPG・PNGを末尾に追加）と、ページの順番変更（◀ ▶ボタン、PCはドラッグも可）ができるように</li>
+            <li>署名済み一覧・結合ファイル、PC・スマホ共通。保存時に内容（削除・追加・順番変更）を確認してから保存します</li>
+          </ul>
+        </div>
+        <div class="version-item">
+          <div class="version-item-header">
+            <span class="ver-num">v4.48</span>
+            <span class="ver-date">2026/11/23</span>
+            <span class="ver-tag new">New</span>
+          </div>
+          <ul class="ver-changes">
+            <li>スマホ：👁をワンタップでPDFが開くように（「PDFを開く」画面を廃止し、アプリ内で表示。＋／−ボタンとピンチで拡大縮小できます）</li>
+            <li>スマホ：👁を押した行は水色になり、PDFを閉じた後も残る（最後に開いた行が分かる）</li>
+            <li>スマホ：一覧は✅と👁だけ表示し、✏️🧾📁🗑は「⋯」を押すと出る形にして1件の高さを縮小</li>
+            <li>署名済み一覧・結合ファイル共通</li>
+          </ul>
+        </div>
+        <div class="version-item">
+          <div class="version-item-header">
+            <span class="ver-num">v4.47</span>
+            <span class="ver-date">2026/11/23</span>
+            <span class="ver-tag fix">Fix</span>
+          </div>
+          <ul class="ver-changes">
+            <li>修正：一覧とプレビューの境界をドラッグしても動かない場合があった問題を強化（ドラッグ中は画面全体でマウスを受け取るように変更し、つまみの当たり判定も広げました）</li>
+          </ul>
+        </div>
+        <div class="version-item">
+          <div class="version-item-header">
+            <span class="ver-num">v4.46</span>
+            <span class="ver-date">2026/11/23</span>
+            <span class="ver-tag new">New</span>
+          </div>
+          <ul class="ver-changes">
+            <li>ランク別フィルター：PDFにD-CDT／E-CDTの記載があるものは、VMと同様に専用のフィルター（例：D-CDT乗船／D-CDT下船）に分けて表示。署名済み一覧・結合ファイル共通（既存PDFも初回表示時に自動で判定します）</li>
+          </ul>
+        </div>
+        <div class="version-item">
+          <div class="version-item-header">
+            <span class="ver-num">v4.45</span>
+            <span class="ver-date">2026/11/23</span>
+            <span class="ver-tag new">New</span>
+          </div>
+          <ul class="ver-changes">
+            <li>PC表示：プレビューを開いていない時の一覧幅を広げ（初期880px）、右端をドラッグして自由に調整できるように（署名済み一覧・結合ファイル共通。幅は記憶、ダブルクリックで初期値）</li>
+          </ul>
+        </div>
+        <div class="version-item">
+          <div class="version-item-header">
+            <span class="ver-num">v4.44</span>
+            <span class="ver-date">2026/11/23</span>
+            <span class="ver-tag new">New</span>
+          </div>
+          <ul class="ver-changes">
+            <li>PC表示：一覧とプレビューの境界をドラッグして、幅を自由に調整できるように（署名済み一覧・結合ファイル共通。幅は記憶され、ダブルクリックで元に戻ります）</li>
+            <li>修正：👁を押した行の水色ハイライトが表示されない不具合を修正</li>
+          </ul>
+        </div>
+        <div class="version-item">
+          <div class="version-item-header">
+            <span class="ver-num">v4.43</span>
+            <span class="ver-date">2026/11/23</span>
+            <span class="ver-tag fix">Fix</span>
+          </div>
+          <ul class="ver-changes">
+            <li>PC表示：👁を押していない時は右側のプレビュー枠を出さず、一覧を従来どおり中央に表示。👁を押した時だけ左右に分かれる</li>
+          </ul>
+        </div>
+        <div class="version-item">
+          <div class="version-item-header">
+            <span class="ver-num">v4.42</span>
+            <span class="ver-date">2026/11/23</span>
+            <span class="ver-tag new">New</span>
+          </div>
+          <ul class="ver-changes">
+            <li>👁を押すと、表示中のPDFの行が水色になり、左端に青いラインと👁が青く塗られて、どれを見ているかひと目でわかるように</li>
+          </ul>
+        </div>
+        <div class="version-item">
+          <div class="version-item-header">
+            <span class="ver-num">v4.41</span>
+            <span class="ver-date">2026/11/23</span>
+            <span class="ver-tag new">New</span>
+          </div>
+          <ul class="ver-changes">
+            <li>PC表示：署名済み一覧・結合ファイルを開くと、左に一覧、右にPDFプレビューを常時表示（👁を押すと右に表示）</li>
+            <li>ファイル名を省略せず、全文を表示（長い場合は折り返し）。スマホも同様</li>
+          </ul>
+        </div>
+        <div class="version-item">
+          <div class="version-item-header">
+            <span class="ver-num">v4.40</span>
+            <span class="ver-date">2026/11/23</span>
+            <span class="ver-tag new">New</span>
+          </div>
+          <ul class="ver-changes">
+            <li>船名別フィルター（署名済み一覧・結合ファイル）に、今月の分だけを表示するように変更</li>
+            <li>一覧そのものは、これまでどおり全期間が月別に表示されます</li>
+          </ul>
+        </div>
+        <div class="version-item">
+          <div class="version-item-header">
+            <span class="ver-num">v4.39</span>
+            <span class="ver-date">2026/11/23</span>
+            <span class="ver-tag new">New</span>
+          </div>
+          <ul class="ver-changes">
+            <li>結合ファイル画面にも、署名済み一覧と同じ「船名別 件数」フィルター（乗船／下船／VM乗船／VM下船）を追加</li>
+            <li>結合ファイル名の「_他○件_merged」部分を船名の判定から除外し、船名を正しく分類</li>
+          </ul>
+        </div>
+        <div class="version-item">
+          <div class="version-item-header">
+            <span class="ver-num">v4.38</span>
+            <span class="ver-date">2026/11/23</span>
+            <span class="ver-tag fix">Fix</span>
+          </div>
+          <ul class="ver-changes">
+            <li>プレビューの「ページ編集」で削除したページも、ゴミ箱に入るように修正（ゴミ箱から別ファイルとして元に戻せます）</li>
+            <li>ゴミ箱に保存できなかった場合は、ページを削除しません</li>
+            <li>結合ファイルのページを削除しても、「元に戻す」が正しく動くように記録を更新</li>
+          </ul>
+        </div>
+        <div class="version-item">
+          <div class="version-item-header">
+            <span class="ver-num">v4.37</span>
+            <span class="ver-date">2026/11/23</span>
+            <span class="ver-tag new">New</span>
+          </div>
+          <ul class="ver-changes">
+            <li>署名済み一覧のプレビュー画面に「📁 結合ファイルへ移動」ボタンを追加（ページ編集の隣）</li>
+          </ul>
+        </div>
+        <div class="version-item">
+          <div class="version-item-header">
+            <span class="ver-num">v4.36</span>
+            <span class="ver-date">2026/11/23</span>
+            <span class="ver-tag new">New</span>
+          </div>
+          <ul class="ver-changes">
+            <li>ホームに「ゴミ箱」を追加。署名済み一覧で削除したPDFは一度ゴミ箱に入り、確認・元に戻す・完全に削除ができます</li>
+            <li>元に戻す時、同じPDFが既に一覧にあれば確認します（ダブり防止）</li>
+            <li>結合した元PDFの整理（結合時の自動削除）は、従来どおりゴミ箱を使わず完全に削除します</li>
+          </ul>
+        </div>
+        <div class="version-item">
+          <div class="version-item-header">
+            <span class="ver-num">v4.35</span>
+            <span class="ver-date">2026/11/23</span>
+            <span class="ver-tag new">New</span>
+          </div>
+          <ul class="ver-changes">
+            <li>VM（ヴィッセルマネージャー）のフィルターを「VM乗船」「VM下船」に分割</li>
+            <li>VMの書類は通常の乗船・下船には数えず、それぞれVM乗船／VM下船として集計</li>
+          </ul>
+        </div>
+        <div class="version-item">
+          <div class="version-item-header">
+            <span class="ver-num">v4.34</span>
+            <span class="ver-date">2026/11/23</span>
+            <span class="ver-tag fix">Fix</span>
+          </div>
+          <ul class="ver-changes">
+            <li>PDFの読み取りを修正：文字を見た目の読み順（上→下・左→右）に並べ替えてから解析。船名・区分（乗船/下船）・日付・伝票番号を正しく読めるように</li>
+            <li>「26-S1012」のような2桁年の伝票番号、「Subject: ○○ at: ○○」形式、区分欄が便名（NH848等）の書式にも対応</li>
+            <li>Voucherチェック、元に戻す、ダブりチェック、結合ファイルの日付の判定に反映</li>
+          </ul>
+        </div>
+        <div class="version-item">
+          <div class="version-item-header">
+            <span class="ver-num">v4.33</span>
+            <span class="ver-date">2026/11/23</span>
+            <span class="ver-tag fix">Fix</span>
+          </div>
+          <ul class="ver-changes">
+            <li>「元に戻す」で、ファイル名の乗船/下船がPDFの内容と食い違う問題を修正（区分はPDF内の Category から決定）</li>
+            <li>名前は「船名_区分_日付」の形式に</li>
+          </ul>
+        </div>
+        <div class="version-item">
+          <div class="version-item-header">
+            <span class="ver-num">v4.32</span>
+            <span class="ver-date">2026/11/23</span>
+            <span class="ver-tag new">New</span>
+          </div>
+          <ul class="ver-changes">
+            <li>結合ファイルのプレビューに「↩ 元に戻す」を追加（誤って結合した場合に、個別PDFに分けて署名済み一覧へ戻す）</li>
+            <li>今後の結合は、元のファイル名・日付・種類を記録するので、元どおりに戻せます</li>
+            <li>重複は作らない：同名・同内容のPDFが既にあれば戻さずスキップして報告。途中で失敗したら取り消して結合ファイルを残します</li>
+          </ul>
+        </div>
+        <div class="version-item">
+          <div class="version-item-header">
+            <span class="ver-num">v4.31</span>
+            <span class="ver-date">2026/11/23</span>
+            <span class="ver-tag new">New</span>
+          </div>
+          <ul class="ver-changes">
+            <li>署名済み一覧の各PDFに「📁 結合ファイルに移動」ボタンを追加（複数選択して一括移動も可能）</li>
+            <li>結合したときの自動ダウンロードを廃止。結合したら、そのまま結合ファイルに保存されます</li>
+          </ul>
+        </div>
         <div class="version-item">
           <div class="version-item-header">
             <span class="ver-num">v4.30</span>
@@ -1194,6 +1546,7 @@ button,[onclick],label,.mode-btn,.archive-btn,.crew-card,.dlc-btn,.upload-box,.r
         <span class="archive-bulk-count" id="archiveBulkCount">0件選択中</span>
         <div style="display:flex;gap:8px;">
           <button class="archive-bulk-dl" onclick="downloadSelectedArchive()">⬇ 個別DL</button>
+          <button class="archive-bulk-dl" id="bulkMoveMergedBtn" onclick="moveToMergedFiles([...archiveSelectedIds])">📁 結合ファイルへ移動</button>
           <button class="archive-bulk-merge" onclick="mergeAndDownloadSelected()">📑 1つに結合</button>
         </div>
       </div>
@@ -1823,7 +2176,7 @@ function showReceiptAttach(){
 }
 
 /* ── 署名済み一覧から直接「領収書添付」を開始 ── */
-let _raSourceArchiveId = null; // 元になった署名済み一覧のID（保存後の削除確認に使用）
+let _raSourceArchiveId = null; // 元になった署名済み一覧のID（保存後に自動でゴミ箱へ移動）
 
 async function attachReceiptFromArchive(id){
   try{
@@ -2967,7 +3320,8 @@ function _voucherIndexMeta(data){
     checksum: data.checksum || null,
     confirmed: !!data.confirmed,
     chunks: data.pdfChunkCount || 0,   // 大きなPDFを分割保存している場合の分割数
-    isVM: (data.isVM === undefined || data.isVM === null) ? null : !!data.isVM  // PDF内に「VM」の記載があるか（null=未判定）
+    isVM: (data.isVM === undefined || data.isVM === null) ? null : !!data.isVM,  // PDF内に「VM」の記載があるか（null=未判定）
+    ranks: Array.isArray(data.ranks) ? data.ranks : null  // PDF内のランク記載（例：['D-CDT']。null=未判定、[]=該当なし）
   };
 }
 
@@ -3110,12 +3464,49 @@ async function _detectVM(bytes){
   }
 }
 
-// 一覧用の区分：PDFにVM記載があれば 'vm'、なければファイル名から 乗船/下船/他
-function _recCat(r){
-  return r.isVM ? 'vm' : extractCategory(r.filename);
+// ランク別フィルター用：PDF内にこの表記があれば専用フィルターを作る。ランクを増やすときはここに1行足すだけ
+const RANK_DEFS = [
+  { key:'D-CDT', re:/(?:^|[^A-Za-z])D\s?-?\s?CDT(?![A-Za-z])/ },
+  { key:'E-CDT', re:/(?:^|[^A-Za-z])E\s?-?\s?CDT(?![A-Za-z])/ }
+];
+// PDF本文を調べて {vm:VM記載の有無, ranks:該当ランク一覧} を返す（失敗時 null）
+async function _detectFlags(bytes){
+  try{
+    const u8 = bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes);
+    const doc = await pdfjsLib.getDocument({data:u8.slice(), stopAtErrors:false}).promise;
+    const n = Math.min(doc.numPages, 20);
+    let vm = false; const found = new Set();
+    for(let i=1;i<=n;i++){
+      const page = await doc.getPage(i);
+      const content = await page.getTextContent();
+      const text = content.items.map(it=>it.str).join(' ');
+      if(/\bVM\b/.test(text)) vm = true;
+      for(const d of RANK_DEFS){ if(d.re.test(text)) found.add(d.key); }
+    }
+    return { vm, ranks: RANK_DEFS.map(d=>d.key).filter(k=>found.has(k)) };
+  }catch(e){ console.warn('PDF判定失敗:', e); return null; }
 }
 
-async function saveToArchive(pdfBytes, filename, type, customDate){
+// 一覧用の区分：PDFにVM記載があれば 'vm_embark'(VM乗船)/'vm_disembark'(VM下船)/'vm'(区分不明のVM)、なければファイル名から 乗船/下船/他
+function _recCat(r){
+  const base = extractCategory(r.filename);
+  if(!r.isVM) return base;
+  return base === 'embark' ? 'vm_embark' : base === 'disembark' ? 'vm_disembark' : 'vm';
+}
+// ランク（D-CDTなど）の区分キー：'D-CDT_embark' / 'D-CDT_disembark' / 'D-CDT'
+function _rankCatKey(rank, base){ return base === 'embark' ? rank+'_embark' : base === 'disembark' ? rank+'_disembark' : rank; }
+// 1件が属する区分の一覧（VM・ランク該当がなければ 乗船/下船/他 の1つ。ランク該当は専用の区分にも入る）
+function _recCats(r){
+  const base = extractCategory(r.filename);
+  const cats = [];
+  if(r.isVM) cats.push(_recCat(r));
+  for(const k of (r.ranks||[])) cats.push(_rankCatKey(k, base));
+  if(cats.length === 0) cats.push(base);
+  return cats;
+}
+
+async function saveToArchive(pdfBytes, filename, type, customDate, opts){
+  opts = opts || {};
   // type: 'sign' | 'receipt' | 'upload'
   // customDate: 'YYYY-MM-DD' string (optional, for upload type)
   try{
@@ -3131,6 +3522,7 @@ async function saveToArchive(pdfBytes, filename, type, customDate){
       if(dupEntry){
         const dupDate = dupEntry.savedAt ? new Date(dupEntry.savedAt).toLocaleDateString('ja-JP') : '不明';
         const dupName = dupEntry.filename || '不明';
+        if(opts.silentDup) return null; // 元に戻す処理：重複は確認なしでスキップ
         const proceed = confirm(
           `⚠️ このPDFは既に保存されている可能性があります。\n\n` +
           `既存ファイル名: ${dupName}\n保存日: ${dupDate}\n\n` +
@@ -3159,8 +3551,9 @@ async function saveToArchive(pdfBytes, filename, type, customDate){
       checksum,  // 重複検知用チェックサム
       dateOnly: !!customDate  // 日付のみフラグ
     };
-    const vmFlag = await _detectVM(bytes);
-    if(vmFlag !== null) record.isVM = vmFlag;
+    const flags = await _detectFlags(bytes);
+    if(flags){ record.isVM = flags.vm; record.ranks = flags.ranks; }
+    if(opts.extra) Object.assign(record, opts.extra);
     const docRef = db.collection('vouchers').doc();
     if(pdfBase64.length + filename.length + 300 > INLINE_LIMIT){
       // 大きいPDFは分割保存（先に分割データを書き、最後に親レコードを作る）
@@ -3257,9 +3650,9 @@ function _fpHash(str){ let h=5381; for(let i=0;i<str.length;i++){ h=((h<<5)+h+st
 
 async function _pageFingerprint(page){
   // 文字のあるページは文字で、文字がほぼ無いページ（画像のみ）は縮小画像で指紋を作る
-  let text='';
-  try{ const tc = await page.getTextContent(); text = tc.items.map(i=>i.str).join(' ').replace(/\s+/g,''); }catch(e){}
-  if(text.length >= 40) return {fp:'t:'+_fpHash(text.toLowerCase()), text: text};
+  let text='', spaced='';
+  try{ const tc = await page.getTextContent(); spaced = _readingOrderText(tc.items); text = spaced.replace(/\s+/g,''); }catch(e){}
+  if(text.length >= 40) return {fp:'t:'+_fpHash(text.toLowerCase()), text: spaced};
   try{
     const vp0 = page.getViewport({scale:1});
     const sc = 32 / Math.max(vp0.width, vp0.height);
@@ -3269,8 +3662,8 @@ async function _pageFingerprint(page){
     await page.render({canvasContext:ctx, viewport:vp}).promise;
     const d = ctx.getImageData(0,0,cv.width,cv.height).data; let bits='';
     for(let i=0;i<d.length;i+=4){ const g=(d[i]+d[i+1]+d[i+2])/3; bits += g<128 ? '1':'0'; }
-    return {fp:'i:'+_fpHash(bits), text:text};
-  }catch(e){ return {fp:null, text:text}; }
+    return {fp:'i:'+_fpHash(bits), text:spaced};
+  }catch(e){ return {fp:null, text:spaced}; }
 }
 
 function closeDupCheck(){ const o=document.getElementById('dupCheckOverlay'); if(o) o.remove(); }
@@ -3305,7 +3698,7 @@ async function runMergedDupCheck(){
         const {fp, text} = await _pageFingerprint(pg);
         totalPages++;
         if(!fp) continue;
-        const info = _parseVoucherInfo(text.replace(/([a-z])([A-Z])/g,'$1 $2'));
+        const info = _parseVoucherInfo(text);
         if(!map.has(fp)) map.set(fp, []);
         map.get(fp).push({id:m.id, filename:m.filename, page:pn, savedAt:m.savedAt, label: info.voucherNo || ''});
       }
@@ -3344,6 +3737,253 @@ async function runMergedDupCheck(){
   }catch(e){
     console.error(e); say('チェックに失敗しました: ' + escHtml(e.message||String(e)));
   }
+}
+
+
+/* ── 結合ファイルを元に戻す（署名済み一覧へ分割して戻す。重複は作らない） ── */
+let _unmerging = false;
+
+async function _pageTextsOf(bytes){
+  const out = [];
+  const doc = await pdfjsLib.getDocument({data: bytes.slice(), stopAtErrors:false}).promise;
+  for(let i=1;i<=doc.numPages;i++){
+    try{ const tc = await (await doc.getPage(i)).getTextContent(); out.push(_readingOrderText(tc.items)); }
+    catch(e){ out.push(''); }
+  }
+  return out;
+}
+
+async function unmergeArchiveItem(){
+  const id = _previewArchiveId;
+  if(!id || _unmerging) return;
+  _unmerging = true;
+  const btn = document.getElementById('pdfPreviewUnmergeBtn');
+  const setBtn = t => { if(btn){ btn.textContent = t; btn.disabled = (t !== '↩ 元に戻す'); } };
+  const savedIds = [];
+  try{
+    const rec = await getArchiveById(id);
+    if(!rec || rec.type !== 'merged'){ alert('結合ファイルではありません'); return; }
+    if(!confirm(`「${rec.filename}」を元の個別PDFに戻して、署名済み一覧へ保存します。\n\n結合ファイルは削除されます。よろしいですか？`)) return;
+    setBtn('処理中...');
+    const bytes = base64ToUint8(rec.pdfBase64);
+    const texts = await _pageTextsOf(bytes);
+    const total = texts.length;
+
+    // 元PDFの読み込み（ページ数が一致する方法で）
+    let srcDoc = null;
+    for(const v of ['raw','clean']){
+      try{
+        const useBytes = v==='raw' ? bytes : await cleanPdfBytes(bytes);
+        const d = await PDFLib.PDFDocument.load(useBytes, {ignoreEncryption:true, throwOnInvalidObject:false});
+        if(d.getPageCount() === total){ srcDoc = d; break; }
+      }catch(e){}
+    }
+    if(!srcDoc){ alert('PDFの読み込みに失敗したため、元に戻せませんでした（結合ファイルはそのまま残しています）'); return; }
+
+    // ── 分割の区切りを決める ──
+    let parts = [];   // {name,type,savedAt,dateOnly,confirmed,start,count,mergeParts}
+    const rp = Array.isArray(rec.mergeParts) ? rec.mergeParts : null;
+    if(rp && rp.length && rp.reduce((a,x)=>a+(x.pages||0),0) === total){
+      let at = 0;
+      rp.forEach(x => { parts.push({name:x.filename, type:x.type||'sign', savedAt:x.savedAt, dateOnly:!!x.dateOnly, confirmed:!!x.confirmed, start:at, count:x.pages, mergeParts:x.mergeParts||null}); at += x.pages; });
+    } else {
+      // 記録がない古い結合ファイル：バウチャーの先頭ページ（VOUCHER/RECEIPT）ごとに分割。後続ページ（領収書等）は直前のバウチャーに付ける
+      const isHead = t => /VOUCHER\s*\/\s*RECEIPT/i.test(t) || /Name of Vessel/i.test(t);
+      const starts = [];
+      texts.forEach((t,i)=>{ if(isHead(t)) starts.push(i); });
+      if(starts.length === 0 || starts[0] !== 0) starts.unshift(0);
+      starts.forEach((st,k)=>{
+        const en = (k+1<starts.length) ? starts[k+1] : total;
+        const head = texts[st] || '';
+        const info = _parseVoucherInfo(head);
+        // 船名：PDFから読めればそれを、読めなければ結合ファイル名の先頭部分（Embark/Disembark等より前）を使う
+        const base = (rec.filename||'merged').replace(/\.pdf$/i,'').replace(/_他\d+件_merged.*$/,'').replace(/_merged.*$/,'');
+        const baseShip = base.replace(/_(Disembark|Embarkation|Embark|Transfer|Sending|VM)(_.*)?$/i,'');
+        const ship = (info.ship || '').replace(/[^A-Za-z0-9]+/g,'_').replace(/^_|_$/g,'') || baseShip;
+        // 区分は必ずそのページの内容（Category:）から決める。読めなければ区分は付けない
+        const cat = info.category ? info.category.replace(/[^A-Za-z]/g,'') : '';
+        const dm = (info.date||'').match(/^(\d{4})\/([A-Za-z]{3})\/(\d{1,2})$/);
+        const MONN = {jan:1,feb:2,mar:3,apr:4,may:5,jun:6,jul:7,aug:8,sep:9,oct:10,nov:11,dec:12};
+        const dstr = (dm && MONN[dm[2].toLowerCase()]) ? `${dm[1]}${String(MONN[dm[2].toLowerCase()]).padStart(2,'0')}${String(+dm[3]).padStart(2,'0')}` : '';
+        let nm = [ship, cat, dstr || (info.voucherNo||'')].filter(Boolean).join('_') || `${base}_${k+1}`;
+        parts.push({name: nm+'.pdf', type: (en-st>1)?'receipt':'sign', savedAt:null, dateOnly:false, confirmed:false, start:st, count:en-st, mergeParts:null, _info:info});
+      });
+    }
+
+    // ── 重複を作らないための確認材料 ──
+    const idx = await _getVoucherIndex();
+    const norm = n => String(n||'').replace(/\.pdf$/i,'').trim().toLowerCase();
+    const existing = new Set(Object.values(idx).filter(x=>x.type!=='merged').map(x=>norm(x.filename)));
+    const usedNames = new Set(); const seenFp = new Set();
+    const skipped = []; const created = [];
+
+    for(let k=0;k<parts.length;k++){
+      const pt = parts[k];
+      setBtn(`保存中 ${k+1}/${parts.length}`);
+      // 分割
+      const nd = await PDFLib.PDFDocument.create();
+      const idxs = Array.from({length:pt.count}, (_,i)=>pt.start+i);
+      const pgs = await nd.copyPages(srcDoc, idxs); pgs.forEach(x=>nd.addPage(x));
+      if(nd.getPageCount() !== pt.count) throw new Error('ページ数が合いません: ' + pt.name);
+      const out = new Uint8Array(await nd.save());
+      // 内容の重複（同じ1ページ目の内容）
+      const fpText = (texts[pt.start]||'').replace(/\s+/g,'').toLowerCase();
+      const fp = fpText.length >= 40 ? _fpHash(fpText) : null;
+      if(fp && seenFp.has(fp)){ skipped.push(pt.name + '（同じ内容が結合ファイル内に複数）'); continue; }
+      // 名前の重複（既に署名済み一覧にある）
+      let nm = pt.name;
+      if(existing.has(norm(nm))){ skipped.push(pt.name + '（一覧に同名あり）'); continue; }
+      let n2 = 2; while(usedNames.has(norm(nm))){ nm = pt.name.replace(/\.pdf$/i,'') + '_' + (n2++) + '.pdf'; }
+      // 日付：記録があれば元の日付、なければバウチャー内の日付→結合ファイルの日付
+      let extra = { confirmed: !!pt.confirmed };
+      let customDate;
+      if(pt.savedAt){ extra.savedAt = pt.savedAt; extra.dateOnly = !!pt.dateOnly; }
+      else {
+        const d = await _voucherDateForMerge(out, rec);
+        if(d){ customDate = d; } else { extra.savedAt = rec.savedAt; extra.dateOnly = !!rec.dateOnly; }
+      }
+      if(pt.mergeParts) extra.mergeParts = pt.mergeParts;
+      const newId = await saveToArchive(out, nm, pt.type === 'merged' ? 'merged' : pt.type, customDate, { extra, silentDup:true });
+      if(!newId){ skipped.push(nm + '（同じPDFが既にあります）'); continue; }
+      savedIds.push(newId); usedNames.add(norm(nm)); if(fp) seenFp.add(fp); created.push(nm);
+    }
+
+    if(created.length + skipped.length !== parts.length) throw new Error('分割結果の件数が合いません');
+    if(created.length === 0 && skipped.length > 0){
+      alert('すべて既に署名済み一覧にあるため、新しく戻したファイルはありません。結合ファイルはそのまま残しています。\n\n' + skipped.join('\n'));
+      return;
+    }
+    // すべて保存できた場合のみ、結合ファイルを削除
+    await deleteArchiveIds([id]);
+    closePdfPreview();
+    archiveSelectedIds = new Set();
+    await renderArchive();
+    alert(`✅ ${created.length}件を署名済み一覧に戻しました。` + (skipped.length ? `\n\n重複のため戻さなかったもの（${skipped.length}件）:\n${skipped.join('\n')}` : ''));
+  }catch(e){
+    console.error(e);
+    // 途中で失敗した場合は、作りかけの個別PDFを取り消して結合ファイルを残す
+    if(savedIds.length){ try{ await deleteArchiveIds(savedIds); }catch(x){ console.warn(x); } }
+    alert('元に戻す処理に失敗しました（結合ファイルはそのまま残しています）: ' + (e.message||e));
+    try{ await renderArchive(); }catch(_){}
+  }finally{
+    _unmerging = false; setBtn('↩ 元に戻す');
+  }
+}
+
+
+/* ── ゴミ箱：削除したPDFは一度ここに入り、元に戻せる ── */
+// 一覧から消して type を 'trash' にする（PDF本体は残す）
+async function trashArchiveIds(ids){
+  ids = (ids||[]).filter(Boolean); if(ids.length===0) return;
+  const db = await getFirestore();
+  const idx = await _getVoucherIndex();
+  const now = new Date().toISOString();
+  for(const id of ids){
+    const cur = idx[id] || {};
+    await db.collection('vouchers').doc(id).update({ type:'trash', origType: cur.type || 'sign', deletedAt: now });
+  }
+  await _removeVoucherIndexEntries(ids);
+}
+
+let _trashItems = [];
+
+function closeTrash(){ const o=document.getElementById('trashOverlay'); if(o) o.remove(); }
+
+async function showTrash(){
+  closeTrash();
+  const ov = document.createElement('div'); ov.id='trashOverlay';
+  ov.style.cssText='position:fixed;inset:0;z-index:2147483000;background:#f0f4f8;display:flex;flex-direction:column;';
+  ov.innerHTML = `<div style="background:#1a3252;color:#fff;padding:14px 16px;display:flex;align-items:center;gap:10px;">
+      <div style="flex:1;font-size:16px;font-weight:800;">🗑 ゴミ箱</div>
+      <button onclick="closeTrash()" style="padding:6px 12px;border-radius:8px;border:none;background:#475569;color:#fff;font-size:14px;font-weight:700;">✕ 閉じる</button></div>
+    <div id="trashBody" style="flex:1;overflow:auto;padding:16px;max-width:560px;width:100%;margin:0 auto;"></div>`;
+  document.body.appendChild(ov);
+  await renderTrash();
+}
+
+async function renderTrash(){
+  const body = document.getElementById('trashBody'); if(!body) return;
+  body.innerHTML = '<div style="text-align:center;padding:40px 10px;color:#64748b;font-size:14px;font-weight:700;">読み込み中...</div>';
+  try{
+    const db = await getFirestore();
+    const snap = await db.collection('vouchers').where('type','==','trash').get();
+    _trashItems = snap.docs.map(d=>({id:d.id, ...d.data()}));
+    _trashItems.sort((a,b)=> new Date(b.deletedAt||0) - new Date(a.deletedAt||0));
+    if(_trashItems.length===0){
+      body.innerHTML = '<div style="text-align:center;padding:50px 10px;color:#94a3b8;font-size:14px;"><div style="font-size:40px;margin-bottom:8px;">📭</div>ゴミ箱は空です</div>';
+      return;
+    }
+    const lbl = {sign:'サイン収集', receipt:'領収書添付', upload:'直接追加', merged:'結合'};
+    const fmt = iso => { const d=new Date(iso); return isNaN(d)?'':`${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`; };
+    body.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+        <div style="font-size:12px;color:#64748b;">${_trashItems.length}件（自動では消えません）</div>
+        <button onclick="emptyTrash()" style="padding:7px 12px;border-radius:8px;border:1.5px solid #fca5a5;background:#fff;color:#dc2626;font-weight:800;font-size:12px;">🗑 ゴミ箱を空にする</button></div>` +
+      _trashItems.map(t=>`<div style="background:#fff;border:1.5px solid #d1dce8;border-radius:12px;padding:12px;margin-bottom:10px;">
+        <div style="font-size:13px;font-weight:800;word-break:break-all;">${escHtml(t.filename||'')}</div>
+        <div style="font-size:11.5px;color:#64748b;margin:3px 0 8px;">${lbl[t.origType]||'サイン収集'} ・ 削除日 ${fmt(t.deletedAt)}</div>
+        <div style="display:flex;gap:8px;">
+          <button onclick="trashPreview('${t.id}')" style="flex:1;padding:8px;border-radius:8px;border:1.5px solid #7c3aed;background:#fff;color:#7c3aed;font-weight:800;font-size:13px;">👁 確認</button>
+          <button onclick="restoreFromTrash('${t.id}')" style="flex:1;padding:8px;border-radius:8px;border:none;background:#16a34a;color:#fff;font-weight:800;font-size:13px;">↩ 元に戻す</button>
+          <button onclick="purgeTrashItem('${t.id}')" style="padding:8px 12px;border-radius:8px;border:1.5px solid #fca5a5;background:#fff;color:#dc2626;font-weight:800;font-size:13px;">完全に削除</button>
+        </div></div>`).join('');
+  }catch(e){
+    body.innerHTML = `<div style="padding:30px 10px;color:#b91c1c;font-size:13px;">読み込みに失敗しました: ${escHtml(e.message||String(e))}</div>`;
+  }
+}
+
+async function _trashFullBytes(t){
+  const rec = await _hydrateRecord(await getFirestore(), t);
+  return rec && rec.pdfBase64 ? base64ToUint8(rec.pdfBase64) : null;
+}
+
+async function trashPreview(id){
+  const t = _trashItems.find(x=>x.id===id); if(!t) return;
+  try{
+    const bytes = await _trashFullBytes(t);
+    if(!bytes){ alert('PDFを読み込めませんでした'); return; }
+    _previewArchiveId = null;
+    _openPdfPreviewFromBytes(bytes, t.filename || 'PDF');
+    const umb = document.getElementById('pdfPreviewUnmergeBtn'); if(umb) umb.style.display='none';
+  }catch(e){ alert('プレビューに失敗しました: ' + e.message); }
+}
+
+async function restoreFromTrash(id){
+  const t = _trashItems.find(x=>x.id===id); if(!t) return;
+  try{
+    // 同じPDFが既に一覧にある場合は確認（ダブり防止）
+    const idx = await _getVoucherIndex();
+    const dup = t.checksum && Object.values(idx).find(x => x.checksum === t.checksum);
+    if(dup && !confirm(`同じPDFが既に一覧にあります（${dup.filename}）。\nそれでも元に戻しますか？\n（「キャンセル」で戻しません）`)) return;
+    const db = await getFirestore();
+    const orig = t.origType || 'sign';
+    const FV = firebase.firestore.FieldValue;
+    await db.collection('vouchers').doc(id).update({ type: orig, origType: FV.delete(), deletedAt: FV.delete() });
+    const rec = { ...t, type: orig }; delete rec.origType; delete rec.deletedAt;
+    await _updateVoucherIndexEntry(id, _voucherIndexMeta(rec));
+    await renderTrash();
+    alert('元に戻しました（' + (orig==='merged' ? '結合ファイル' : '署名済み一覧') + '）');
+  }catch(e){ alert('元に戻せませんでした: ' + e.message); }
+}
+
+async function _purgeTrash(ids){
+  const db = await getFirestore();
+  for(const id of ids){
+    const t = _trashItems.find(x=>x.id===id);
+    const n = t && t.pdfChunkCount;
+    await db.collection('vouchers').doc(id).delete();
+    if(n){ try{ await _deleteChunks(db, id, n); }catch(e){ console.warn(e); } }
+  }
+}
+
+async function purgeTrashItem(id){
+  if(!confirm('完全に削除します。元に戻せません。よろしいですか？')) return;
+  try{ await _purgeTrash([id]); await renderTrash(); }catch(e){ alert('削除に失敗しました: ' + e.message); }
+}
+
+async function emptyTrash(){
+  if(_trashItems.length===0) return;
+  if(!confirm(`ゴミ箱の${_trashItems.length}件をすべて完全に削除します。元に戻せません。よろしいですか？`)) return;
+  try{ await _purgeTrash(_trashItems.map(x=>x.id)); await renderTrash(); }catch(e){ alert('削除に失敗しました: ' + e.message); }
 }
 
 async function showArchive(view){
@@ -3614,6 +4254,8 @@ async function _registerPendingFiles(files, sourceId){
 // アプリ起動時に保留バナーを更新
 document.addEventListener('DOMContentLoaded', ()=>{ refreshPendingBanner(); });
 
+function _thisMonthKey(){ const n=new Date(); return `${n.getFullYear()}年${n.getMonth()+1}月`; }
+function _catTotal(c){ return c.n; }  // 1件が複数の区分（VM・ランク）に入ることがあるため、件数は別カウント
 let _archiveShipFilter = null; // null なら全件表示。それ以外は {ship, category} （categoryは 'embark'|'disembark'|'other'|null）
 
 // 現在のフィルター（船名別件数の絞り込み）を records に適用する共通処理
@@ -3621,19 +4263,24 @@ let _archiveShipFilter = null; // null なら全件表示。それ以外は {shi
 function _applyShipFilter(records){
   return _archiveShipFilter
     ? records.filter(r => extractShipName(r.filename) === _archiveShipFilter.ship
-        && (_archiveShipFilter.category == null || _recCat(r) === _archiveShipFilter.category))
+        && (_archiveShipFilter.category == null || _recCats(r).includes(_archiveShipFilter.category)))
     : records;
 }
 
 function extractShipName(filename){
   // ファイル名から船名を抽出：「SHIP_NAME_Category_JPY...」形式
   // Category候補: Embark, Disembark, Embarkation, Disembarkation など
-  const m = filename.replace(/\.pdf$/i,'').match(/^(.+?)_(Embark|Disembark|Sign|Receipt|JPY|\d)/i);
+  // 結合ファイル名の「_他2件_merged」部分は船名判定から除く
+  const fn0 = filename.replace(/\.pdf$/i,'').replace(/_他\d+件.*$/,'').replace(/_merged.*$/i,'');
+  const m = fn0.match(/^(.+?)_(Embark|Disembark|Sign|Receipt|JPY|\d)/i);
   if(m) return m[1].replace(/_/g,' ').trim();
+  // 区分語がファイル名の途中にある場合（例：「SEISYU MARU navies disembark」）
+  const m2 = fn0.match(/^(.+?)[ _]+(?:navies[ _]+)?(?:Embark|Disembark)/i);
+  if(m2) return m2[1].replace(/_/g,' ').trim();
   // アンダースコア区切りの先頭2〜3単語
-  const parts = filename.replace(/\.pdf$/i,'').split('_');
+  const parts = fn0.split('_');
   if(parts.length >= 2) return parts.slice(0, Math.min(3, parts.length-1)).join(' ');
-  return filename.replace(/\.pdf$/i,'');
+  return fn0;
 }
 
 // ファイル名から「乗船（Embark）」「下船（Disembark）」を判定（どちらでもなければ 'other'）
@@ -3650,13 +4297,29 @@ function extractCategory(filename){
    アップロードした原本とサインアプリ保存済みPDFを突き合わせる
 ══════════════════════════════════════════ */
 
+// PDF内の文字を「見た目の読み順」（上→下、左→右）に並べ替えてテキスト化する
+// ※ PDFの内部順は見た目と違うことが多く（例：「Name of Vessel:」の値が文章の最後に出る）、
+//    そのまま結合すると船名・区分・伝票番号を正しく読み取れないため、位置で並べ直す
+function _readingOrderText(items){
+  const its = (items||[]).filter(i => i && i.str && i.str.trim() && i.transform)
+    .map(i => ({s:i.str, x:i.transform[4], y:i.transform[5]}));
+  its.sort((a,b)=> b.y - a.y);
+  const lines = [];
+  for(const it of its){
+    const ln = lines.find(l => Math.abs(l.y - it.y) <= 4);
+    if(ln){ ln.items.push(it); } else { lines.push({y:it.y, items:[it]}); }
+  }
+  lines.sort((a,b)=> b.y - a.y);
+  return lines.map(l => l.items.sort((a,b)=>a.x-b.x).map(i=>i.s).join(' ')).join(' ').replace(/\s+/g,' ').trim();
+}
+
 // PDF（1ページ目）の全文テキストを抽出
 async function _extractPdfFullText(bytes){
   try{
     const doc = await pdfjsLib.getDocument({data:bytes.slice(), stopAtErrors:false}).promise;
     const page = await doc.getPage(1);
     const content = await page.getTextContent();
-    return content.items.map(it=>it.str).join(' ').replace(/\s+/g,' ').trim();
+    return _readingOrderText(content.items);
   }catch(e){
     console.warn('PDFテキスト抽出失敗:', e);
     return '';
@@ -3666,11 +4329,11 @@ async function _extractPdfFullText(bytes){
 // 全文テキストから Voucher情報を抽出
 function _parseVoucherInfo(text){
   // 伝票番号: "2026-A0031" のようなパターン（年-英字+数字）
-  const noMatch = text.match(/\b(\d{4}-[A-Z]\d{3,6})\b/);
+  const noMatch = text.match(/\b(\d{2,4}-[A-Z]\d{3,6})\b/);
   // 船名: "Name of Vessel: XXX" の直後
-  const shipMatch = text.match(/Name of Vessel:?\s*([A-Z0-9][A-Z0-9 .\-]*?)(?:\s+Port at:|\s+Port:|$)/i);
+  const shipMatch = text.match(/(?:Name of Vessel|Subject):?\s*([A-Z0-9][A-Z0-9 .\-&']*?)(?:\s+Port at:|\s+Port:|\s+at:|\s+This is to certify|$)/i);
   // 区分: "Category: XXX"
-  const catMatch = text.match(/Category:?\s*([A-Za-z]+)/i);
+  const catMatch = text.match(/Category:?\s*([A-Za-z0-9]+)/i);
   // 日付: "Date: 2026/Nov/17" 形式
   const dateMatch = text.match(/Date:?\s*([0-9]{4}\/[A-Za-z]{3}\/[0-9]{1,2})/i);
   // 合計金額: "Total JPY 1,000"
@@ -3947,12 +4610,12 @@ async function renderArchive(){
     const monthKey = `${d.getFullYear()}年${d.getMonth()+1}月`;
     if(!byMonthShip.has(monthKey)) byMonthShip.set(monthKey, new Map());
     const ship = extractShipName(r.filename);
-    const cat = _recCat(r);
     const m = byMonthShip.get(monthKey);
-    if(!m.has(ship)) m.set(ship, {embark:0, disembark:0, other:0, vm:0});
-    m.get(ship)[cat]++;
+    if(!m.has(ship)) m.set(ship, {n:0, embark:0, disembark:0, other:0, vm:0, vm_embark:0, vm_disembark:0});
+    const cnt = m.get(ship); cnt.n++;
+    for(const cat of _recCats(r)) cnt[cat] = (cnt[cat]||0) + 1;
   }
-  const sortedMonthKeys = [...byMonthShip.keys()].sort((a,b)=>{
+  const sortedMonthKeys = [...byMonthShip.keys()].filter(k => k === _thisMonthKey()).sort((a,b)=>{
     // "2026年11月" 形式から比較
     const toNum = s => { const m=s.match(/(\d+)年(\d+)月/); return m?parseInt(m[1])*100+parseInt(m[2]):0; };
     return toNum(b)-toNum(a);
@@ -3960,15 +4623,17 @@ async function renderArchive(){
 
   const shipSummary = document.getElementById('archiveShipSummary');
   const shipBody = document.getElementById('archiveShipBody');
-  shipSummary.style.display = (_archiveView === 'merged') ? 'none' : 'block';
-  shipBody.innerHTML = sortedMonthKeys.map(monthKey => {
+  shipSummary.style.display = 'block';  // 署名済み一覧・結合ファイルの両方で船名別フィルターを表示
+  const _noThisMonth = sortedMonthKeys.length === 0
+    ? `<div style="padding:10px 4px;font-size:12.5px;color:#94a3b8;">今月（${_thisMonthKey()}）の分はありません</div>` : '';
+  shipBody.innerHTML = _noThisMonth + sortedMonthKeys.map(monthKey => {
     const shipMap = byMonthShip.get(monthKey);
     const sortedShips = [...shipMap.entries()].sort((a,b)=>{
-      const ta = a[1].embark + a[1].disembark + a[1].other + a[1].vm;
-      const tb = b[1].embark + b[1].disembark + b[1].other + b[1].vm;
+      const ta = _catTotal(a[1]);
+      const tb = _catTotal(b[1]);
       return tb - ta;
     });
-    const totalInMonth = sortedShips.reduce((s,[,c])=>s + c.embark + c.disembark + c.other + c.vm, 0);
+    const totalInMonth = sortedShips.reduce((s,[,c])=>s + _catTotal(c), 0);
     return `
       <div class="archive-ship-month-label">${escHtml(monthKey)}（${totalInMonth}件）</div>
       <div class="archive-ship-rows">
@@ -3978,7 +4643,14 @@ async function renderArchive(){
           const tags = [];
           if(c.embark>0) tags.push(`<span class="archive-ship-cat embark${isActive('embark')?' active':''}" onclick="filterByShipCategory('${escHtml(ship)}','embark')">乗船 ${c.embark}件</span>`);
           if(c.disembark>0) tags.push(`<span class="archive-ship-cat disembark${isActive('disembark')?' active':''}" onclick="filterByShipCategory('${escHtml(ship)}','disembark')">下船 ${c.disembark}件</span>`);
+          if(c.vm_embark>0) tags.push(`<span class="archive-ship-cat vm_embark${isActive('vm_embark')?' active':''}" onclick="filterByShipCategory('${escHtml(ship)}','vm_embark')">VM乗船 ${c.vm_embark}件</span>`);
+          if(c.vm_disembark>0) tags.push(`<span class="archive-ship-cat vm_disembark${isActive('vm_disembark')?' active':''}" onclick="filterByShipCategory('${escHtml(ship)}','vm_disembark')">VM下船 ${c.vm_disembark}件</span>`);
           if(c.vm>0) tags.push(`<span class="archive-ship-cat vm${isActive('vm')?' active':''}" onclick="filterByShipCategory('${escHtml(ship)}','vm')">VM ${c.vm}件</span>`);
+          for(const d of RANK_DEFS){
+            [[d.key+'_embark', d.key+'乗船', 'rk_embark'], [d.key+'_disembark', d.key+'下船', 'rk_disembark'], [d.key, d.key, 'rk']].forEach(([ck,label,cls])=>{
+              if((c[ck]||0)>0) tags.push(`<span class="archive-ship-cat ${cls}${isActive(ck)?' active':''}" onclick="filterByShipCategory('${escHtml(ship)}','${ck}')">${label} ${c[ck]}件</span>`);
+            });
+          }
           if(c.other>0) tags.push(`<span class="archive-ship-cat other${isActive('other')?' active':''}" onclick="filterByShipCategory('${escHtml(ship)}','other')">他 ${c.other}件</span>`);
           return `
           <div class="archive-ship-row">
@@ -4062,7 +4734,7 @@ let _vmBackfillRunning = false;
 // VM判定が未実施の既存PDFを順番に判定してインデックスに記録（初回のみ時間がかかる）
 async function _backfillVMFlags(records){
   if(_vmBackfillRunning) return;
-  const todo = records.filter(r => r.isVM === null || r.isVM === undefined);
+  const todo = records.filter(r => r.isVM === null || r.isVM === undefined || !Array.isArray(r.ranks));
   if(todo.length === 0) return;
   _vmBackfillRunning = true;
   const label = document.getElementById('archiveSecLabel');
@@ -4071,14 +4743,14 @@ async function _backfillVMFlags(records){
   try{
     const db = await getFirestore();
     for(let i=0;i<todo.length;i++){
-      if(label) label.textContent = `${baseText}（VM判定中 ${i+1}/${todo.length}）`;
+      if(label) label.textContent = `${baseText}（判定中 ${i+1}/${todo.length}）`;
       const r = await getArchiveById(todo[i].id);
       if(!r || !r.pdfBase64) continue;
-      const flag = await _detectVM(base64ToUint8(r.pdfBase64));
-      if(flag === null) continue;
-      await db.collection('vouchers').doc(r.id).update({ isVM: flag });
-      await _patchVoucherIndexFields(r.id, { isVM: flag });
-      if(flag) changed++;
+      const fl = await _detectFlags(base64ToUint8(r.pdfBase64));
+      if(fl === null) continue;
+      await db.collection('vouchers').doc(r.id).update({ isVM: fl.vm, ranks: fl.ranks });
+      await _patchVoucherIndexFields(r.id, { isVM: fl.vm, ranks: fl.ranks });
+      if(fl.vm || fl.ranks.length) changed++;
     }
   }catch(e){ console.warn('VM判定の一括処理に失敗:', e); }
   _vmBackfillRunning = false;
@@ -4163,7 +4835,7 @@ function renderArchiveItem(r){
     ? `<span style="background:#fef3c7;color:#92400e;padding:1px 6px;border-radius:6px;font-size:10px;font-weight:700;border:1px solid #fcd34d;" title="同じPDFが複数回保存されています">⚠️ 重複</span>`
     : '';
   return `
-    <div class="archive-item${confirmed?' confirmed':''}${r._isDuplicate?' dup-item':''}" id="aitem_${r.id}" ${r._isDuplicate?'style="background:#fffbeb;"':''}>
+    <div class="archive-item${confirmed?' confirmed':''}${r._isDuplicate?' dup-item':''}${r.id===_previewHighlightId?' previewing':''}" id="aitem_${r.id}" ${r._isDuplicate?'style="background:#fffbeb;"':''}>
       <div class="archive-item-check${checked?' checked':''}" onclick="toggleArchiveSelect('${r.id}')"></div>
       <div class="archive-item-info" onclick="toggleArchiveSelect('${r.id}')">
         <div class="archive-item-name">${escHtml(r.filename)}</div>
@@ -4175,10 +4847,12 @@ function renderArchiveItem(r){
       </div>
       <div class="archive-item-actions">
         <button class="archive-item-confirm${confirmed?' confirmed':''}" onclick="toggleConfirmed('${r.id}', ${confirmed})" title="${confirmed?'確認済み':'未確認'}">✅</button>
-        <button class="archive-item-rename" onclick="startRenameArchive('${r.id}')" title="ファイル名・日付を変更">✏️</button>
-        <button class="archive-item-rename" style="border-color:#f59e0b;color:#d97706;" onclick="attachReceiptFromArchive('${r.id}')" title="領収書を添付">🧾</button>
+        <button class="archive-item-rename act-x" onclick="startRenameArchive('${r.id}')" title="ファイル名・日付を変更">✏️</button>
+        <button class="archive-item-rename act-x" style="border-color:#f59e0b;color:#d97706;" onclick="${r.type==='merged' ? `attachReceiptToMerged('${r.id}')` : `attachReceiptFromArchive('${r.id}')`}" title="領収書を添付">🧾</button>
+        ${r.type!=='merged' ? `<button class="archive-item-rename act-x" style="border-color:#7c3aed;color:#7c3aed;" onclick="moveToMergedFiles(['${r.id}'])" title="結合ファイルに移動">📁</button>` : ''}
         <button class="archive-item-preview" onclick="previewArchiveItem('${r.id}')">👁</button>
-        <button class="archive-item-del" onclick="deleteSingleArchive('${r.id}')">🗑</button>
+        <button class="archive-item-del act-x" onclick="deleteSingleArchive('${r.id}')">🗑</button>
+        <button class="archive-item-more" onclick="toggleItemMore('${r.id}')" title="その他の操作（編集・領収書・ゴミ箱）">⋯</button>
       </div>
     </div>
     <div class="archive-rename-form" id="rename_form_${r.id}" style="display:none;">
@@ -4263,6 +4937,37 @@ function toggleArchiveSelect(id){
   updateArchiveBulkBar();
 }
 
+
+// 選択したPDFを「結合ファイル」へ移動する（単体で結合の必要がないものを整理する用）
+async function moveToMergedFiles(ids){
+  ids = (ids||[]).filter(Boolean);
+  if(ids.length===0) return;
+  try{
+    const db = await getFirestore();
+    const idx = await _getVoucherIndex();
+    for(const id of ids){
+      await db.collection('vouchers').doc(id).update({ type: 'merged' });
+      const cur = idx[id];
+      if(cur) await _updateVoucherIndexEntry(id, { ...cur, type: 'merged' });
+    }
+    archiveSelectedIds = new Set();
+    updateArchiveBulkBar();
+    await renderArchive();
+  }catch(e){
+    alert('結合ファイルへの移動に失敗しました: ' + e.message);
+  }
+}
+
+
+// プレビュー中のPDFを「結合ファイル」へ移動する
+async function movePreviewToMerged(){
+  const id = _previewArchiveId;
+  if(!id) return;
+  if(!confirm('このPDFを結合ファイルへ移動しますか？')) return;
+  closePdfPreview();
+  await moveToMergedFiles([id]);
+}
+
 function updateArchiveBulkBar(){
   const n = archiveSelectedIds.size;
   const bulkBar  = document.getElementById('archiveBulkBar');
@@ -4270,6 +4975,8 @@ function updateArchiveBulkBar(){
   if(bulkBar){
     bulkBar.style.display  = n > 0 ? 'block' : 'none';
     if(bulkCount) bulkCount.textContent = `${n}件選択中`;
+    const mvb = document.getElementById('bulkMoveMergedBtn');
+    if(mvb) mvb.style.display = (_archiveView === 'merged') ? 'none' : '';
   }
 }
 
@@ -4304,16 +5011,126 @@ async function downloadArchiveItem(id){
   }
 }
 
+function toggleItemMore(id){ const el = document.getElementById('aitem_' + id); if(el) el.classList.toggle('more-open'); }
+
+/* ── スマホ用PDFビューア：iPhone等はiframeでPDFを表示できないため、アプリ内で描画してワンタップで開く ── */
+let _mvDoc = null, _mvZoom = 1, _mvKey = '', _mvScroller = null, _mvPendingRatio = null;
+function _mvScrollRatio(){ const sc = _mvScroller; return (sc && sc.isConnected && sc.scrollHeight > 0) ? sc.scrollTop / sc.scrollHeight : null; }
+function _useInAppViewer(){
+  const ua = navigator.userAgent;
+  return /iPad|iPhone|iPod|Android/i.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1) || window.innerWidth < 1000;
+}
+function _mvCleanup(){ try{ if(_mvDoc) _mvDoc.destroy(); }catch(e){} _mvDoc = null; _mvZoom = 1; _mvScroller = null; }
+async function _openMobileViewer(body, bytes){
+  _mvCleanup();
+  body.innerHTML = '';
+  body.style.display = 'flex';
+  const wrap = document.createElement('div');
+  wrap.style.cssText = 'flex:1;position:relative;min-width:0;';
+  const sc = document.createElement('div');
+  sc.style.cssText = 'position:absolute;inset:0;overflow:auto;-webkit-overflow-scrolling:touch;background:#525659;';
+  const inner = document.createElement('div');
+  inner.style.cssText = 'width:100%;padding:8px 0 80px;';
+  inner.innerHTML = '<div style="color:#e2e8f0;text-align:center;padding:40px 0;font-size:13px;">読み込み中…</div>';
+  sc.appendChild(inner); wrap.appendChild(sc); _mvScroller = sc;
+  const ctl = document.createElement('div');
+  ctl.style.cssText = 'position:absolute;right:12px;bottom:16px;display:flex;align-items:center;gap:6px;background:rgba(15,23,42,.82);border-radius:22px;padding:6px 8px;z-index:5;';
+  const mk = (t, f) => { const b = document.createElement('button'); b.textContent = t; b.onclick = f;
+    b.style.cssText = 'width:38px;height:34px;border-radius:17px;border:none;background:rgba(255,255,255,.16);color:#fff;font-size:18px;font-weight:800;cursor:pointer;'; return b; };
+  const lab = document.createElement('span'); lab.style.cssText = 'color:#fff;font-size:12px;font-weight:700;min-width:40px;text-align:center;'; lab.textContent = '100%';
+  ctl.appendChild(mk('−', () => setZoom(_mvZoom / 1.3))); ctl.appendChild(lab); ctl.appendChild(mk('＋', () => setZoom(_mvZoom * 1.3)));
+  wrap.appendChild(ctl);
+  body.appendChild(wrap);
+
+  const pages = [];
+  const dpr = Math.min(window.devicePixelRatio || 1, 2.5);
+  function near(div){ const a = div.getBoundingClientRect(), b = sc.getBoundingClientRect(); return a.bottom > b.top - 700 && a.top < b.bottom + 700; }
+  async function renderPage(div){
+    const key = _mvKey = _mvZoom.toFixed(2);
+    if(div._key === key || div._busy) return;
+    div._busy = true;
+    try{
+      const page = await _mvDoc.getPage(div._n);
+      const vp1 = page.getViewport({scale:1});
+      const w = Math.max(div.clientWidth, 100);
+      const scale = Math.min(w * dpr / vp1.width, 3000 / vp1.width);
+      const vp = page.getViewport({scale});
+      const cv = document.createElement('canvas'); cv.width = Math.floor(vp.width); cv.height = Math.floor(vp.height);
+      cv.style.cssText = 'display:block;width:100%;height:100%;';
+      await page.render({canvasContext: cv.getContext('2d'), viewport: vp}).promise;
+      if(div._canvas) div._canvas.remove();
+      div.appendChild(cv); div._canvas = cv; div._key = key;
+    }catch(e){ console.warn('page render', e); }
+    div._busy = false;
+    if(div._key !== _mvKey && near(div)) renderPage(div);   // 描画中に倍率が変わっていたら描き直す
+  }
+  function refresh(){
+    for(const d of pages){
+      if(near(d)){ if(d._key !== _mvZoom.toFixed(2)) renderPage(d); }
+      else if(d._canvas){ d._canvas.remove(); d._canvas = null; d._key = null; }   // 遠いページはメモリ節約のため破棄
+    }
+  }
+  function setZoom(z){
+    z = Math.min(4, Math.max(1, z));
+    const cx = (sc.scrollLeft + sc.clientWidth/2) / Math.max(sc.scrollWidth,1), cy = (sc.scrollTop + sc.clientHeight/2) / Math.max(sc.scrollHeight,1);
+    _mvZoom = z; inner.style.width = (z*100) + '%'; lab.textContent = Math.round(z*100) + '%';
+    sc.scrollLeft = cx * sc.scrollWidth - sc.clientWidth/2; sc.scrollTop = cy * sc.scrollHeight - sc.clientHeight/2;
+    clearTimeout(setZoom._t); setZoom._t = setTimeout(refresh, 120);
+  }
+  // ピンチ操作で拡大・縮小
+  let d0 = 0, z0 = 1;
+  sc.addEventListener('touchstart', e => { if(e.touches.length === 2){ d0 = Math.hypot(e.touches[0].clientX-e.touches[1].clientX, e.touches[0].clientY-e.touches[1].clientY); z0 = _mvZoom; } }, {passive:true});
+  sc.addEventListener('touchmove', e => { if(e.touches.length === 2 && d0){ e.preventDefault();
+    const d = Math.hypot(e.touches[0].clientX-e.touches[1].clientX, e.touches[0].clientY-e.touches[1].clientY); setZoom(z0 * d / d0); } }, {passive:false});
+  sc.addEventListener('touchend', () => { d0 = 0; });
+  let tick = false;
+  sc.addEventListener('scroll', () => { if(tick) return; tick = true; requestAnimationFrame(() => { tick = false; refresh(); }); }, {passive:true});
+
+  try{
+    const doc = await pdfjsLib.getDocument({data: bytes.slice(), stopAtErrors:false}).promise;
+    if(!document.getElementById('pdfPreviewOverlay').classList.contains('open') || !wrap.isConnected){ try{ doc.destroy(); }catch(e){} return; }
+    _mvDoc = doc;
+    inner.innerHTML = '';
+    for(let i=1;i<=doc.numPages;i++){
+      const pg = await doc.getPage(i), vp = pg.getViewport({scale:1});
+      const div = document.createElement('div');
+      div.style.cssText = `margin:0 auto 8px;width:calc(100% - 16px);aspect-ratio:${vp.width}/${vp.height};background:#fff;position:relative;box-shadow:0 1px 4px rgba(0,0,0,.4);`;
+      div._n = i; inner.appendChild(div); pages.push(div);
+      if(i <= 2) refresh();
+    }
+    if(_mvPendingRatio !== null){ sc.scrollTop = _mvPendingRatio * sc.scrollHeight; _mvPendingRatio = null; }   // ページ編集の保存後：見ていた位置に戻す
+    refresh();
+  }catch(e){
+    inner.innerHTML = '<div style="color:#fecaca;text-align:center;padding:40px 16px;font-size:13px;">PDFを表示できませんでした：' + escHtml(e.message || String(e)) + '</div>';
+  }
+}
+
 let _previewBlobUrl = null;
 let _previewArchiveId = null; // プレビュー中のレコードID（署名済み一覧のものなら「ページ編集」を使えるようにする）
 
+let _previewHighlightId = null;
+function _markPreviewRow(id){
+  _previewHighlightId = id || null;
+  document.querySelectorAll('.archive-item.previewing').forEach(el => el.classList.remove('previewing'));
+  if(id){ const el = document.getElementById('aitem_' + id); if(el) el.classList.add('previewing'); }
+}
+
 async function previewArchiveItem(id){
+  _markPreviewRow(id);   // 押した瞬間に、表示中の行を水色にする
   try{
     const r = await getArchiveById(id);
     if(!r) return;
     const bytes = r.pdfBase64 ? base64ToUint8(r.pdfBase64) : (r.pdfBytes || new Uint8Array());
     _previewArchiveId = id;
     _openPdfPreviewFromBytes(bytes, r.filename);
+    const _umb = document.getElementById('pdfPreviewUnmergeBtn');
+    if(_umb) _umb.style.display = (r.type === 'merged') ? 'inline-block' : 'none';
+    const _rcb = document.getElementById('pdfPreviewReceiptBtn');
+    if(_rcb) _rcb.style.display = (r.type === 'merged') ? 'inline-block' : 'none';
+    // 剥がせる領収書（貼り付けの記録）があるときだけ「領収書を剥がす」を表示
+    if(r.type === 'merged'){ _rcBackups(id).then(l => { const ub = document.getElementById('pdfPreviewReceiptUndoBtn'); if(ub && _previewArchiveId === id) ub.style.display = l.length ? 'inline-block' : 'none'; }).catch(()=>{}); }
+    const _mvb = document.getElementById('pdfPreviewMoveBtn');
+    if(_mvb) _mvb.style.display = (r.type !== 'merged') ? 'inline-block' : 'none';
   }catch(e){
     alert('プレビューに失敗しました: ' + e.message);
   }
@@ -4332,25 +5149,20 @@ function _openPdfPreviewFromBytes(bytes, filename){
     document.getElementById('pdfPreviewTitle').textContent = filename;
     const editBtn = document.getElementById('pdfPreviewEditBtn');
     if(editBtn) editBtn.style.display = _previewArchiveId ? 'inline-block' : 'none';
+    const umBtn = document.getElementById('pdfPreviewUnmergeBtn'); if(umBtn) umBtn.style.display = 'none';
+    const rcBtn0 = document.getElementById('pdfPreviewReceiptBtn'); if(rcBtn0) rcBtn0.style.display = 'none';
+    const rcUn0 = document.getElementById('pdfPreviewReceiptUndoBtn'); if(rcUn0) rcUn0.style.display = 'none';
+    const dtBtn0 = document.getElementById('pdfPreviewDateBtn'); if(dtBtn0) dtBtn0.style.display = _previewArchiveId ? 'inline-block' : 'none';
+    const mvBtn = document.getElementById('pdfPreviewMoveBtn'); if(mvBtn) mvBtn.style.display = 'none';
     const body = document.getElementById('pdfPreviewBody');
     body.innerHTML = '';
 
-    // iOSはiframeでPDFが開けないため、オブジェクトタグとフォールバックを使う
-    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-    if(isIOS){
-      // iOS: 新しいタブで開く + プレビューエリアにメッセージ
-      body.innerHTML = `
-        <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:24px;text-align:center;">
-          <div style="font-size:48px;">📄</div>
-          <div style="color:#fff;font-size:15px;font-weight:600;">${escHtml(filename)}</div>
-          <button onclick="window.open('${_previewBlobUrl}','_blank')"
-            style="padding:14px 28px;border-radius:12px;border:none;background:#7c3aed;color:#fff;font-size:15px;font-weight:700;cursor:pointer;">
-            📂 PDFを開く
-          </button>
-          <div style="color:rgba(255,255,255,0.6);font-size:12px;">タップしてSafariで表示</div>
-        </div>`;
+    // スマホ・タブレット：iframeではPDFが開けない（iPhoneは「PDFを開く」画面が出てしまう）ため、アプリ内で描画してワンタップで表示
+    if(_useInAppViewer()){
+      overlay.classList.add('open');
+      _openMobileViewer(body, bytes);
     } else {
-      // PC・Android: iframe埋め込み
+      // PC: iframe埋め込み
       const iframe = document.createElement('iframe');
       iframe.src = _previewBlobUrl;
       iframe.style.cssText = 'flex:1;width:100%;height:100%;border:none;';
@@ -4359,6 +5171,7 @@ function _openPdfPreviewFromBytes(bytes, filename){
     }
 
     overlay.classList.add('open');
+    if(window._splitPreviewOn) window._splitPreviewOn();   // PC：左に一覧・右にプレビュー
   }catch(e){
     alert('プレビューに失敗しました: ' + e.message);
   }
@@ -4369,6 +5182,10 @@ function closePdfPreview(){
   document.getElementById('pdfPreviewBody').innerHTML = '';
   if(_previewBlobUrl){ URL.revokeObjectURL(_previewBlobUrl); _previewBlobUrl = null; }
   _previewArchiveId = null;
+  _mvCleanup();
+  // PC：右側プレビューを閉じたら色も消す。スマホ：どれを開いたか分かるよう、最後に開いた行の水色を残す
+  if(document.body.classList.contains('arch-preview')) _markPreviewRow(null);
+  document.body.classList.remove('arch-preview');   // PC：右側のプレビューを消して、一覧を元の位置に戻す
 }
 
 function pdfPreviewDownload(){
@@ -4384,121 +5201,232 @@ function pdfPreviewDownload(){
    ページ編集機能（結合などで複数ページになったPDFから
    不要なページだけを選んで削除する）
 ══════════════════════════════════════════ */
-let _pageEditor = null; // { id, filename, bytes, pageCount, markedPages:Set }
+let _pageEditor = null; // { id, filename, bytes, srcDoc, items:[], extra:[], uidSeq, marked:Set<uid> }
+
+function _peUpdateFooter(){
+  const pe = _pageEditor; if(!pe) return;
+  const saveBtn = document.getElementById('pageEditorSaveBtn');
+  const footerText = document.getElementById('pageEditorFooterText');
+  const kept = pe.items.filter(it => !pe.marked.has(it.uid));
+  const delOrig = pe.items.filter(it => it.src==='orig' && pe.marked.has(it.uid)).length;
+  const added = kept.filter(it => it.src==='add').length;
+  let ordChanged = false, last = -1;
+  for(const it of kept){ if(it.seq < last){ ordChanged = true; break; } last = it.seq; }
+  const parts = [];
+  if(delOrig) parts.push(`削除${delOrig}`);
+  if(added) parts.push(`追加${added}`);
+  if(ordChanged) parts.push('順番変更');
+  if(kept.length === 0){
+    // すべてのページを削除対象にした場合は、ファイルごと削除（ゴミ箱へ）できる
+    saveBtn.disabled = false; saveBtn.textContent = 'ファイルごと削除';
+    footerText.textContent = '⚠️ 全ページを削除対象にしています。保存すると、このファイル全体がゴミ箱に移動します';
+    return;
+  }
+  saveBtn.textContent = '変更を保存';
+  if(parts.length === 0){
+    saveBtn.disabled = true;
+    footerText.textContent = 'タップ＝削除する／戻す、◀ ▶＝順番を移動、「＋ ページを追加」＝PDF・画像を追加';
+  } else {
+    saveBtn.disabled = false;
+    footerText.textContent = `${parts.join('・')}（保存後は${kept.length}ページ）`;
+  }
+}
+
+function _peRender(){
+  const pe = _pageEditor; if(!pe) return;
+  const body = document.getElementById('pageEditorBody');
+  body.innerHTML = '';
+  pe.items.forEach((it, pos) => {
+    const thumb = document.createElement('div');
+    thumb.className = 'page-editor-thumb' + (pe.marked.has(it.uid) ? ' marked' : '') + (it.src==='add' ? ' added' : '');
+    thumb.draggable = true;
+    thumb.dataset.pos = pos;
+    thumb.onclick = () => _peToggle(it.uid);
+    thumb.ondragstart = ev => { pe._drag = pos; try{ ev.dataTransfer.effectAllowed = 'move'; ev.dataTransfer.setData('text/plain', String(pos)); }catch(e){} };
+    thumb.ondragover = ev => { ev.preventDefault(); thumb.classList.add('dragover'); };
+    thumb.ondragleave = () => thumb.classList.remove('dragover');
+    thumb.ondrop = ev => { ev.preventDefault(); thumb.classList.remove('dragover'); if(pe._drag !== undefined && pe._drag !== pos) _peMoveTo(pe._drag, pos); pe._drag = undefined; };
+    thumb.appendChild(it.canvas);
+    const label = document.createElement('div');
+    label.className = 'page-editor-thumb-label';
+    label.textContent = `${pos+1}` + (it.src==='add' ? '・追加' : '');
+    thumb.appendChild(label);
+    const mark = document.createElement('div');
+    mark.className = 'page-editor-thumb-mark'; mark.textContent = '🗑';
+    thumb.appendChild(mark);
+    const mkBtn = (txt, cls, fn, dis) => { const b = document.createElement('button'); b.className = 'page-editor-mv ' + cls; b.textContent = txt; b.disabled = !!dis;
+      b.onclick = ev => { ev.stopPropagation(); fn(); }; return b; };
+    thumb.appendChild(mkBtn('◀', 'l', () => _peMoveTo(pos, pos-1), pos === 0));
+    thumb.appendChild(mkBtn('▶', 'r', () => _peMoveTo(pos, pos+1), pos === pe.items.length-1));
+    body.appendChild(thumb);
+  });
+  _peUpdateFooter();
+}
+
+function _peMoveTo(from, to){
+  const pe = _pageEditor; if(!pe || to < 0 || to >= pe.items.length) return;
+  const [it] = pe.items.splice(from, 1);
+  pe.items.splice(to, 0, it);
+  _peRender();
+}
+
+function _peToggle(uid){
+  const pe = _pageEditor; if(!pe) return;
+  if(pe.marked.has(uid)) pe.marked.delete(uid); else pe.marked.add(uid);
+  _peRender();
+}
+
+async function _peThumbFromPdfPage(pdfjsDoc, n){
+  const page = await pdfjsDoc.getPage(n);
+  const vp1 = page.getViewport({scale:1});
+  const vp = page.getViewport({scale: 220 / vp1.width});
+  const canvas = document.createElement('canvas');
+  canvas.width = vp.width; canvas.height = vp.height;
+  await page.render({canvasContext: canvas.getContext('2d'), viewport: vp}).promise;
+  return canvas;
+}
 
 async function openPagesEditor(){
   if(!_previewArchiveId) return;
   const id = _previewArchiveId;
   const body = document.getElementById('pageEditorBody');
   const saveBtn = document.getElementById('pageEditorSaveBtn');
-  const footerText = document.getElementById('pageEditorFooterText');
   const overlay = document.getElementById('pageEditorOverlay');
   const titleEl = document.getElementById('pageEditorTitle');
-
   try{
     const r = await getArchiveById(id);
     if(!r){ alert('データが見つかりませんでした'); return; }
     const bytes = r.pdfBase64 ? base64ToUint8(r.pdfBase64) : new Uint8Array();
     if(!bytes.length){ alert('PDFデータが見つかりませんでした'); return; }
 
-    titleEl.textContent = 'ページを選んで削除：' + r.filename;
+    titleEl.textContent = 'ページ編集：' + r.filename;
     body.innerHTML = '<div style="color:#94a3b8;font-size:13px;padding:20px;grid-column:1/-1;text-align:center;">読み込み中...</div>';
     saveBtn.disabled = true;
-    footerText.textContent = '削除したいページをタップして選択してください';
+    document.getElementById('pageEditorFooterText').textContent = '読み込み中...';
     overlay.classList.add('open');
 
     const pdfjsDoc = await pdfjsLib.getDocument({data: bytes.slice(), stopAtErrors:false}).promise;
     const pageCount = pdfjsDoc.numPages;
-
-    _pageEditor = { id, filename: r.filename, bytes, pageCount, markedPages: new Set() };
-
-    if(pageCount <= 1){
-      body.innerHTML = '<div style="color:#fca5a5;font-size:13px;padding:20px;grid-column:1/-1;text-align:center;">このPDFは1ページのみのため、ページ削除はできません。</div>';
-      return;
-    }
-
-    body.innerHTML = '';
+    const srcDoc = await PDFLib.PDFDocument.load(bytes, {ignoreEncryption:true, throwOnInvalidObject:false});
+    _pageEditor = { id, filename: r.filename, bytes, srcDoc, pageCount, items: [], extra: [], uidSeq: 0, marked: new Set() };
     for(let i=1;i<=pageCount;i++){
-      const page = await pdfjsDoc.getPage(i);
-      const vp1 = page.getViewport({scale:1});
-      const scale = 220 / vp1.width;
-      const vp = page.getViewport({scale});
-      const canvas = document.createElement('canvas');
-      canvas.width = vp.width;
-      canvas.height = vp.height;
-      await page.render({canvasContext: canvas.getContext('2d'), viewport: vp}).promise;
-
-      const thumb = document.createElement('div');
-      thumb.className = 'page-editor-thumb';
-      thumb.id = 'pgthumb_' + i;
-      thumb.onclick = () => togglePageMark(i);
-      thumb.appendChild(canvas);
-      const label = document.createElement('div');
-      label.className = 'page-editor-thumb-label';
-      label.textContent = `${i} / ${pageCount}`;
-      thumb.appendChild(label);
-      const mark = document.createElement('div');
-      mark.className = 'page-editor-thumb-mark';
-      mark.textContent = '🗑';
-      thumb.appendChild(mark);
-      body.appendChild(thumb);
+      const canvas = await _peThumbFromPdfPage(pdfjsDoc, i);
+      const uid = ++_pageEditor.uidSeq;
+      _pageEditor.items.push({ uid, seq: uid, src:'orig', idx: i-1, canvas });
     }
+    _peRender();
   }catch(e){
     console.error('ページ編集の読み込みに失敗:', e);
     body.innerHTML = `<div style="color:#fca5a5;font-size:13px;padding:20px;grid-column:1/-1;text-align:center;">読み込みに失敗しました: ${escHtml(e.message)}</div>`;
   }
 }
 
-function togglePageMark(pageNum){
-  if(!_pageEditor) return;
-  const { markedPages, pageCount } = _pageEditor;
-  if(markedPages.has(pageNum)) markedPages.delete(pageNum);
-  else markedPages.add(pageNum);
-
-  const thumb = document.getElementById('pgthumb_' + pageNum);
-  if(thumb) thumb.classList.toggle('marked', markedPages.has(pageNum));
-
-  const saveBtn = document.getElementById('pageEditorSaveBtn');
+// ページを追加：PDF（全ページ）または画像（JPG/PNG）を末尾に追加。あとから ◀ ▶ で好きな位置へ移動できる
+async function peAddFiles(ev){
+  const pe = _pageEditor; const files = [...(ev.target.files || [])]; ev.target.value = '';
+  if(!pe || files.length === 0) return;
   const footerText = document.getElementById('pageEditorFooterText');
-  const n = markedPages.size;
-  if(n === 0){
-    saveBtn.disabled = true;
-    footerText.textContent = '削除したいページをタップして選択してください';
-  } else if(n >= pageCount){
-    // 全ページ削除は不可（PDFが空になってしまうため）
-    saveBtn.disabled = true;
-    footerText.textContent = '⚠️ 全ページは削除できません（最低1ページは残してください）';
-  } else {
-    saveBtn.disabled = false;
-    footerText.textContent = `${n}ページを削除します（残り${pageCount - n}ページ）`;
+  try{
+    for(const f of files){
+      footerText.textContent = `「${f.name}」を読み込み中...`;
+      const buf = new Uint8Array(await f.arrayBuffer());
+      const isPdf = /pdf$/i.test(f.type) || /\.pdf$/i.test(f.name);
+      if(isPdf){
+        const doc = await PDFLib.PDFDocument.load(buf, {ignoreEncryption:true, throwOnInvalidObject:false});
+        const pj = await pdfjsLib.getDocument({data: buf.slice(), stopAtErrors:false}).promise;
+        const di = pe.extra.push({ kind:'pdf', doc, name:f.name }) - 1;
+        for(let i=1;i<=pj.numPages;i++){
+          const canvas = await _peThumbFromPdfPage(pj, i);
+          const uid = ++pe.uidSeq; pe.items.push({ uid, seq: uid, src:'add', extra: di, idx: i-1, canvas, name: f.name });
+        }
+      } else if(/^image\/(jpeg|png)$/i.test(f.type)){
+        const url = URL.createObjectURL(f);
+        const img = await new Promise((res, rej) => { const im = new Image(); im.onload = () => res(im); im.onerror = () => rej(new Error('画像を読み込めません')); im.src = url; });
+        const k = 220 / img.naturalWidth; const canvas = document.createElement('canvas');
+        canvas.width = 220; canvas.height = Math.round(img.naturalHeight * k);
+        canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+        URL.revokeObjectURL(url);
+        const di = pe.extra.push({ kind:'img', bytes: buf, png: /png/i.test(f.type), name:f.name }) - 1;
+        const uid = ++pe.uidSeq; pe.items.push({ uid, seq: uid, src:'add', extra: di, idx: 0, canvas, name: f.name });
+      } else {
+        alert(`「${f.name}」はPDFまたは画像（JPG/PNG）ではないため追加できません`);
+      }
+    }
+    _peRender();
+    const bodyEl = document.getElementById('pageEditorBody'); bodyEl.scrollTop = bodyEl.scrollHeight;
+  }catch(e){
+    console.error('ページ追加に失敗:', e);
+    alert('ページの追加に失敗しました: ' + e.message);
+    _peUpdateFooter();
   }
 }
 
 async function savePagesEditor(){
-  if(!_pageEditor || _pageEditor.markedPages.size === 0) return;
-  const { id, filename, bytes, pageCount, markedPages } = _pageEditor;
-  if(markedPages.size >= pageCount){
-    alert('全ページは削除できません');
+  const pe = _pageEditor; if(!pe) return;
+  const { id, filename, bytes, srcDoc, pageCount, items, marked, extra } = pe;
+  const kept = items.filter(it => !marked.has(it.uid));
+  if(kept.length === 0){
+    if(!confirm(`全${items.length}ページを削除対象にしています。\n\nこのファイル全体をゴミ箱に移動します（ホームの「ゴミ箱」から元に戻せます）。\nよろしいですか？`)) return;
+    try{
+      await trashArchiveIds([id]);
+      closePagesEditor();
+      _markPreviewRow(null);
+      closePdfPreview();
+      await renderArchive();
+      alert('ファイルをゴミ箱に移動しました');
+    }catch(e){ alert('ファイルの削除に失敗しました: ' + e.message); }
     return;
   }
-  if(!confirm(`${markedPages.size}ページを削除します。元に戻せません。よろしいですか？`)) return;
+  const delItems = items.filter(it => it.src==='orig' && marked.has(it.uid));
+  const addCount = kept.filter(it => it.src==='add').length;
+  let ordChanged = false, last = -1; for(const it of kept){ if(it.seq < last){ ordChanged = true; break; } last = it.seq; }
+  if(delItems.length === 0 && addCount === 0 && !ordChanged) return;
+  const msg = [];
+  if(delItems.length) msg.push(`${delItems.length}ページを削除（ホームの「ゴミ箱」に入り、あとから元に戻せます）`);
+  if(addCount) msg.push(`${addCount}ページを追加`);
+  if(ordChanged) msg.push('ページの順番を変更');
+  if(!confirm(`次の内容で保存します。\n\n・${msg.join('\n・')}\n\nよろしいですか？`)) return;
 
   const saveBtn = document.getElementById('pageEditorSaveBtn');
   saveBtn.disabled = true;
-  saveBtn.textContent = '削除中...';
+  saveBtn.textContent = '保存中...';
 
   try{
-    const srcDoc = await PDFLib.PDFDocument.load(bytes, {ignoreEncryption:true, throwOnInvalidObject:false});
-    // 残すページ番号（1始まり）を決定し、新しいPDFを作成
-    const keepIndexes = [];
-    for(let i=0;i<pageCount;i++){
-      if(!markedPages.has(i+1)) keepIndexes.push(i);
-    }
+    // 画面に並んでいる順に、新しいPDFを組み立てる
     const newDoc = await PDFLib.PDFDocument.create();
-    const copiedPages = await newDoc.copyPages(srcDoc, keepIndexes);
-    copiedPages.forEach(p => newDoc.addPage(p));
-    const out = await newDoc.save();
-    const outBytes = new Uint8Array(out);
+    for(const it of kept){
+      if(it.src === 'orig'){
+        const [p] = await newDoc.copyPages(srcDoc, [it.idx]); newDoc.addPage(p);
+      } else {
+        const ex = extra[it.extra];
+        if(ex.kind === 'pdf'){ const [p] = await newDoc.copyPages(ex.doc, [it.idx]); newDoc.addPage(p); }
+        else {
+          const im = ex.png ? await newDoc.embedPng(ex.bytes) : await newDoc.embedJpg(ex.bytes);
+          // A4に収まるよう縮小して中央に配置
+          const W = 595.28, H = 841.89, k = Math.min(W / im.width, H / im.height, 1);
+          const pg = newDoc.addPage([W, H]);
+          pg.drawImage(im, { x:(W - im.width*k)/2, y:(H - im.height*k)/2, width: im.width*k, height: im.height*k });
+        }
+      }
+    }
+    const outBytes = new Uint8Array(await newDoc.save());
+
+    // ── 削除するページを先に「ゴミ箱」へ保存（保存できなければ削除しない） ──
+    if(delItems.length){
+      const delIndexes = delItems.map(it => it.idx).sort((a,b)=>a-b);
+      const trashDoc = await PDFLib.PDFDocument.create();
+      (await trashDoc.copyPages(srcDoc, delIndexes)).forEach(pg => trashDoc.addPage(pg));
+      const trashBytes = new Uint8Array(await trashDoc.save());
+      const dbT = await getFirestore();
+      const tRef = dbT.collection('vouchers').doc();
+      const tB64 = uint8ToBase64(trashBytes);
+      const tName = `${String(filename||'file').replace(/\.pdf$/i,'')}_削除ページ(${delIndexes.map(i=>'p'+(i+1)).join(',')}).pdf`;
+      const tRec = { filename: tName, type:'trash', origType:'sign', savedAt:new Date().toISOString(), deletedAt:new Date().toISOString(),
+                     checksum:_pdfChecksum(trashBytes), dateOnly:false, fromId:id };
+      if(tB64.length + tName.length + 400 > INLINE_LIMIT){ tRec.pdfChunkCount = await _writeChunks(dbT, tRef.id, tB64); }
+      else { tRec.pdfBase64 = tB64; }
+      await tRef.set(tRec);
+    }
 
     // Firestore上の該当レコードを上書き保存（チェックサム・インデックスも更新）
     const newChecksum = _pdfChecksum(outBytes);
@@ -4514,6 +5442,26 @@ async function savePagesEditor(){
     } else {
       fields = { pdfBase64: newPdfBase64, pdfChunkCount: FV.delete(), checksum: newChecksum };
     }
+    // 結合ファイルの場合：「元に戻す」用の記録も、削除・追加・順番変更を反映する
+    try{
+      const curDoc = await db.collection('vouchers').doc(id).get();
+      const mp = curDoc.exists ? curDoc.data().mergeParts : null;
+      if(Array.isArray(mp) && mp.reduce((a,x)=>a+(x.pages||0),0) === pageCount){
+        const partOf = []; mp.forEach((x,pi) => { for(let q=0;q<(x.pages||0);q++) partOf.push(pi); });
+        const runs = []; let ok = true; const seen = new Set();
+        for(const it of kept){
+          const key = it.src==='orig' ? 'p'+partOf[it.idx] : 'a'+it.extra;
+          const lastRun = runs[runs.length-1];
+          if(lastRun && lastRun.key === key){ lastRun.pages++; continue; }
+          if(seen.has(key)){ ok = false; break; }   // 同じ元ファイルのページが離れて並ぶと、元に戻す記録は表せない
+          seen.add(key);
+          if(it.src==='orig') runs.push({ key, pages:1, base: mp[partOf[it.idx]] });
+          else runs.push({ key, pages:1, base: { filename: it.name || '追加ページ', type:'upload', savedAt: new Date().toISOString(), dateOnly:false, confirmed:false } });
+        }
+        if(ok){ fields.mergeParts = runs.map(r => ({ ...r.base, pages: r.pages })); }
+        else { fields.mergeParts = FV.delete(); }
+      }
+    }catch(e){ console.warn('mergeParts更新失敗（無視）:', e); }
     await db.collection('vouchers').doc(id).update(fields);
     // 以前の分割データが不要になった分を削除
     if(oldChunks > newChunks){
@@ -4521,19 +5469,28 @@ async function savePagesEditor(){
         try{ await db.collection('vouchers_chunks').doc(`${id}_${i}`).delete(); }catch(e){}
       }
     }
-    const newVM = await _detectVM(outBytes);
-    if(newVM !== null){ await db.collection('vouchers').doc(id).update({ isVM: newVM }); }
-    await _patchVoucherIndexFields(id, { checksum: newChecksum, chunks: newChunks, isVM: newVM });
+    const newFl = await _detectFlags(outBytes);
+    if(newFl !== null){ await db.collection('vouchers').doc(id).update({ isVM: newFl.vm, ranks: newFl.ranks }); }
+    await _patchVoucherIndexFields(id, { checksum: newChecksum, chunks: newChunks, isVM: newFl ? newFl.vm : null, ranks: newFl ? newFl.ranks : null });
+    await _clearReceiptBackups(id);   // ページの位置が変わるため、領収書の取り外し記録はここで破棄する
 
-    alert(`${markedPages.size}ページを削除しました（残り${pageCount - markedPages.size}ページ）`);
+    alert(`保存しました（${msg.join('、')}／現在${kept.length}ページ）`);
+    // 保存後も「今の状態」のまま：一覧のスクロール位置・選択中の行（👁の水色）・開いているプレビューを維持し、更新後のPDFを表示し直す
+    const _scrollEls = [document.scrollingElement, document.querySelector('.body'), document.getElementById('archiveScreen'), document.getElementById('archiveList')].filter(Boolean);
+    const _scrollKeep = _scrollEls.map(el => el.scrollTop);
+    _mvPendingRatio = _mvScrollRatio();
     closePagesEditor();
-    closePdfPreview();
     await renderArchive();
+    _scrollEls.forEach((el,i) => { el.scrollTop = _scrollKeep[i]; });
+    if(_previewArchiveId === id || document.getElementById('pdfPreviewOverlay').classList.contains('open')){
+      await previewArchiveItem(id);
+      _scrollEls.forEach((el,i) => { el.scrollTop = _scrollKeep[i]; });
+    }
   }catch(e){
-    console.error('ページ削除に失敗:', e);
-    alert('ページの削除に失敗しました: ' + e.message);
-    saveBtn.disabled = false;
-    saveBtn.textContent = '選択したページを削除';
+    console.error('ページ編集の保存に失敗:', e);
+    alert('ページ編集の保存に失敗しました: ' + e.message);
+    saveBtn.textContent = '変更を保存';
+    _peUpdateFooter();
   }
 }
 
@@ -4541,8 +5498,386 @@ function closePagesEditor(){
   document.getElementById('pageEditorOverlay').classList.remove('open');
   document.getElementById('pageEditorBody').innerHTML = '';
   document.getElementById('pageEditorSaveBtn').disabled = true;
-  document.getElementById('pageEditorSaveBtn').textContent = '選択したページを削除';
+  document.getElementById('pageEditorSaveBtn').textContent = '変更を保存';
   _pageEditor = null;
+}
+
+/* ══════════════════════════════════════════
+   結合ファイルへの領収書添付
+   結合ファイル（複数のバウチャー）の中から貼り付け先のページを選び、
+   そのページの空きスペースに領収書を貼って、同じ結合ファイルに上書き保存する
+══════════════════════════════════════════ */
+// 貼り付け先のページ（サムネイル）を選ぶ。選んだページ番号（0始まり）を返す。キャンセルは null
+function _receiptPickPage(pdfBytes, fileName, title){
+  return new Promise(async resolve => {
+    const ov = document.createElement('div');
+    ov.style.cssText = 'position:fixed;inset:0;z-index:2147483647;background:rgba(0,0,0,.88);display:flex;flex-direction:column;';
+    ov.innerHTML = `<div style="display:flex;align-items:center;gap:8px;padding:10px 14px;background:#1e1b4b;">
+        <div style="flex:1;color:#fff;font-size:13px;font-weight:700;">${title ? escHtml(title) : '🧾 領収書（' + escHtml(fileName) + '）を貼るバウチャーをタップ'}</div>
+        <button id="rcPickClose" style="padding:6px 12px;border-radius:8px;border:none;background:rgba(255,255,255,.15);color:#fff;font-size:14px;font-weight:700;cursor:pointer;">✕</button></div>
+      <div id="rcPickGrid" style="flex:1;overflow-y:auto;background:#0f172a;padding:14px;display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:12px;align-content:start;">
+        <div style="color:#94a3b8;font-size:13px;padding:20px;grid-column:1/-1;text-align:center;">読み込み中...</div></div>`;
+    document.body.appendChild(ov);
+    const done = v => { ov.remove(); resolve(v); };
+    ov.querySelector('#rcPickClose').onclick = () => done(null);
+    try{
+      const pj = await pdfjsLib.getDocument({data: pdfBytes.slice(), stopAtErrors:false}).promise;
+      const grid = ov.querySelector('#rcPickGrid'); grid.innerHTML = '';
+      for(let i=1;i<=pj.numPages;i++){
+        const canvas = await _peThumbFromPdfPage(pj, i);
+        const t = document.createElement('div');
+        t.className = 'page-editor-thumb';
+        t.appendChild(canvas);
+        const lb = document.createElement('div'); lb.className = 'page-editor-thumb-label'; lb.textContent = `${i} / ${pj.numPages}`; t.appendChild(lb);
+        t.onclick = () => done(i-1);
+        grid.appendChild(t);
+      }
+    }catch(e){ alert('ページの読み込みに失敗しました: ' + e.message); done(null); }
+  });
+}
+
+// 指定ページの空きスペース（表の下〜注意書きの上）に領収書を貼る。貼れたら true、スペース不足なら false
+async function _embedReceiptOnPage(doc, pageIdx, pdfBytes, rc){
+  const page = doc.getPages()[pageIdx];
+  const {width:W, height:H} = page.getSize();
+  const pj = await pdfjsLib.getDocument({data: pdfBytes.slice(), stopAtErrors:false}).promise;
+  const pg = await pj.getPage(pageIdx + 1);
+  const content = await pg.getTextContent();
+  const raw = [];
+  for(const it of content.items){
+    if(!it.str || !it.str.trim()) continue;
+    raw.push({ str: it.str, yPDF: it.transform[5] });
+  }
+  const numYs = raw.filter(i => /^\d{1,2}$/.test(i.str.trim()) && i.yPDF < H*0.8 && i.yPDF > H*0.1).map(i => i.yPDF);
+  const tableBottomY = numYs.length > 0 ? Math.min(...numYs) - 5 : H*0.6;
+  const imp = raw.filter(i => /important/i.test(i.str) && i.yPDF < H*0.6);
+  const importantTopY = imp.length > 0 ? Math.max(...imp.map(i => i.yPDF + 15)) : H*0.25;
+  const margin = 12, spaceBottom = importantTopY + margin, spaceTop = tableBottomY - margin;
+  const spaceLeft = W*0.07, spaceW = W*0.93 - spaceLeft, spaceH = spaceTop - spaceBottom;
+  if(spaceH <= 20) return false;
+  if(rc.isPdf){
+    const rdoc = await PDFLib.PDFDocument.load(rc.bytes);
+    const [emb] = await doc.embedPages([rdoc.getPages()[0]]);
+    const d = emb.size(); const sc = Math.min(spaceW/d.width, spaceH/d.height, 1);
+    page.drawPage(emb, { x: spaceLeft + (spaceW - d.width*sc)/2, y: spaceBottom + (spaceH - d.height*sc)/2, width: d.width*sc, height: d.height*sc });
+  } else {
+    const im = rc.png ? await doc.embedPng(rc.bytes) : await doc.embedJpg(rc.bytes);
+    const d = im.scale(1); const sc = Math.min(spaceW/d.width, spaceH/d.height, 1);
+    page.drawImage(im, { x: spaceLeft + (spaceW - d.width*sc)/2, y: spaceBottom + (spaceH - d.height*sc)/2, width: d.width*sc, height: d.height*sc });
+  }
+  return true;
+}
+
+/* ── 結合ファイル：領収書の添付・取り外し（「元に戻す」用のバックアップ） ──
+   添付時に、貼り付け前の元ページ（または追加ページの位置）を app_meta/rcbk_… に記録しておき、あとから剥がせるようにする */
+const _RCBK = 'app_meta';
+async function _rcBackups(id){
+  const db = await getFirestore();
+  const snap = await db.collection(_RCBK).where('recordId','==',id).get();
+  return snap.docs.map(d => ({ ref: d.ref, docId: d.id, ...d.data() })).sort((a,b) => String(a.at).localeCompare(String(b.at)));
+}
+async function _rcShiftBackups(id, afterIdx, delta, exceptDocId){
+  for(const b of await _rcBackups(id)){
+    if(b.docId !== exceptDocId && b.pageIndex > afterIdx){ try{ await b.ref.update({ pageIndex: b.pageIndex + delta }); }catch(e){} }
+  }
+}
+async function _clearReceiptBackups(id){
+  try{ for(const b of await _rcBackups(id)){ try{ await b.ref.delete(); }catch(e){} } }catch(e){ console.warn('領収書バックアップの削除に失敗（無視）:', e); }
+}
+
+// 結合ファイルのPDFを、同じレコードに上書き保存（チェックサム・インデックス・VM/ランク判定・「元に戻す」記録も更新）
+async function _saveBytesInPlace(id, outBytes, nBefore, mpFn){
+  const db = await getFirestore();
+  const FV = firebase.firestore.FieldValue;
+  const newChecksum = _pdfChecksum(outBytes), b64 = uint8ToBase64(outBytes);
+  let oldChunks = 0; try{ const ix = await _getVoucherIndex(); oldChunks = (ix[id] && ix[id].chunks) || 0; }catch(e){}
+  let fields, newChunks = 0;
+  if(b64.length + 600 > INLINE_LIMIT){ newChunks = await _writeChunks(db, id, b64); fields = { pdfChunkCount: newChunks, pdfBase64: FV.delete(), checksum: newChecksum }; }
+  else { fields = { pdfBase64: b64, pdfChunkCount: FV.delete(), checksum: newChecksum }; }
+  if(mpFn){
+    try{
+      const cur = await db.collection('vouchers').doc(id).get(); const mp = cur.exists ? cur.data().mergeParts : null;
+      if(Array.isArray(mp) && mp.reduce((a,x)=>a+(x.pages||0),0) === nBefore){ const nm = mpFn(mp); if(nm) fields.mergeParts = nm; }
+    }catch(e){ console.warn('mergeParts更新失敗（無視）:', e); }
+  }
+  await db.collection('vouchers').doc(id).update(fields);
+  if(oldChunks > newChunks){ for(let i=newChunks;i<oldChunks;i++){ try{ await db.collection('vouchers_chunks').doc(`${id}_${i}`).delete(); }catch(e){} } }
+  const fl = await _detectFlags(outBytes);
+  if(fl !== null){ await db.collection('vouchers').doc(id).update({ isVM: fl.vm, ranks: fl.ranks }); }
+  await _patchVoucherIndexFields(id, { checksum: newChecksum, chunks: newChunks, isVM: fl ? fl.vm : null, ranks: fl ? fl.ranks : null });
+}
+
+// 保存後も今の状態のまま（プレビュー・選択行・スクロール位置を維持）で表示を更新
+async function _refreshKeepState(id){
+  const els = [document.scrollingElement, document.querySelector('.body'), document.getElementById('archiveScreen'), document.getElementById('archiveList')].filter(Boolean);
+  const keep = els.map(el => el.scrollTop);
+  _mvPendingRatio = _mvScrollRatio();
+  await renderArchive();
+  els.forEach((el,i) => { el.scrollTop = keep[i]; });
+  await previewArchiveItem(id);
+  els.forEach((el,i) => { el.scrollTop = keep[i]; });
+}
+
+// 剥がす領収書を選ぶ
+function _receiptUndoPick(list){
+  return new Promise(resolve => {
+    const ov = document.createElement('div');
+    ov.style.cssText = 'position:fixed;inset:0;z-index:2147483647;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;padding:16px;box-sizing:border-box;';
+    const fmt = iso => { try{ const d = new Date(iso); return `${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`; }catch(e){ return ''; } };
+    ov.innerHTML = `<div class="dlc-box" style="max-height:80vh;overflow:auto;">
+      <div class="dlc-title">🧾 剥がす領収書を選択</div>
+      <div class="dlc-sub">選んだ領収書を取り外し、元のバウチャーに戻します</div>
+      ${list.map((b,i) => `<button class="dlc-btn btn-merge" data-i="${i}"><div class="dlc-btn-title">${b.pageIndex+1}ページ目：${b.mode==='embed'?'貼り付け':'ページ結合（次ページ'+(b.count>1?'から'+b.count+'ページ':'')+'）'}</div><div class="dlc-btn-desc">${escHtml(b.name||'領収書')}（${fmt(b.at)}に添付）</div></button>`).join('')}
+      <button class="dlc-cancel" data-i="">キャンセル</button></div>`;
+    ov.addEventListener('click', e => { const b = e.target.closest('[data-i]'); if(!b) return; ov.remove(); resolve(b.dataset.i === '' ? null : list[+b.dataset.i]); });
+    document.body.appendChild(ov);
+  });
+}
+
+// 領収書を剥がして、元のバウチャーに戻す
+async function undoReceiptOnMerged(id){
+  id = id || _previewArchiveId; if(!id) return;
+  try{
+    const list = await _rcBackups(id);
+    if(list.length === 0){ alert('このファイルには、剥がせる領収書の記録がありません。\n（この機能を入れる前に添付した領収書は剥がせません）'); return; }
+    const pick = await _receiptUndoPick(list); if(!pick) return;
+    if(!confirm(`${pick.pageIndex+1}ページ目の領収書を剥がして、元に戻します。\nよろしいですか？`)) return;
+    const r = await getArchiveById(id);
+    if(!r || (!r.pdfBase64 && !r.pdfBytes)){ alert('PDFデータが見つかりませんでした'); return; }
+    const bytes = r.pdfBase64 ? base64ToUint8(r.pdfBase64) : r.pdfBytes;
+    const doc = await PDFLib.PDFDocument.load(bytes, {throwOnInvalidObject:false, updateMetadata:false, ignoreEncryption:true});
+    const n = doc.getPageCount();
+    if(pick.mode === 'embed'){
+      if(pick.pageIndex >= n || !pick.origB64){ alert('元のページが見つからないため、剥がせませんでした'); return; }
+      const origDoc = await PDFLib.PDFDocument.load(base64ToUint8(pick.origB64));
+      doc.removePage(pick.pageIndex);
+      const [op] = await doc.copyPages(origDoc, [0]);
+      doc.insertPage(pick.pageIndex, op);
+    } else {
+      if(pick.pageIndex + pick.count >= n){ alert('領収書のページが見つからないため、剥がせませんでした'); return; }
+      for(let k=0;k<pick.count;k++) doc.removePage(pick.pageIndex + 1);
+    }
+    const outBytes = new Uint8Array(await doc.save());
+    await _saveBytesInPlace(id, outBytes, n, pick.mode === 'merge' ? (mp => {
+      let at = 0; return mp.map(x => { const has = pick.pageIndex >= at && pick.pageIndex < at + x.pages; at += x.pages; return has ? { ...x, pages: Math.max(1, x.pages - pick.count) } : x; });
+    }) : null);
+    try{ await pick.ref.delete(); }catch(e){}
+    if(pick.mode === 'merge') await _rcShiftBackups(id, pick.pageIndex, -pick.count, pick.docId);
+    await _refreshKeepState(id);
+    alert(`${pick.pageIndex+1}ページ目の領収書を剥がしました`);
+  }catch(e){
+    console.error('領収書を剥がす処理に失敗:', e);
+    alert('領収書を剥がせませんでした: ' + e.message);
+  }
+}
+
+/* ══════════════════════════════════════════
+   Voucher右上の「Date:」を入力・編集する
+══════════════════════════════════════════ */
+const _MON = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+// 指定ページの「Date:」の位置と、すでに書かれている日付を探す
+async function _findDateSpot(pdfBytes, pageIdx){
+  const pj = await pdfjsLib.getDocument({data: pdfBytes.slice(), stopAtErrors:false}).promise;
+  const pg = await pj.getPage(pageIdx + 1);
+  const content = await pg.getTextContent();
+  const items = content.items.filter(it => it.str && it.str.trim()).map(it => ({ str: it.str, x: it.transform[4], y: it.transform[5], w: Math.abs(it.width), h: Math.abs(it.height) || 9 }));
+  // いちばん上にある「Date」を探す
+  const labels = items.filter(it => /^\s*Date\s*:?/i.test(it.str)).sort((a,b) => b.y - a.y);
+  if(!labels.length) return null;
+  const lb = labels[0];
+  let existing = [];
+  const m = lb.str.match(/^(\s*Date\s*:?)\s*(\S.*)$/i);
+  let labelEnd = lb.x + lb.w;
+  if(m){   // 「Date: 2026/Nov/24」が1つの文字列になっている場合
+    const cw = lb.w / lb.str.length; labelEnd = lb.x + cw * m[1].length;
+    existing.push({ str: m[2], x: labelEnd, y: lb.y, w: lb.w - cw * m[1].length, h: lb.h });
+  }
+  // 「Date」と「:」が別々の文字列になっている様式があるため、コロンだけの文字列はラベルの一部として扱う
+  const sameLine = items.filter(it => it !== lb && Math.abs(it.y - lb.y) <= 4 && it.x >= labelEnd - 1).sort((a,b) => a.x - b.x);
+  for(const it of sameLine){
+    if(/^\s*:\s*$/.test(it.str)){ labelEnd = Math.max(labelEnd, it.x + it.w); continue; }
+    existing.push(it);
+  }
+  const txt = existing.map(e => e.str).join(' ').replace(/^\s*:\s*/, '');
+  let parsed = null;
+  const dm = txt.match(/(\d{4})\s*\/\s*([A-Za-z]{3})\s*\/\s*(\d{1,2})/);
+  if(dm){ const mi = _MON.findIndex(x => x.toLowerCase() === dm[2].toLowerCase()); if(mi >= 0) parsed = `${dm[1]}-${String(mi+1).padStart(2,'0')}-${String(+dm[3]).padStart(2,'0')}`; }
+  return { label: lb, labelEnd, existing, text: txt, parsed };
+}
+
+// 日付の入力ダイアログ。{date:'YYYY-MM-DD'} / {clear:true} / null(キャンセル)
+function _dateEditDialog(spot, pageNo){
+  return new Promise(resolve => {
+    const ov = document.createElement('div');
+    ov.style.cssText = 'position:fixed;inset:0;z-index:2147483647;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;padding:16px;box-sizing:border-box;';
+    const today = new Date(); const td = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
+    ov.innerHTML = `<div style="background:#fff;border-radius:16px;padding:22px 20px;width:100%;max-width:320px;box-shadow:0 8px 32px rgba(0,0,0,.25);box-sizing:border-box;">
+      <div style="font-size:15px;font-weight:800;color:#1e1b4b;margin-bottom:4px;">📅 Voucherの日付を入力・編集</div>
+      <div style="font-size:12px;color:#6b7280;margin-bottom:14px;">${pageNo}ページ目の右上「Date:」${spot.text ? '／現在：' + escHtml(spot.text) : '／現在：空欄'}</div>
+      <input type="date" id="vdInput" value="${spot.parsed || td}" style="width:100%;box-sizing:border-box;padding:10px 12px;border:1.5px solid #d1d5db;border-radius:10px;font-size:15px;color:#1e1b4b;background:#fff;margin-bottom:16px;display:block;">
+      <div style="display:flex;gap:8px;margin-bottom:8px;">
+        <button data-a="cancel" style="flex:1;padding:12px;border-radius:10px;border:1.5px solid #d1d5db;background:#f9fafb;color:#374151;font-size:14px;font-weight:600;">キャンセル</button>
+        <button data-a="ok" style="flex:1;padding:12px;border-radius:10px;border:none;background:#2563eb;color:#fff;font-size:14px;font-weight:700;">反映する</button>
+      </div>
+      ${spot.text ? '<button data-a="clear" style="width:100%;padding:10px;border-radius:10px;border:1.5px solid #fca5a5;background:#fff;color:#dc2626;font-size:13px;font-weight:700;">日付を消して空欄にする</button>' : ''}
+    </div>`;
+    ov.addEventListener('click', e => {
+      const b = e.target.closest('[data-a]'); if(!b) return;
+      const a = b.dataset.a;
+      if(a === 'ok'){ const v = ov.querySelector('#vdInput').value; if(!v){ alert('日付を入力してください'); return; } ov.remove(); resolve({ date: v }); }
+      else if(a === 'clear'){ ov.remove(); resolve({ clear: true }); }
+      else { ov.remove(); resolve(null); }
+    });
+    document.body.appendChild(ov);
+  });
+}
+
+async function editVoucherDate(id){
+  id = id || _previewArchiveId; if(!id) return;
+  try{
+    const r = await getArchiveById(id);
+    if(!r || (!r.pdfBase64 && !r.pdfBytes)){ alert('PDFデータが見つかりませんでした'); return; }
+    const bytes = r.pdfBase64 ? base64ToUint8(r.pdfBase64) : r.pdfBytes;
+    const doc = await PDFLib.PDFDocument.load(bytes, {throwOnInvalidObject:false, updateMetadata:false, ignoreEncryption:true});
+    const n = doc.getPageCount();
+    let target = 0;
+    if(n > 1){ target = await _receiptPickPage(bytes, r.filename, '📅 日付を入力・編集するバウチャーをタップ'); if(target === null) return; }
+    const spot = await _findDateSpot(bytes, target);
+    if(!spot){ alert(`${target+1}ページ目に「Date:」の欄が見つかりませんでした。\n（Voucherの様式以外のページです）`); return; }
+    const res = await _dateEditDialog(spot, target + 1);
+    if(!res) return;
+
+    const page = doc.getPages()[target];
+    // 今ある日付を白で塗りつぶす
+    for(const e of spot.existing){
+      page.drawRectangle({ x: e.x - 2, y: e.y - 1.5, width: e.w + 4, height: (e.h || 9) + 2.5, color: PDFLib.rgb(1,1,1), borderWidth: 0 });
+    }
+    if(res.date){
+      const [yy, mm, dd] = res.date.split('-');
+      const text = `${yy}/${_MON[+mm - 1]}/${dd}`;
+      const font = await doc.embedFont(PDFLib.StandardFonts.Helvetica);
+      const size = Math.min(12, Math.max(8, (spot.existing[0] && spot.existing[0].h) || spot.label.h || 9));
+      // 既存の日付があればその右端、なければ「Date:」の線の右端にそろえる
+      const ex = spot.existing;
+      const endX = ex.length ? Math.max(...ex.map(e => e.x + e.w)) : spot.label.x + spot.label.w * 5.15;   // 様式の大きさ（A4・大判）に合わせて、線の右端の位置を換算
+      const y = ex.length ? ex[0].y : spot.label.y;
+      const tw = font.widthOfTextAtSize(text, size);
+      const pw = page.getWidth();
+      let sx = endX - tw;
+      const minX = (spot.labelEnd || (spot.label.x + spot.label.w)) + 4;   // 「Date:」の文字に重ならないようにする
+      if(sx < minX) sx = minX;
+      if(sx + tw > pw - 8) sx = Math.max(minX, pw - 8 - tw);              // ページの右端からはみ出さないようにする
+      page.drawText(text, { x: sx, y, size, font, color: PDFLib.rgb(0,0,0) });
+    }
+    const outBytes = new Uint8Array(await doc.save());
+    await _saveBytesInPlace(id, outBytes, n, null);
+    await _refreshKeepState(id);
+    alert(res.date ? `${target+1}ページ目の日付を ${res.date.replace(/-/g,'/')} に更新しました` : `${target+1}ページ目の日付を消しました`);
+  }catch(e){
+    console.error('日付の編集に失敗:', e);
+    alert('日付を編集できませんでした: ' + e.message);
+  }
+}
+
+// 「埋め込み」か「ページ結合」かを選ぶ（署名済み一覧の領収書添付と同じ選択）。選んだ方式、キャンセルは null
+function _receiptChooseMode(pageNo){
+  return new Promise(resolve => {
+    const ov = document.createElement('div');
+    ov.style.cssText = 'position:fixed;inset:0;z-index:2147483647;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;padding:16px;box-sizing:border-box;';
+    ov.innerHTML = `<div class="dlc-box">
+        <div class="dlc-title">🧾 領収書の添付方法を選択</div>
+        <div class="dlc-sub">${pageNo}ページ目のバウチャーに添付します</div>
+        <button class="dlc-btn btn-embed" data-m="embed"><div class="dlc-btn-title">🧾 バウチャーに貼り付け</div><div class="dlc-btn-desc">そのバウチャーの空きスペースに領収書を配置（ページ数は増えません）</div></button>
+        <button class="dlc-btn btn-merge" data-m="merge"><div class="dlc-btn-title">📑 ページ結合</div><div class="dlc-btn-desc">そのバウチャーの次に、領収書を別ページとして追加</div></button>
+        <button class="dlc-cancel" data-m="">キャンセル</button></div>`;
+    ov.addEventListener('click', e => { const b = e.target.closest('[data-m]'); if(!b) return; ov.remove(); resolve(b.dataset.m || null); });
+    document.body.appendChild(ov);
+  });
+}
+
+// ※ファイル選択を押した直後（ユーザー操作の中）で開く必要があるため、ここでは先にファイル選択を出す
+function attachReceiptToMerged(id){
+  id = id || _previewArchiveId; if(!id) return;
+  const inp = document.createElement('input');
+  inp.type = 'file'; inp.accept = 'application/pdf,image/jpeg,image/png';
+  inp.onchange = async () => {
+    const f = inp.files && inp.files[0]; if(!f) return;
+    try{
+      const isPdf = /pdf$/i.test(f.type) || /\.pdf$/i.test(f.name);
+      const isImg = /^image\/(jpeg|png)$/i.test(f.type);
+      if(!isPdf && !isImg){ alert('領収書はPDFまたは画像（JPG/PNG）を選んでください'); return; }
+      const rc = { isPdf, png: /png/i.test(f.type), bytes: new Uint8Array(await f.arrayBuffer()) };
+      const r = await getArchiveById(id);
+      if(!r || !r.pdfBase64 && !r.pdfBytes){ alert('PDFデータが見つかりませんでした'); return; }
+      const bytes = r.pdfBase64 ? base64ToUint8(r.pdfBase64) : r.pdfBytes;
+      const doc = await PDFLib.PDFDocument.load(bytes, {throwOnInvalidObject:false, updateMetadata:false, ignoreEncryption:true});
+      const n = doc.getPageCount();
+      let target = 0;
+      if(n > 1){ target = await _receiptPickPage(bytes, f.name); if(target === null) return; }
+      const mode = await _receiptChooseMode(target + 1);
+      if(!mode) return;
+      let addedPages = 0;
+      let doMerge = (mode === 'merge');
+      let origB64 = null;   // 貼り付け前の元ページ（あとで剥がすために保存）
+      if(!doMerge){
+        const tmp = await PDFLib.PDFDocument.create(); const [op] = await tmp.copyPages(doc, [target]); tmp.addPage(op);
+        origB64 = uint8ToBase64(new Uint8Array(await tmp.save()));
+      }
+      if(!doMerge && !(await _embedReceiptOnPage(doc, target, bytes, rc))){
+        if(!confirm(`${target+1}ページ目には領収書を貼る空きスペースがありません。\n\nそのページの次に、領収書を別ページとして追加しますか？`)) return;
+        doMerge = true; origB64 = null;
+      }
+      if(doMerge){
+        // そのバウチャーのすぐ後ろに、A4の別ページとして領収書を追加（PDFの領収書は全ページ）
+        const A4W = 595, A4H = 842, mg = 30;
+        if(rc.isPdf){
+          const rdoc = await PDFLib.PDFDocument.load(rc.bytes);
+          const rn = rdoc.getPageCount();
+          for(let k=0;k<rn;k++){
+            const [emb] = await doc.embedPages([rdoc.getPages()[k]]); const d = emb.size();
+            const sc = Math.min((A4W-mg*2)/d.width, (A4H-mg*2)/d.height);
+            const np = doc.insertPage(target + 1 + k, [A4W, A4H]);
+            np.drawPage(emb, { x:(A4W-d.width*sc)/2, y:(A4H-d.height*sc)/2, width:d.width*sc, height:d.height*sc });
+            addedPages++;
+          }
+        } else {
+          const im = rc.png ? await doc.embedPng(rc.bytes) : await doc.embedJpg(rc.bytes); const d = im.scale(1);
+          const sc = Math.min((A4W-mg*2)/d.width, (A4H-mg*2)/d.height, 1);
+          const np = doc.insertPage(target + 1, [A4W, A4H]);
+          np.drawImage(im, { x:(A4W-d.width*sc)/2, y:(A4H-d.height*sc)/2, width:d.width*sc, height:d.height*sc });
+          addedPages = 1;
+        }
+      }
+      const outBytes = new Uint8Array(await doc.save());
+
+      // ── 同じ結合ファイルに上書き保存（チェックサム・インデックス・「元に戻す」用の記録も更新） ──
+      await _saveBytesInPlace(id, outBytes, n, addedPages > 0 ? (mp => {
+        let at = 0; return mp.map(x => { const has = target >= at && target < at + x.pages; at += x.pages; return has ? { ...x, pages: x.pages + addedPages } : x; });
+      }) : null);
+
+      // ── あとで剥がせるように記録を残す ──
+      let canUndo = true;
+      try{
+        if(addedPages > 0) await _rcShiftBackups(id, target, addedPages);
+        if(origB64 !== null && origB64.length > 850000) canUndo = false;   // 元ページが大きすぎて記録できない
+        else{
+          const db = await getFirestore();
+          await db.collection(_RCBK).doc('rcbk_' + id + '_' + Date.now()).set({
+            recordId: id, mode: addedPages > 0 ? 'merge' : 'embed', pageIndex: target, count: addedPages,
+            at: new Date().toISOString(), name: f.name, ...(origB64 !== null ? { origB64 } : {})
+          });
+        }
+      }catch(e){ canUndo = false; console.warn('領収書の取り外し用記録に失敗:', e); }
+
+      await _refreshKeepState(id);
+      alert((addedPages > 0 ? `${target+1}ページ目の次に領収書を${addedPages}ページ追加して保存しました` : `${target+1}ページ目に領収書を貼り付けて保存しました`) + (canUndo ? '' : '\n\n※この領収書は、あとから剥がすための記録を残せませんでした'));
+    }catch(e){
+      console.error('領収書の添付に失敗:', e);
+      alert('領収書の添付に失敗しました: ' + e.message);
+    }
+  };
+  inp.click();
 }
 
 async function downloadSelectedArchive(){
@@ -4610,6 +5945,7 @@ async function mergeAndDownloadSelected(){
     fx = FusionFX.start(_fxLabels);
     const mergedDoc = await PDFLib.PDFDocument.create();
     let firstRecord = null;
+    const _mergeParts = [];  // 結合した各PDFの情報（あとで「元に戻す」ために結合ファイルへ記録）
     const _mergeDates = [];  // 結合できた各PDFの日付（最も古いものを結合ファイルの日付にする）
     const mergedIds = [];    // 実際にページを結合できたレコードのID（削除してよいもの）
     const failedNames = [];  // 読み込み・結合に失敗したファイル名（一覧から残す）
@@ -4659,6 +5995,9 @@ async function mergeAndDownloadSelected(){
         expectedTotal += added;
         mergedIds.push(id);
         const _d = await _voucherDateForMerge(bytes, r); if(_d) _mergeDates.push(_d);
+        _mergeParts.push({ filename: r.filename || '', type: r.type || 'sign', savedAt: r.savedAt || null,
+          dateOnly: !!r.dateOnly, confirmed: !!r.confirmed, pages: added,
+          mergeParts: Array.isArray(r.mergeParts) ? r.mergeParts : null });
       } else {
         failedNames.push(r.filename);
       }
@@ -4693,10 +6032,10 @@ async function mergeAndDownloadSelected(){
     const mergedDateStr = _mergeDates.length ? [..._mergeDates].sort()[0] : todayStr;
     let newId = null;
     try{
-      newId = await saveToArchive(out, mergedFilename, 'merged', mergedDateStr);
+      newId = await saveToArchive(out, mergedFilename, 'merged', mergedDateStr, { extra: { mergeParts: _mergeParts } });
     }catch(saveErr){
       console.error('結合PDFの保存に失敗:', saveErr);
-      _fxAlert('結合PDFの一覧への保存に失敗しました。ダウンロードのみ行います。\n' + saveErr.message);
+      _fxAlert('結合PDFの保存に失敗しました。\n' + saveErr.message);
     }
 
     if(!newId){
@@ -4732,13 +6071,6 @@ async function mergeAndDownloadSelected(){
     await renderArchive();
     await fx.finish(mergedFilename, mergedDoc.getPageCount());
 
-    // 手元にも残せるようダウンロード（最後に実行）
-    const blob = new Blob([out], {type:'application/pdf'});
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.download = mergedFilename;
-    a.href = url; a.click();
-    setTimeout(()=>URL.revokeObjectURL(url), 10000);
   }catch(e){
     _fxAlert('結合に失敗しました: ' + e.message);
   }finally{
@@ -4839,8 +6171,8 @@ async function _doUploadWithDate(file, chosenDate){
 }
 
 async function deleteSingleArchive(id){
-  if(!confirm('この1件を削除しますか？')) return;
-  await deleteArchiveIds([id]);
+  if(!confirm('この1件をゴミ箱に移動しますか？\n（ホームの「ゴミ箱」から元に戻せます）')) return;
+  try{ await trashArchiveIds([id]); }catch(e){ alert('削除に失敗しました: ' + e.message); return; }
   archiveSelectedIds.delete(id);
   updateArchiveBulkBar();
   await renderArchive();
@@ -4849,8 +6181,8 @@ async function deleteSingleArchive(id){
 async function deleteSelectedArchive(){
   if(archiveSelectedIds.size === 0) return;
   const n = archiveSelectedIds.size;
-  if(!confirm(`選択中の${n}件を削除しますか？`)) return;
-  await deleteArchiveIds([...archiveSelectedIds]);
+  if(!confirm(`選択中の${n}件をゴミ箱に移動しますか？\n（ホームの「ゴミ箱」から元に戻せます）`)) return;
+  try{ await trashArchiveIds([...archiveSelectedIds]); }catch(e){ alert('削除に失敗しました: ' + e.message); return; }
   archiveSelectedIds = new Set();
   await renderArchive();
 }
@@ -4917,11 +6249,10 @@ async function saveReceiptAttachToArchive(){
     if(newId && _raSourceArchiveId){
       const srcId = _raSourceArchiveId;
       _raSourceArchiveId = null;
-      if(confirm('元の署名済みPDF（領収書添付前）は不要であれば削除できます。\n\n削除しますか？\n（「キャンセル」を選ぶと両方残ります）')){
-        try{
-          await deleteArchiveIds([srcId]);
-        }catch(delErr){ console.warn('元PDF削除エラー:', delErr); }
-      }
+      // 確認なしで、元の（領収書添付前の）PDFをゴミ箱へ移動する
+      try{
+        await trashArchiveIds([srcId]);
+      }catch(delErr){ console.warn('元PDF削除エラー:', delErr); }
     }
   }catch(e){
     btn.disabled = false;
@@ -4939,7 +6270,12 @@ refreshPendingBanner();
 <div id="pdfPreviewOverlay">
   <div id="pdfPreviewHeader">
     <div id="pdfPreviewTitle"></div>
-    <button id="pdfPreviewEditBtn" onclick="openPagesEditor()" style="display:none;">🗑 ページ編集</button>
+    <button id="pdfPreviewEditBtn" onclick="openPagesEditor()" style="display:none;">✏️ ページ編集</button>
+    <button id="pdfPreviewMoveBtn" onclick="movePreviewToMerged()" style="display:none;padding:6px 12px;border-radius:8px;border:none;background:#7c3aed;color:#fff;font-size:13px;font-weight:700;cursor:pointer;flex-shrink:0;">📁 結合ファイルへ移動</button>
+    <button id="pdfPreviewReceiptBtn" onclick="attachReceiptToMerged()" style="display:none;padding:6px 12px;border-radius:8px;border:none;background:#d97706;color:#fff;font-size:13px;font-weight:700;cursor:pointer;flex-shrink:0;">🧾 領収書を添付</button>
+    <button id="pdfPreviewReceiptUndoBtn" onclick="undoReceiptOnMerged()" style="display:none;padding:6px 12px;border-radius:8px;border:none;background:#92400e;color:#fff;font-size:13px;font-weight:700;cursor:pointer;flex-shrink:0;">🧾 領収書を剥がす</button>
+    <button id="pdfPreviewDateBtn" onclick="editVoucherDate()" style="display:none;padding:6px 12px;border-radius:8px;border:none;background:#0369a1;color:#fff;font-size:13px;font-weight:700;cursor:pointer;flex-shrink:0;">📅 日付を入力</button>
+    <button id="pdfPreviewUnmergeBtn" onclick="unmergeArchiveItem()" style="display:none;padding:6px 12px;border-radius:8px;border:none;background:#dc2626;color:#fff;font-size:13px;font-weight:700;cursor:pointer;flex-shrink:0;">↩ 元に戻す</button>
     <button id="pdfPreviewDlBtn" onclick="pdfPreviewDownload()">⬇ DL</button>
     <button id="pdfPreviewCloseBtn" onclick="closePdfPreview()">✕</button>
   </div>
@@ -4949,13 +6285,15 @@ refreshPendingBanner();
 <!-- ページ編集モーダル（複数ページのPDFから不要なページだけを削除） -->
 <div id="pageEditorOverlay">
   <div id="pageEditorHeader">
-    <div id="pageEditorTitle">ページを選んで削除</div>
+    <div id="pageEditorTitle">ページ編集</div>
+    <button id="pageEditorAddBtn" onclick="document.getElementById('pageEditorAddInput').click()">＋ ページを追加</button>
+    <input type="file" id="pageEditorAddInput" accept="application/pdf,image/jpeg,image/png" multiple style="display:none" onchange="peAddFiles(event)">
     <button id="pageEditorCloseBtn" onclick="closePagesEditor()">✕</button>
   </div>
   <div id="pageEditorBody"></div>
   <div id="pageEditorFooter">
-    <div id="pageEditorFooterText">削除したいページをタップして選択してください</div>
-    <button id="pageEditorSaveBtn" onclick="savePagesEditor()" disabled>選択したページを削除</button>
+    <div id="pageEditorFooterText">タップ＝削除する／戻す、◀ ▶＝順番を移動、「＋ ページを追加」＝PDF・画像を追加</div>
+    <button id="pageEditorSaveBtn" onclick="savePagesEditor()" disabled>変更を保存</button>
   </div>
 </div>
 
@@ -5131,6 +6469,86 @@ const FusionFX = (function(){
     setTimeout(()=>{ try{e.remove();}catch(_){} },400);
   }
   return {start};
+})();
+</script>
+<script>
+/* PC表示：👁でPDFを開いている間だけ右側に表示。ほかの画面へ移ったら閉じる */
+(function(){
+  function hdr(){ var h=document.querySelector('.header'); document.documentElement.style.setProperty('--hdr',(h?h.offsetHeight:64)+'px'); }
+  // 一覧とプレビューの境界をドラッグして幅を調整（幅は記憶する）
+  var MIN_LIST=320, MIN_PREV=360;
+  function setW(px){
+    var max = Math.max(MIN_LIST, window.innerWidth - MIN_PREV);
+    px = Math.min(Math.max(px, MIN_LIST), max);
+    document.documentElement.style.setProperty('--list-w', px+'px');
+    return px;
+  }
+  try{ var saved = parseInt(localStorage.getItem('voucher_list_w'),10); if(saved) setW(saved); }catch(e){}
+  // 一覧だけ表示しているとき（プレビューなし）の幅。左右対称に広がる
+  function setSolo(px){
+    px = Math.min(Math.max(px, 480), Math.max(480, window.innerWidth-60));
+    document.documentElement.style.setProperty('--solo-w', px+'px'); return px;
+  }
+  try{ var sv2 = parseInt(localStorage.getItem('voucher_solo_w'),10); if(sv2) setSolo(sv2); }catch(e){}
+  function cssPx(n){ return parseInt(getComputedStyle(document.documentElement).getPropertyValue(n),10); }
+  function syncSolo(){
+    var as=document.getElementById('archiveScreen'), ov=document.getElementById('pdfPreviewOverlay');
+    var on = !!(as && as.style.display==='flex' && window.innerWidth>=1000 && !(ov && ov.classList.contains('open')));
+    document.body.classList.toggle('arch-solo', on);
+    if(on) hdr();
+  }
+  window._syncSolo = syncSolo;
+  document.addEventListener('DOMContentLoaded',function(){
+    var h=document.createElement('div'); h.id='splitHandle'; h.title='ドラッグで幅を調整（ダブルクリックで元に戻す）';
+    document.body.appendChild(h);
+    var drag=false, shield=null;
+    function onMove(e){ if(!drag) return;
+      if(document.body.classList.contains('arch-solo')) setSolo(2*(e.clientX - window.innerWidth/2)); else setW(e.clientX); }
+    function end(e){ if(!drag) return; drag=false;
+      document.body.classList.remove('split-dragging');
+      if(shield){ shield.remove(); shield=null; }
+      window.removeEventListener('pointermove',onMove,true); window.removeEventListener('pointerup',end,true); window.removeEventListener('pointercancel',end,true);
+      window.removeEventListener('mousemove',onMove,true); window.removeEventListener('mouseup',end,true);
+      try{ if(document.body.classList.contains('arch-solo')) localStorage.setItem('voucher_solo_w', String(cssPx('--solo-w')));
+           else localStorage.setItem('voucher_list_w', String(cssPx('--list-w'))); }catch(_){} }
+    function start(e){
+      if(drag) return; if(e.button!==undefined && e.button!==0) return;
+      drag=true; document.body.classList.add('split-dragging');
+      // 画面全体を透明な膜で覆う：PDFプレビュー（別プロセスの埋め込み）の上でもマウス操作を取りこぼさない
+      shield=document.createElement('div');
+      shield.style.cssText='position:fixed;inset:0;z-index:2147483647;cursor:col-resize;background:transparent;';
+      document.body.appendChild(shield);
+      window.addEventListener('pointermove',onMove,true); window.addEventListener('pointerup',end,true); window.addEventListener('pointercancel',end,true);
+      window.addEventListener('mousemove',onMove,true); window.addEventListener('mouseup',end,true);
+      e.preventDefault();
+    }
+    h.addEventListener('pointerdown',start);
+    h.addEventListener('mousedown',start);   // pointerdownが来ない環境の保険（二重起動は start 内で防止）
+    h.addEventListener('dblclick',function(){
+      if(document.body.classList.contains('arch-solo')){ setSolo(880); try{ localStorage.removeItem('voucher_solo_w'); }catch(_){} }
+      else { setW(560); try{ localStorage.removeItem('voucher_list_w'); }catch(_){} } });
+  });
+  window._splitPreviewOn = function(){
+    var as=document.getElementById('archiveScreen');
+    var on = !!(as && as.style.display==='flex' && window.innerWidth>=1000);
+    document.body.classList.toggle('arch-preview', on);
+    if(on) hdr();
+  };
+  document.addEventListener('DOMContentLoaded',function(){
+    var as=document.getElementById('archiveScreen');
+    var ov=document.getElementById('pdfPreviewOverlay');
+    if(ov) new MutationObserver(syncSolo).observe(ov,{attributes:true,attributeFilter:['class']});
+    if(as) new MutationObserver(syncSolo).observe(as,{attributes:true,attributeFilter:['style']});
+    syncSolo();
+    if(as) new MutationObserver(function(){
+      if(as.style.display!=='flex' && document.body.classList.contains('arch-preview')){ try{ closePdfPreview(); }catch(e){} }
+    }).observe(as,{attributes:true,attributeFilter:['style']});
+  });
+  window.addEventListener('resize',function(){
+    var cur=parseInt(getComputedStyle(document.documentElement).getPropertyValue('--list-w'),10)||560; setW(cur);
+    setSolo(cssPx('--solo-w')||880); syncSolo();
+    if(document.getElementById('pdfPreviewOverlay').classList.contains('open')) window._splitPreviewOn();
+  });
 })();
 </script>
 </body>
